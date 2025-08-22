@@ -1,0 +1,71 @@
+﻿@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        string txtsearchform = "";
+        System.Globalization.CultureInfo cultureinfo = new System.Globalization.CultureInfo(getLang.toLangCulture());
+        if (IsPost) {
+            txtsearchform = Request.Form["q"];
+        } else {
+            txtsearchform = Request.QueryString["q"];
+        }
+        List<WebSiteSearch> ListWebSiteSearch = new List<WebSiteSearch>();
+        foreach (Pages item in ConnXml.Pages.Where(x => x.Status && x.Lang == getLang && (x.DisplayName.Contains(txtsearchform) || x.Body.Contains(txtsearchform))))
+        {
+            WebSiteSearch WebSiteSearch = new WebSiteSearch();
+            WebSiteSearch.Title = item.DisplayName;
+            WebSiteSearch.ShortContent = item.ShortContent;
+            WebSiteSearch.Url = Shared.PageBasePath() + item.RawUrl;
+            WebSiteSearch.Date = Convert.ToDateTime(item.CreatedDate);
+            ListWebSiteSearch.Add(WebSiteSearch);
+        }
+        foreach (Branch item in ConnXml.Branch.Where(x => x.Status && x.Lang == getLang && (x.Title.Contains(txtsearchform) || x.Address.Contains(txtsearchform))))
+        {
+            WebSiteSearch WebSiteSearch = new WebSiteSearch();
+            WebSiteSearch.Title = item.Title;
+            WebSiteSearch.ShortContent = "<br>" + item.Address;
+            WebSiteSearch.Url = "";
+            WebSiteSearch.Date = Convert.ToDateTime(item.CreatedDate);
+            ListWebSiteSearch.Add(WebSiteSearch);
+        }
+        foreach (BIST100Bulletin item in ConnXml.BIST100Bulletin.Where(x => x.Status && x.Lang == getLang && (x.Title.Contains(txtsearchform))))
+        {
+            WebSiteSearch WebSiteSearch = new WebSiteSearch();
+            WebSiteSearch.Title = item.Title;
+            WebSiteSearch.Url = "";
+            WebSiteSearch.Date = Convert.ToDateTime(item.Date);
+            ListWebSiteSearch.Add(WebSiteSearch);
+        }
+        foreach (ABDBulletin item in ConnXml.ABDBulletin.Where(x => x.Status && x.Lang == getLang && (x.Title.Contains(txtsearchform))))
+        {
+            WebSiteSearch WebSiteSearch = new WebSiteSearch();
+            WebSiteSearch.Title = item.Title;
+            WebSiteSearch.Url = "";
+            WebSiteSearch.Date = Convert.ToDateTime(item.Date);
+            ListWebSiteSearch.Add(WebSiteSearch);
+        }
+        <div class="views" style="padding:0;">
+            <div class="block">
+                <div class="tabco active">
+                    <div class="table-box active">
+                        <form method="get">
+                            @HelperClientControl.inputTextWithoutLabelWrapper("q", Shared.GetTranslation(96), false, true, "", "input-giris")
+                            <input type="submit" id="submit" value="@Shared.GetTranslation(97)" class="search" />
+                        </form>
+                        <table style="max-width:inherit">
+                            <tbody style="overflow-y: initial; height:auto">
+                                @{
+                                    foreach (var item in ListWebSiteSearch.OrderByDescending(x => x.Date))
+                                    {
+                                        string sc = string.IsNullOrEmpty(item.ShortContent) ? "" : item.ShortContent;
+                                        <tr > <td> <span>@item.Date.Day</span> @item.Date.ToString("MMMM yyyy", cultureinfo) </td> <td style=" height: auto;"> @item.Title @Html.Raw(sc) </td><td></td><td> <a class="button" target="_blank" href="@item.Url">Detay</a> </td> </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

@@ -1,0 +1,50 @@
+﻿@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        System.Text.StringBuilder sbProspectus = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbExport = new System.Text.StringBuilder();
+        //
+        string str = @"<div class='faaliyet-raporlari'>
+            <a href='{2}'><span>{0} - {1}</span> </a>
+            <a href='{2}'>
+                PDF
+                <img class='pdf-icon' src='/Content/images/pdf.svg'>
+            </a>
+        </div>";
+        foreach (var item in ConnXml.Prospectus.Where(x=> x.Status && x.Lang == getLang).OrderByDescending(x=> x.Date))
+        {
+            sbProspectus.AppendFormat(str, item.Title, item.Date.ToString("dd/MM/yyyy"), "/Files/Prospectus/" + item.ImageUrl);
+        }
+        foreach (var item in ConnXml.ExportDocument.Where(x => x.Status && x.Lang == getLang).OrderByDescending(x => x.Date))
+        {
+            sbExport.AppendFormat(str, item.Title, item.Date.ToString("dd/MM/yyyy"), "/Files/ExportDocument/" + item.ImageUrl);
+        }
+        <div class="accordion">
+            <span class="target-fix" id="accordion"></span>
+            <div>
+                <span class="target-fix" id="accordion2022"></span>
+                <div class="accordion-content">
+                    <div class="faaliyet-raporlari-mali-tablolar-wrapper">
+                        <div class="faaliyet-raporlari-wrapper">
+                            <h3>@Shared.GetTranslation(32)</h3>
+                            @Html.Raw(sbExport.ToString())
+                        </div>
+                        @{
+                            if (!string.IsNullOrEmpty(sbProspectus.ToString()))
+                            {
+                                <div class="mali-raporlari-wrapper">
+                                    <h3>@Shared.GetTranslation(33)</h3>
+                                    @Html.Raw(sbProspectus.ToString())
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <style>
+            .accordion-content { padding-top: 10px; padding-bottom: 25px; height: auto; display: block; }
+        </style>
+    }
+}

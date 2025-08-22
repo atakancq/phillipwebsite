@@ -1,0 +1,114 @@
+﻿@functions{
+    string bankList(MvcXmlEntities ConnXml, int getLang, string getUnit, int aNumber)
+    {
+        System.Text.StringBuilder sbAccordion = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbAccordionContent = new System.Text.StringBuilder();
+        string strAccordion = @"<div>
+            <span class='target-fix' id='accordion" + aNumber + @"'></span>
+            <a href='#accordion" + aNumber + @"' class='baslik-link' id='open-accordion" + aNumber + @"' title='open'>
+                <div class='acc-inner'>
+                    <img class='history-text-before-img' src='/Content/images/history-solid.svg' />
+                    <div class='text-acc-header'><h5>{1}</h5></div>
+                    <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                </div>
+            </a>
+            <a href='#accordion' class='baslik-link' id='close-accordion" + aNumber + @"' title='close'>
+                <div class='acc-inner'>
+                    <img class='history-text-before-img' src='/Content/images/history-solid.svg' />
+                    <div class='text-acc-header'><h5>{1}</h5></div>
+                    <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                </div>
+            </a>
+            <div class='accordion-content'>
+                <div class='banka-hesap-numaralari-hepsi'>
+                    {0}
+                </div>
+            </div>
+        </div>";
+        //
+        string strAccordionContent = @"<div class='banka-hesap-numaralari-inner'>
+            <div class='banka-hesap-logo'>
+                <img src='/Files/Bank/{4}' />
+            </div>
+            <div class='banka-hesap-adres'>
+                <div class='sube'>
+                    {0}
+                </div>
+                <div class='firma-adi'>
+                    {1}
+                    <a href='javascript:;' class='copyValue' data-val='{1}'><img src='/Content/images/brochure.png' /></a>
+                </div>
+                <div class='iban-no'>
+                    {3}
+                    <a href='javascript:;' class='copyValue' data-val='{3}'><img src='/Content/images/brochure.png' /></a>
+                </div>
+            </div>
+            <div class='banka-hesap-turu'>
+                <div class='hesap-turu-text {5}'>{2}</div>
+                <div class='oval {5}'>
+                    <i class='fas {6}'></i>
+                </div>
+            </div>
+        </div>";
+        //
+        var query = from b in ConnXml.Bank
+                    join bi in ConnXml.BankAccount on b.BankID equals bi.BankID
+                    where b.Status && bi.Status && b.Lang == getLang && bi.Unit == getUnit
+                    orderby bi.Line
+                    select new
+                    {
+                        BankName = b.Title,
+                        BankAccountName = bi.Title,
+                        bi.Iban,
+                        b.ImageUrl,
+                        b.Line,
+                        bi.Unit
+                    };
+        //
+        foreach (var item in query)
+        {
+            var className = "";
+            var iconName = "";
+            // Euro
+            if (item.Unit  == "EURO")
+            {
+                iconName = "fa-euro-sign";
+                className = "eur";
+            }
+            else
+            {
+                className = item.Unit.ToLower();
+            }
+            // TL
+            if (item.Unit == "TL")
+            {
+                iconName = "fa-lira-sign";
+            }
+            else if (item.Unit == "USD")
+            {
+                iconName = "fa-dollar-sign";
+            }
+            // Display
+            var unitDisplay = Shared.GetTranslation(1).Replace("{0}", item.Unit);
+            sbAccordionContent.AppendFormat(strAccordionContent, item.BankName, item.BankAccountName, unitDisplay, item.Iban, item.ImageUrl, className, iconName);
+        }
+        sbAccordion.AppendFormat(strAccordion, sbAccordionContent.ToString(), getUnit);
+        return sbAccordion.ToString();
+    }
+}
+@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        string[] bankAccountList = new string[] {  "TL", "USD", "EURO"/*, "All",*/ };
+        <div class="accordion">
+            <span class="target-fix" id="accordion"></span>
+            @{
+                for (int i = 0; i < bankAccountList.Length; i++)
+                {
+                    @Html.Raw(bankList(ConnXml, getLang, bankAccountList[i], i))
+                }
+            }
+        </div>
+    }
+}

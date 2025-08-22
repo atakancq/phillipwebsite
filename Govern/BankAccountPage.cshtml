@@ -1,0 +1,136 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    if (IsPost)
+    {
+        if (!Request.Form["drpLang"].IsEmpty())
+        {
+            reqLangID = Request.Form["drpLang"].AsInt();
+        }
+        if (!Request.Form["btnSort"].IsEmpty())
+        {
+            string[] StrSortList = Request.Form["SortItems"].Split(',');
+            try
+            {
+                int i = 1;
+                foreach (var item in StrSortList)
+                {
+                    if (!item.IsEmpty())
+                    {
+                        int getItem = Convert.ToInt32(item);
+                        BankAccount itemPage = ConnXml.BankAccount.FirstOrDefault(x => x.BankAccountID == getItem);
+                        itemPage.Line = i;
+                        ConnXml.Entry(itemPage).State = System.Data.EntityState.Modified;
+                        ConnXml.SaveChanges();
+                        i++;
+                    }
+                }
+            }
+            catch { }
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            Response.Redirect("BankAccountPage");
+        }
+    }
+}
+@functions {
+    public string GetDetail(int getLangID)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        IQueryable<Bank> IqBank = ConnXml.Bank;
+        foreach (BankAccount itemPages in ConnXml.BankAccount.Where(x => x.Lang == getLangID).OrderByDescending(x => x.BankAccountID).OrderBy(x => x.Line))
+        {
+            str += "<tr thisVal=" + itemPages.BankAccountID + " " + (itemPages.Status == false ? "class='Yellow sssicon' title='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            str += "<td class=\"Min grippy\"></td>";
+            str += "<td class='Normal'>" + itemPages.Title + "</td>";
+            str += "<td class='Normal'>" + itemPages.Unit + "</td>";
+            Bank itemRelease  = IqBank.FirstOrDefault(x => x.BankID == itemPages.BankID);
+            if (itemRelease!=null)
+            {
+                str += "<td class='Normal'>" + itemRelease.Title + "</td>";
+            }
+            else
+            {
+                str += "<td class='Normal'>--------</td>";
+            }
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditBankAccountPage?ID=" + itemPages.BankAccountID + "&Lang=" + getLangID + "'>Düzenle</a>";
+            str += "<a class='Red' onclick='return confirmDelete();' href='EditBankAccountPage?Delete=" + itemPages.BankAccountID + "&Lang=" + getLangID + "'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<script type="text/javascript">
+    <!-- 
+    function newPage(num, reqLangID) {
+        var url = new Array();
+        url[0] = "EditBankAccountPage?Lang=" + reqLangID;
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Hesap Listesi</div>
+<form method="post">
+    <input type="hidden" id="SortItems" name="SortItems" class="SortItems" runat="server" />
+    <div class="Content">
+        <div class="ButtonPanel">
+            @{
+                List<SelectListItem> lstLang = new List<SelectListItem>();
+                for (int i = 0; i < Shared.Lang.Length; i++)
+                {
+                    lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                }
+                lstLang.FirstOrDefault(x => x.Value == reqLangID.ToString()).Selected = true;
+                IEnumerable<SelectListItem> drplstLangs = lstLang;
+            }
+            @Html.ListBox("drpLang", drplstLangs, new { @class = "inputdrp", @onchange = "submit();" })
+            <input name="btnSort" type="submit" value="Sıralamayı Kaydet" id="btnSort" class="inputbutton Save">
+            <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0,@reqLangID)" value="Yeni Hesap Ekle" />
+        </div>
+        <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+            <thead>
+                <td class="Min"></td>
+                <td class="Normal">Hesap Adı</td>
+                <td class="Normal">Birim</td>
+                <td class="Normal">Banka</td>
+                <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetDetail(reqLangID);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Hesap Bulunamadı<br />
+                                    <br />
+                                    <a onclick="newPage(0,@reqLangID)">Yeni Hesap Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Min"></td>
+                <td class="Normal">Hesap Adı</td>
+                <td class="Normal">Birim</td>
+                <td class="Normal">Banka</td>
+                <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

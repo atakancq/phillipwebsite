@@ -1,0 +1,384 @@
+﻿<div class="mobile" style="display:none;">
+    <div id="tanitimArea">
+        <div class="image-area" style="width: 100%; background-color: #20293a; padding:55px;">
+            <div class="title">
+                <h6 style="color:white; font-size: 45px;text-align: center;font-weight: bold;"> MARKET PULSE 2024</h6>
+            </div>
+            <p style="color: white; font-size: 19px; text-align: center; font-weight: bold; margin-bottom: 60px;"> ABD Seçimleri ve Fed Etkisi: Finansal Görünüm  </p>
+            <div class="images" style="display:flex; justify-content:center;">
+                <div class="event-image" style="margin-left:15px;width:160px;">
+                    <img style="width: 160px;" src="~/content/images/event/Group 7.png" />
+                </div>
+                <div class="event-image" style="margin-left: 15px;">
+                    <img style="width: 160px;" src="~/content/images/event/Group 6.png" />
+                </div>
+                <div class="event-image" style="margin-left: 15px; ">
+                    <img style="width: 160px;" src="~/content/images/event/Group 5.png" />
+                </div>
+            </div>
+        </div>
+        <div class="desc-area" style="padding:30px; width:100%;">
+            <div style="color: #21252E;font-weight: bold;font-size: 25px;">
+                "ABD Seçimleri Sonrası Finansal Görünüm” seminerimiz için
+            </div>
+            <div style="color: #F57F01;font-weight: bold;font-size: 25px;">
+                7 Kasım Perşembe günü saat 10:30'da İstanbul'da bize katılın.
+            </div>
+
+            <p style="font-size:20px;">
+                Etkinlikte, CME Group Baş Ekonomisti Erik Norland,
+                CME Group EMEA Başkanı Serge Marston ve Türkiye ile küresel makroekonomi
+                alanında uzmanlaşmış İstanbul Topkapı Üniversitesi
+                Rektör Yardımcısı Prof. Dr. Erhan Aslanoğlu gibi uzman konuşmacılar yer alacak.
+            </p>
+            <p style="font-size: 20px;margin-top: 25px;">
+                Sizi orada görmek için sabırsızlanıyoruz!
+            </p>
+            <p>
+                <button class="btn btn-primary" style="background-color: #f57f01; font-weight: bold;font-size: 25px;margin-top: 35px; border:none;" id="registerShowBtn">
+                    Kayıt Ol
+                </button>
+            </p>
+        </div>
+    </div>
+    <div class="register-form-mobile" style="width:100%; margin:15px; display:none;" id="registerFormMobile">
+        <button class="btn btn-block" style="width:100%;font-weight: bold;
+ color: white; border-radius: 7px;
+ background: #f47f01;
+ text-align: center;
+ color: white;
+ width:251px;
+ margin-bottom:15px;
+ font-size: 25px;" id="returnBtn">
+            Tanıtıma Geri Dön
+        </button>
+        <div class="register-form-mobile">
+            <div class="register-form-card-mobile" style="width: 100%; margin-bottom: 20px;">
+                <div class="register-form-quickForm-mobile">
+                    <div class="qTitle" style="padding-left:30px;padding-top:15px;">
+                        <p style="color: #012060; font-weight: bold;">
+                            Market Pulse 2024
+                        </p>
+                        <p style="color: #f47f01; margin-top: -8px; font-size: 30px; font-weight: bold; ">
+                            Kayıt Formu
+                        </p>
+                    </div>
+                    <div class="qBody" style="padding-left: 30px;">
+                        <form id="mobileRegister">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="nameMobile" aria-describedby="emailHelp" placeholder="İsim (*)">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mt-2">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="surnameMobile" placeholder="Soyisim (*)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <input type="email" class="form-control" id="emailMobile" aria-describedby="emailHelp" placeholder="E-posta (*)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="phoneMobile" aria-describedby="emailHelp" placeholder="İletişim Numarası (*)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="companyMobile" aria-describedby="emailHelp" placeholder="Şirket (*)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="positionMobile" aria-describedby="emailHelp" placeholder="Pozisyon (*)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12 mt">
+                                    <div class="checkArea mt">
+                                        <input onchange="this.setCustomValidity(validity.valueMissing ? 'Formu Göndermek için lütfen kabul ediniz' : '');" id="field_terms" type="checkbox" required="" name="field_terms" style="height: 20px; width: auto !important;">
+                                        <label for="field_terms" style="width: calc(100% - 50px); margin-left: 15px;">
+                                            PhillipCapital<a href="/internet-sitesi-aydinlatma-metni" target="_blank"> web sitesi üyeliği aydınlatma bildirimi</a> ’ni
+                                            okuduğumu, anladığımı ve kabul ettiğimi beyan ederim.
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="checkArea">
+                                        <input id="field_terms2" type="checkbox" name="field_terms2" style="height:20px;width:auto!important;">
+                                        <label for="field_terms2" style="width: calc(100% - 50px); margin-left: 15px;">
+                                            PhillipCapital ve bağlı ortaklıkları tarafından tanıtım ve pazarlama
+                                            amacıyla <a href="/ticari-elektronik-ileti-gonderimine-iliskin-onay-metni" target="_blank">ticari elektronik ileti</a> gönderilmesini
+                                            onaylıyorum.
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" style="display:none" id="sMessageMobile">
+                                <p style="color:green; font-weight:bold;">Kayıt Başarıyla Oluştu. E-Posta kutunuzu kontrol ediniz.</p>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <button class="btn btn-block" style="width:100%;font-weight: bold;
+                                    color: white; border-radius: 7px;
+                                    background: #f47f01;
+                                    text-align: center;
+                                    color: white;
+                                    font-size: 25px; ">
+                                        Kayıt Ol
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="desktop">
+    <section id="market-pulse" class="market-pulse">
+        <div class="images-desc">
+            <div class="event-logo"  style="margin-bottom:20px;"> 
+                <img src="~/content/images/event/phc-3-koyuzemin.png" style="width: 195px; margin-left: 25%;"/>
+            </div>
+            <div class="date-btn">
+                7 Kasım
+            </div>
+            <div class="" style="color: white;text-align: center; font-size: 45px; margin-left: 21%; font-weight: bold;">
+                MARKET PULSE 2024
+            </div>
+            <div style="color: white;text-align: center;font-size: 15px;margin-left: 21%;font-weight: bold;">
+                ABD Seçimleri ve Fed Etkisi: Finansal Görünüm
+            </div>
+            <div class="speakers">
+                <img src="~/content/images/event/konusmacilar-tr.png" />
+            </div>
+            <div class="konf-desc ml-16" style="color:white; text-align:center;">
+                <p>
+                    ABD seçimlerinin ardından, bu etkinlikte küresel ve yerel piyasalara dair önemli bilgiler paylaşılacak, uzmanlar olası piyasa gelişmelerini tartışacak. Katılımcılar, ekonomik eğilimlerin yatırım kararları ve stratejilerini nasıl etkileyebileceğini keşfetme fırsatı bulacaklar.
+                </p>
+            </div>
+            <div class="event-info ml-50" style="color:white;">
+                <i class="fa fa-calendar" style="margin-right: 15px;font-size: 23px;color: white;" aria-hidden="true"></i>
+                <strong>7 Kasım Perşembe, 10:30 - 12:30 </strong>
+            </div>
+            <div class="event-info ml-50 location" style="">
+                <i class="fa-solid fa-location-dot" style="margin-right: 15px;font-size: 23px;color: white;" aria-hidden="true"></i>
+                <strong>Delta Hotels by Marriott Istanbul Levent </strong><br>
+
+                <small style="
+    margin-left: 48px;
+">Esentepe, Büyükdere Cd. No:187, Şişli/İstanbul</small>
+            </div>
+        </div>
+        <div class="register-form">
+            <div class="register-form-card">
+                <div class="register-form-quickForm">
+                    <div class="qTitle" style="padding-left:30px;padding-top:15px;">
+                        <p style="color: #012060; font-weight: bold;">
+                            Market Pulse 2024
+                        </p>
+                        <p style="color: #f47f01; margin-top: -8px; font-size: 30px; font-weight: bold; ">
+                            Kayıt Formu
+                        </p>
+                    </div>
+                    <div class="qBody" style="padding-left: 30px;">
+                        <form id="desktopRegister">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="name" aria-describedby="emailHelp" placeholder="İsim (*)">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="surname" placeholder="Soyisim (*)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="E-posta (*)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="phone" aria-describedby="emailHelp" placeholder="İletişim Numarası (*)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="company" aria-describedby="emailHelp" placeholder="Şirket (*)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="position" aria-describedby="emailHelp" placeholder="Pozisyon (*)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12 mt">
+                                    <div class="checkArea mt">
+                                        <input onchange="this.setCustomValidity(validity.valueMissing ? 'Formu Göndermek için lütfen kabul ediniz' : '');" id="field_terms" type="checkbox" required="" name="field_terms" style="height: 20px; width: auto !important;">
+                                        <label for="field_terms" style="width: calc(100% - 50px); margin-left: 15px;">
+                                            PhillipCapital<a href="/internet-sitesi-aydinlatma-metni" target="_blank"> web sitesi üyeliği aydınlatma bildirimi</a> ’ni
+                                            okuduğumu, anladığımı ve kabul ettiğimi beyan ederim.
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="checkArea">
+                                        <input id="field_terms2" type="checkbox" name="field_terms2" style="height:20px;width:auto!important;">
+                                        <label for="field_terms2" style="width: calc(100% - 50px); margin-left: 15px;">
+                                            PhillipCapital ve bağlı ortaklıkları tarafından tanıtım ve pazarlama
+                                            amacıyla <a href="/ticari-elektronik-ileti-gonderimine-iliskin-onay-metni" target="_blank">ticari elektronik ileti</a> gönderilmesini
+                                            onaylıyorum.
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <button class="btn btn-block" style="width:100%;font-weight: bold; color: white; border-radius: 7px; background: #f47f01; text-align: center; color: white; font-size: 25px; ">
+                                        Kayıt Ol
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="event-program">
+        <div class="desc" style="padding-left: 46px; padding-top: 53px; padding-bottom: 20px; width: 50%; float: left; background:#fff;">
+            <h6 style=" font-size: 40px; color: #f47f01; font-weight: bold; ">
+                Etkinlik Planı
+            </h6>
+            <div class="row" style="margin-bottom: 80px;">
+                <div class="col-md-6">
+                    10:00 - 11:00<br />
+                    <div style="font-weight:bold;">Kayıt</div>
+                </div>
+                <div class="col-md-6">
+                    11:00 - 11:20<br />
+                    <div style="font-weight:bold;">Açılış Konuşması</div>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom: 75px;">
+                <div class="col-md-6">
+                    11:20 - 11:50<br />
+                    <div style="font-weight:bold;">Dr. Erhan Aslanoğlu tarafından Türkiye'nin Ekonomik Görünümü</div>
+                </div>
+                <div class="col-md-6">
+                    11:50 - 12:30<br />
+                    <div style="font-weight:bold;">Erik Norland'dan Küresel Ekonomik Görünüm</div>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom: 15px;">
+                <div class="col-md-6">
+                    12:30 - 13:30<br />
+                    <div style="font-weight:bold;">Öğle Yemeği</div>
+                </div>
+                <div class="col-md-6">
+                    13:30 - 15:00<br />
+                    <div style="font-weight:bold;">Networking</div>
+                </div>
+            </div>
+        </div>
+        <div class="bosh-image" style="width:50%; float:right;">
+            <img src="~/content/images/event/event-program-istanbul.jpg" style="width:100%;" />
+        </div>
+    </section>
+</div>
+
+<script defer>
+    $("#registerShowBtn").on("click", function (e) {
+        e.preventDefault();
+        $("#registerFormMobile").show();
+        $("#tanitimArea").hide();
+    })
+
+    $("#returnBtn").on("click", function (e) {
+        e.preventDefault();
+        $("#registerFormMobile").hide();
+        $("#tanitimArea").show();
+    })
+
+    $("#desktopRegister").submit(function (e) {
+        e.preventDefault();
+        var name = document.getElementById("name").value;
+        var surname = document.getElementById("surname").value;
+        var email = document.getElementById("email").value;
+        var phone = document.getElementById("phone").value;
+        var company = document.getElementById("company").value;
+        var position = document.getElementById("position").value;
+        var d = { name: name };
+        $.ajax({
+            url: `/WebServices/ClientServices.asmx/RegisterNovemberEvent?name=${name}&surname=${surname}&email=${email}&phone=${phone}&company=${company}&position=${position}`,
+            type: 'GET',
+            success: function (res) {
+                $("#sMessage").show();
+                setTimeout(function () {
+                    window.location.href = "/"
+                }, 2500)
+
+            },
+            error: (err) => {
+                console.log(err.responseText);
+            }
+        })
+    })
+
+    $("#mobileRegister").submit(function (e) {
+        e.preventDefault();
+        var name = document.getElementById("nameMobile").value;
+        var surname = document.getElementById("surnameMobile").value;
+        var email = document.getElementById("emailMobile").value;
+        var phone = document.getElementById("phoneMobile").value;
+        var company = document.getElementById("companyMobile").value;
+        var position = document.getElementById("positionMobile").value;
+        var d = { name: name };
+        $.ajax({
+            url: `/WebServices/ClientServices.asmx/RegisterNovemberEvent?name=${name}&surname=${surname}&email=${email}&phone=${phone}&company=${company}&position=${position}`,
+            type: 'GET',
+            success: function (res) {
+                $("#sMessageMobile").show();
+                setTimeout(function () {
+                    window.location.href = "/"
+                }, 2500)
+            },
+            error: (err) => {
+                console.log(err.responseText);
+            }
+        })
+    })
+</script>

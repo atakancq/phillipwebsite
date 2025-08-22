@@ -1,0 +1,214 @@
+﻿.market-pulse {
+    background-image: url('../images/event/marketpulse.jpg');
+    width: 100%;
+    padding: 15px;
+    height: auto;
+    display: flex;
+}
+
+.date-btn {
+    display: inline-block;
+    padding: 6px 20px;
+    font-size: 16px;
+    color: white;
+    background: linear-gradient(90deg, #0072ff, #00c6ff);
+    border: none;
+    border-radius: 25px;  
+    cursor: pointer;
+    padding-left: 50px;
+    text-align: center;
+    padding-right: 50px;
+    margin-left: 50%;
+}
+
+.images-desc {
+    width: 50%;
+}
+
+.mp-title .title h5 {
+    color: white;
+    font-size: 50px;
+    font-weight: bold;
+    letter-spacing: -1px;
+    word-spacing: 3px;
+    margin-left: 30%;
+}
+
+.mp-title .desc {
+    color: white;
+    margin-left: 30%;
+}
+
+.speakers {
+    margin-left: 18%;
+}
+
+.ml-16 {
+    margin-left: 16%;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.ml-50 {
+    margin-left: 50%;
+}
+
+.register-form {
+    width: 50%;
+}
+
+.konf-desc {
+    width: 100%;
+}
+
+.register-form-card {
+    height: 100%;
+    width: 75%;
+    float: right;
+}
+
+.register-form-quickForm {
+    border-radius: 15px;
+    border: 1px solid #012060;
+    background: #fff;
+}
+
+    .register-form-quickForm .qBody {
+        padding-left: 30px;
+        padding-right: 30px;
+        padding-bottom: 15px;
+    }
+
+        .register-form-quickForm .qBody .row {
+            padding-top: 15px;
+        }
+        .register-form-quickForm-mobile .qBody .row {
+            padding-top: 15px;
+        }
+.register-form-mobile {
+    width: 93%;
+    margin-bottom:15px;
+}
+.register-form-card-mobile {
+    height: 100%;
+    width: 75%;
+    float: right;
+}
+
+.register-form-quickForm-mobile {
+    border-radius: 15px;
+    border: 1px solid #012060;
+    background: #fff;padding:15px;
+}
+
+.event-program {
+    width: 100%;
+}
+
+    .event-program .desc {
+        width: 50%;
+        padding:50px;
+        
+    }
+
+    .event-program .desc .row{ 
+        margin-top: 25px;
+    }
+    .event-program .bosh-image {
+        width: 50%;
+    }
+.location {
+    margin-left: 354px;
+    color: white;
+    margin-top: 20px;
+}
+
+
+/*@media screen and (max-width: 850px) {
+    .desktop {
+        display: none;
+    }
+}*/
+
+@media screen and (min-width: 850px) {
+    .mobile{
+        display: none;
+    }
+    .event-logo {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    .event-image img {
+        width: auto!important;
+    }
+    .market-pulse {
+        flex-direction: column;
+    }
+    .speakers {
+        width: 70%;
+        margin-left: 9%;
+    }
+    .register-form-card {
+        height: 100%; 
+        float: right;
+        width:100%!important;
+    } 
+
+    .ml-16 { 
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+
+    .ml-50 { }
+
+    .location { 
+        color: white;
+        margin-top: 20px;
+        margin-left:20%;
+    }
+    .register-form {
+        width: auto!important; 
+    }
+
+    .konf-desc{
+        width:175%;
+    }
+
+    .speakers  img{
+        width:375px;
+    }
+
+    .images-desc {
+        width: 100% !important;
+        margin-bottom: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+        .images-desc > div {
+            width: auto;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        .images-desc .date-btn {
+            width: 180px;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        .images-desc .event-info {
+            display: flex;
+            justify-content: center;
+        }
+
+    #event-program {
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+    }
+
+        #event-program .desc, #event-program .bosh-image {
+            width: 100% !important;
+        }
+    
+}

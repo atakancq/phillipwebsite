@@ -1,0 +1,81 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+}
+@functions
+{
+    public string GetDetail()
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (MailGroup itemPages in ConnXml.MailGroup.ToList().OrderByDescending(x => x.MailGroupID))
+        {
+            str += "<tr thisVal='" + itemPages.MailGroupID + "'>";
+            str += "<td class='Big'>" + itemPages.MailGroupName + "</td>";
+            str += "<td class='Normal'>" + ConnXml.MailAccount.Where(x=>x.MailGroupID == itemPages.MailGroupID).Count() + "</td>";
+            str += "<td class='Normal'><a href='MailAccount?ID=" + itemPages.MailGroupID + "'>Kullanıcılar</a> | <a href='EditMailGroup?ID=" + itemPages.MailGroupID + "'>Düzenle</a> | <a onclick='return confirmDelete();' href='EditMailGroup?Delete=" + itemPages.MailGroupID + "'>Sil</a></td>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }  
+}
+<script type="text/javascript">
+    <!-- 
+    function newPage(num) {
+        var url = new Array();
+        url[0] = "EditMailGroup";
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Mail Grupları</div>
+<div class="Content">
+    <div class="ButtonPanel">
+        @{
+            List<SelectListItem> lstLang = new List<SelectListItem>();
+            for (int i = 0; i < Shared.Lang.Length; i++)
+            {
+                lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+            }
+            lstLang.FirstOrDefault(x => x.Value == "0").Selected = true;
+            IEnumerable<SelectListItem> drplstLangs = lstLang;
+        }
+        @Html.ListBox("drpLang",drplstLangs, new { @class = "inputdrp" })
+        <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0)" value="Yeni Mail Grup Ekle" />
+    </div>
+    <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+        <thead>
+            <td class="Big">Grup Adı</td>
+            <td class="Normal">Kullanıcı sayısı</td>
+            <td class="Normal"></td>
+        </thead>
+        <tbody>
+            @{
+                string str = GetDetail();
+                if (!str.IsEmpty())
+                {
+                    @Html.Raw(str);
+                }
+                else
+                {
+                    <tr>
+                        <td class='Big' colspan='15'>
+                            <div class='NoneItemPage'>
+                                Mail Grubu Bulunamadı<br />
+                                <br />
+                                <a href="EditMailGroup">Yeni Mail Grubu Ekle</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+        <tfoot>
+            <td class="Big">Grup Adı</td>
+            <td class="Normal">Kullanıcı sayısı</td>
+            <td class="Normal"></td>
+        </tfoot>
+    </table>
+</div>

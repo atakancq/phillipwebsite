@@ -1,0 +1,84 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    if (IsPost) { }
+}
+@functions {
+    public string GetDetail()
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (Admin itemPages in ConnXml.Admin.OrderByDescending(x => x.AdminID))
+        {
+            str += "<tr thisVal=" + itemPages.Status + " " + (itemPages.Status == false ? "class='Yellow sssicon' title='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            str += "<td class='Normal'>" + itemPages.UserName + "</td>";
+            str += "<td class='Min'>" + itemPages.Email + "</td>";
+            str += "<td class='Normal'>";
+            str += "<a href='AdminAuth?ID=" + itemPages.AdminID + "' class='Blue'>Menü Yetkileri</a>";
+            str += "<a href='EditAdmin?ID=" + itemPages.AdminID + "' class='Blue'>Düzenle</a> | <a onclick='return confirmDelete();' href='EditAdmin?Delete=" + itemPages.AdminID + "' class='Red'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<script type="text/javascript">
+    <!--
+    function newPage(num,reqLangID) {
+        var url = new Array();
+        url[0] = "EditAdmin?Lang=" + reqLangID;
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Kullanıcılar</div>
+<form method="post">
+    <div class="Content">
+        <div class="ButtonPanel">
+            @* <input id="btnUpdate" name="btnUpdate" type="submit" class="inputbutton Add" onclick="newPage(0,@reqLangID)" value="Tüm Personel Bilgilerini Web Servisten Güncelle" />*@
+            <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0,@reqLangID)" value="Yeni Kullanıcı Ekle" />
+            <div> </div>
+        </div>
+        <div class="InTxt">
+            <table class="GridWiew" cellpadding="5" cellspacing="0">
+                <thead>
+                    <td class="Normal">Kullanıcı Adı</td>
+                    <td class="Min">E-Posta Adresi</td>
+                    <td class="Normal"></td>
+                    @*<td class="Min">Yetkileri</td>*@
+                </thead>
+                <tbody>
+                    @{
+                        string str = GetDetail();
+                        if (!str.IsEmpty())
+                        {
+                            @Html.Raw(str);
+                        }
+                        else
+                        {
+                            <tr>
+                                <td class='Big' colspan='15'>
+                                    <div class='NoneItemPage'>
+                                        Personel Bulunamadı
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+                <tfoot>
+                    <td class="Normal">Kullanıcı Adı</td>
+                    <td class="Min">E-Posta Adresi</td>
+                    <td class="Normal"></td>
+                    @*<td class="Min">Yetkileri</td>*@
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</form>

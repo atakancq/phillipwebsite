@@ -1,0 +1,166 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    if (IsPost)
+    {
+        if (!Request.Form["btnSort"].IsEmpty())
+        {
+            string[] StrSortList = Request.Form["SortItems"].Split(',');
+            try
+            {
+                int i = 1;
+                foreach (var item in StrSortList)
+                {
+                    if (!item.IsEmpty())
+                    {
+                        int getItem = Convert.ToInt32(item);
+                        Pages itemPage = ConnXml.Pages.FirstOrDefault(x => x.PageID == getItem);
+                        itemPage.Line = i;
+                        ConnXml.Entry(itemPage).State = System.Data.EntityState.Modified;
+                        ConnXml.SaveChanges();
+                        i++;
+                    }
+                }
+            }
+            catch { }
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            Response.Redirect("Pages");
+        }
+        else if (!Request.Form["btnDelete"].IsEmpty())
+        {
+            //Response.Write(Request.Form["SelectedItems"]);
+        }
+        else if (!Request.Form["drpLang"].IsEmpty())
+        {
+            reqLangID = Request.Form["drpLang"].AsInt();
+        }
+    }
+}
+@functions
+{
+    public string GetSubPage(int i, List<Pages> Pages, int getPageID, int getLangID)
+    {
+        string left = "<img src='Images/Node.png' style='margin-left:" + (i * 30) + "px;' /> ";
+        string str = "";
+        foreach (Pages itemPages in Pages.Where(x => x.ParentID == getPageID && x.Lang == getLangID).OrderBy(x => x.Line))
+        {
+            str += "<tr thisVal=" + itemPages.PageID + " " + (itemPages.Status == false ? "class='Yellow sssicon' title='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            str += "<td class=\"Min\">";
+            str += " <input type='checkbox' value=\"" + itemPages.PageID + "\" /></td>";
+            str += "<td class=\"Min grippy\"></td>";
+            str += "<td class='Big'>" + left + itemPages.DisplayName + " " + itemPages.SubTitle + "</td>";
+            if (!itemPages.ExtarnalLink.IsEmpty())
+            {
+                int getValue = itemPages.ExtarnalLink.ToString().AsInt();
+                MvcXmlEntities ConnXml = new MvcXmlEntities();
+                Pages itemPageReDirect = ConnXml.Pages.FirstOrDefault(x => x.PageID == getValue);
+                try
+                {
+                    str += "<td><a href='https://phillipcapital.com.tr/" + itemPageReDirect.RawUrl + "' target='blank'>" + itemPageReDirect.DisplayName + "</a></td>";
+                }
+                catch
+                {
+                    str += "<td></td>";
+                }
+            }
+            else
+            {
+                str += "<td></td>";
+            }
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='https://www.phillipcapital.com.tr/" + itemPages.RawUrl + "' target='_blank'>Sayfayı Görüntüle</a>";
+            str += "<a class='Blue' href='EditPages?ID=" + itemPages.PageID + "'>Düzenle</a>";
+            str += "<a class='Green' href='EditPages?ParentID=" + itemPages.PageID + "&Lang=" + getLangID + "'>Alt Sayfa Ekle</a>";
+            str += "<a class='Green' href='EditPages?Reference=" + itemPages.PageID + "'>Referans Al</a>";
+            str += "<a class='Red' onclick='return confirmDelete();' href='EditPages?Delete=" + itemPages.PageID + "'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+            str += GetSubPage(i + 1, Pages, itemPages.PageID, getLangID);
+        }
+        return str;
+    }
+}
+<script type="text/javascript">
+    <!-- 
+    function newPage(num,reqLangID) {
+        var url = new Array();
+        url[0] = "EditPages?Lang=" + reqLangID;
+        url[1] = "http://www.codingforums.com.";
+        url[2] = "http://www.w3schools.com";
+        url[3] = "http://www.webmasterworld.com";
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Sayfalar</div>
+<form method="post">
+    <input type="hidden" id="PageName" value="" />
+    <input type="hidden" id="PageNameQ" value="" />
+    <input type="hidden" id="SelectedItems" name="SelectedItems" class="SelectedItems" runat="server" />
+    <input type="hidden" id="PassiveItems" name="PassiveItems" class="PassiveItems" runat="server" />
+    <input type="hidden" id="SortItems" name="SortItems" class="SortItems" runat="server" />
+    <div class="Content">
+        <div class="ButtonPanel">
+            @{
+                List<SelectListItem> lstLang = new List<SelectListItem>();
+                for (int i = 0; i < Shared.Lang.Length; i++)
+                {
+                    lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                }
+                lstLang.FirstOrDefault(x => x.Value == reqLangID.ToString()).Selected = true;
+                IEnumerable<SelectListItem> drplstLangs = lstLang;
+            }
+            @Html.ListBox("drpLang", drplstLangs, new { @class = "inputdrp", @onchange = "submit();" })
+            <input type="submit" name="btnDelete" value="Seçilenleri Sil" onclick="return confirmDelete();" id="btnDelete" class="inputbutton DeleteAll">
+            <input name="btnSort" type="submit" value="Sıralamayı Kaydet" id="btnSort" class="inputbutton Save">
+            <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0,@reqLangID)" value="Yeni Sayfa Ekle" />
+        </div>
+        <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+            <thead>
+                <td class="Min">
+                    <input type="checkbox" />
+                </td>
+                <td class="Min"></td>
+                <td class="Big">Görünen Ad</td>
+                <td>Yönlendirme</td>
+                <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    int langID = reqLangID;
+                    string str = GetSubPage(0, ConnXml.Pages.ToList(), 0, reqLangID);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(GetSubPage(0, ConnXml.Pages.ToList(), 0, reqLangID));
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Sayfa Bulanamadı<br />
+                                    <br />
+                                    <a href='javascript:;' onclick="newPage(0,@reqLangID)">Yeni Sayfa Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Min">
+                    <input type="checkbox" />
+                </td>
+                <td class="Min"></td>
+                <td class="Big">Görünen Ad</td>
+                <td class="Small">Yönlendirme</td>
+                <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

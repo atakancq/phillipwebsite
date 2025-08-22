@@ -1,0 +1,388 @@
+﻿@functions
+{
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    string WriteSubPageMenu(int MenuID, int PageID)
+    {
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        System.Text.StringBuilder SbMenu = new System.Text.StringBuilder();
+        // Get Lang
+        int getLang = Shared.GetLang();
+        // Get Menus
+        var menuList = ConnXml.Pages.Where(x => (x.Status) && (x.Lang == getLang) && (x.ParentID == MenuID)&& x.ShowHeaderMenu==true).Select(x => new
+        {
+            x.PageID,
+            x.Line,
+            x.Target,
+            x.DisplayName,
+            x.RawUrl
+        }).OrderBy(x => x.Line);
+        // Menu Items
+        foreach (var Menu in menuList)
+        {
+            bool subPageCntrl = ConnXml.Pages.Any(x => (x.Status) && (x.ParentID == Menu.PageID));
+            string SubPagesUrl = Menu.RawUrl;
+            SbMenu.Append(" <li itemid='" + Menu.PageID + "' class='left-menu-item " + (Menu.PageID == PageID ? "active" : "") + "'><a target=" + Menu.Target + " href='/" + SubPagesUrl + "'>" + Menu.DisplayName + "</a>");
+            SbMenu.Append("</li>");
+            if (subPageCntrl)
+            {
+                SbMenu.Append("<ul>");
+                SbMenu.Append(WriteSubPageMenu(Menu.PageID, PageID));
+                SbMenu.Append("</ul>");
+            }
+        }
+        return SbMenu.ToString();
+    }
+    // FAQ Entities
+    string faqList(MvcXmlEntities ConnXml, int getFAQCategory)
+    {
+        System.Text.StringBuilder sbAccordion = new System.Text.StringBuilder();
+        string strAccordion = @"
+            <div>
+                <span class='target-fix' id='accordion{0}'></span>
+                <!-- Link to open accordion, hidden when open -->
+                <a href='#accordion{0}' class='baslik-link' id='open-accordion{0}' title='open' data-id='area{0}'>
+                    <div class='acc-inner'>
+                        <img class='history-text-before-img' src='/Content/images/help.svg' />
+                        <div class='text-acc-header'><h5>{1}</h5></div>
+                        <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                    </div>
+                </a>
+                <a href='#accordion' class='baslik-link' id='close-accordion{0}' title='close' >
+                    <div class='acc-inner'>
+                        <img class='history-text-before-img' src='/Content/images/help.svg' />
+                        <div class='text-acc-header'><h5>{1}</h5></div>
+                        <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                    </div>
+                </a>
+                <div class='accordion-content' id='area{0}'>
+                    <p>{2}</p>
+                </div>
+            </div>";
+        // FAQ's in Category
+        foreach (var item in ConnXml.FAQ.Where(x => x.Status && x.FAQCategoryID == getFAQCategory))
+        {
+            sbAccordion.AppendFormat(strAccordion, "FAQ" + item.FAQID, item.Question, item.Answer);
+        }
+        return sbAccordion.ToString();
+    }
+}
+@* Begin Page *@
+@{
+    Layout = "Master/_Default.cshtml";
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        int getLang = Shared.GetLang();
+        if ((UrlData[0].IsInt()) && (ConnXml.Pages.AsEnumerable().Any(x => x.PageID == UrlData[0].AsInt())))
+        {
+            int getPageID = UrlData[0].AsInt();
+            System.Globalization.CultureInfo cultureinfo = new System.Globalization.CultureInfo(getLang.toLangCulture());
+            Pages itemPage = ConnXml.Pages.FirstOrDefault(x => x.PageID == getPageID);
+            Page.Title = itemPage.Title + " | " + Setting.Pagetitle;
+            if (itemPage.Status == false)
+            {
+                Response.Redirect(Shared.PageBasePath());
+            }
+            if (itemPage.ExtarnalLink.AsInt() > 0)
+            {
+                int getValue = itemPage.ExtarnalLink.ToString().AsInt();
+                Pages itemPageReDirect = ConnXml.Pages.FirstOrDefault(x => x.PageID == getValue);
+                if (itemPageReDirect != null)
+                {
+                    Response.Redirect(Shared.PageBasePath() + itemPageReDirect.RawUrl);
+                }
+            }
+            else if (!string.IsNullOrEmpty(itemPage.ExternalUrl))
+            {
+                Response.Redirect(itemPage.ExternalUrl);
+            }
+            string getFileName = "Content/images/hizmetlerimiz.png";
+            if (!string.IsNullOrEmpty(itemPage.ImageUrl))
+            {
+                // Images Url Fixation - Berker Yüceer - 07.06.2023
+                getFileName = "../Files/Pages/" + itemPage.ImageUrl;
+            }
+            string strTopName = "";
+            if (ConnXml.Pages.Any(x => x.PageID == itemPage.ParentID))
+            {
+                strTopName = ConnXml.Pages.FirstOrDefault(x => x.PageID == itemPage.ParentID).DisplayName;
+            }
+            string strMenu = WriteSubPageMenu(itemPage.Menu != 0 ? itemPage.Menu : itemPage.ParentID, itemPage.PageID);
+            string strRenderHtml = "";
+            if (itemPage.ModuleID > 0)
+            {
+                Module getModule = ConnXml.Module.FirstOrDefault(x => x.ModuleID == itemPage.ModuleID);
+                object[] data = new object[] { itemPage.ControlParameter, this };
+                strRenderHtml = RenderPage("~/App_Module/Module/" + getModule.ModulePath, data).ToHtmlString();
+            }
+            @section head {
+                @{
+                    <meta property="og:title" content="@itemPage.Title" />
+                    if (!string.IsNullOrEmpty(itemPage.Keywords))
+                    {
+                        <meta name="keywords" content="@itemPage.Keywords">
+                    }
+                    if (!string.IsNullOrEmpty(itemPage.Description))
+                    {
+                        <meta name="description" content="@itemPage.Description">
+                        <meta property="og:description" content="@itemPage.Description" />
+                    }
+                    <meta property="og:site_name" content="@Shared.PageBasePath()@Request.RawUrl.Substring(1)" />
+                }
+            }
+            <div class="page">
+                <div class="single-banner">
+                    <div class="single-banner-inner">
+                        <img src="@getFileName" />
+                    </div>
+                </div>
+                @*
+                <div class="title-area">
+                    <h1>
+                        @{
+                            string pTitle = string.Empty;
+                            if (strTopName.Contains(" ")) {
+                                var splitTitle = strTopName.Split(' ');
+                                pTitle = "<span class='orange'>" + splitTitle[0] + "</span>";
+                                for (int i = 1; i < splitTitle.Length; i++)
+                                {
+                                    pTitle += " " + splitTitle[i];
+                                }
+                            } else {
+                                pTitle = "<span class='orange'>" + strTopName + "</span>";
+                            }
+                        }
+                        @Html.Raw(pTitle)
+                    </h1>
+                    <div class="left-menu-dropdown">
+                        <svg id="Group_5735" data-name="Group 5735" xmlns="http://www.w3.org/2000/svg" width="27.795" height="27.795" viewBox="0 0 27.795 27.795">
+                            <path id="Path_48035" data-name="Path 48035" d="M13.9,0A13.9,13.9,0,1,0,27.8,13.9,13.913,13.913,0,0,0,13.9,0Zm4.293,14.717L12.4,20.507a1.158,1.158,0,1,1-1.638-1.638L15.735,13.9,10.763,8.926A1.158,1.158,0,0,1,12.4,7.288l5.791,5.791A1.157,1.157,0,0,1,18.191,14.717Z" fill="#F47F01" />
+                        </svg>
+                    </div>
+                </div>
+                *@
+                <div class="sub-page">
+                    <div class="left-container">
+                        <div class="left-menu-container">
+                            <ul id="left-menu" class="left-menu">
+                                @Html.Raw(strMenu)
+                            </ul>
+                        </div>
+                        @{
+                            if (itemPage.FormID == 0)
+                            {
+                                <div class="quickForm" style="background-image: url('/Content/images/iletisim-orange-accent-hesapac.jpg')">
+                                    <div class="qTitle">
+                                        <div class="text">Hesap Aç</div>
+                                        <!-- <img class="close" src="media/images/cancel.png" /> -->
+                                    </div>
+                                    <div class="qBody">
+                                        <form class="hid" method="post" action="hesap-ac">
+                                            <input type="hidden" name="csrfmiddlewaretoken" value="BbD6AoVYEJY0d45ffzE4IBtjdTu06DVmQ6QTvl7Ho9uSdpZBpVcP57EKRkTFj5Gy">
+                                            <div class="top">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <input type="text" class="form-control" name="contact_name" required="" id="contact_name" placeholder="@Shared.GetTranslation(17)">
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <input type="email" class="form-control" name="contact_email" required="" id="contact_email" placeholder="@Shared.GetTranslation(8)">
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <input type="text" class="form-control" name="txtPhone" required="" id="txtPhone" placeholder="@Shared.GetTranslation(16)" minlength="10" maxlength="14" oninvalid="this.setCustomValidity('Hatalı giriş yaptınız. Lütfen eksiksiz giriniz.')">
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-12 mt">
+                                                    <div class="checkArea mt">
+                                                        <input id="field_terms" type="checkbox" required="" name="field_terms" oninvalid="this.setCustomValidity('Lütfen onaylayınız.')">
+                                                        <label for="field_terms">
+                                                            PhillipCapital<a href="/internet-sitesi-aydinlatma-metni" target="_blank"> web sitesi üyeliği aydınlatma bildirimi</a> ’ni
+                                                            okuduğumu, anladığımı ve kabul ettiğimi beyan ederim.
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-12">
+                                                    <div class="checkArea">
+                                                        <input id="field_terms2" type="checkbox" name="field_terms2" oninvalid="this.setCustomValidity('Lütfen onaylayınız.')">
+                                                        <label for="field_terms2">
+                                                            PhillipCapital ve bağlı ortaklıkları tarafından tanıtım ve pazarlama
+                                                            amacıyla <a href="/ticari-elektronik-ileti-gonderimine-iliskin-onay-metni" target="_blank">ticari elektronik ileti</a> gönderilmesini
+                                                            onaylıyorum.
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="bottom">
+                                                @{
+                                                    @*
+                                                        if (isConfirm)
+                                                        {
+                                                            <div class="hesap-confirm">@Shared.GetTranslation(154)</div>
+                                                        }
+                                                        else
+                                                        {
+                                                    *@
+                                                    @*
+                                                        <div class="captcha">
+                                                            <script src="https://www.google.com/recaptcha/api.js"></script>
+                                                            <div class="g-recaptcha" data-sitekey="6LfkcHgUAAAAAEkBqqbkgi-ebcVMhS6e0-XcB0ce"><div style="width: 304px; height: 78px;"><div><iframe title="reCAPTCHA" src="https://www.google.com/recaptcha/api2/anchor?ar=1&amp;k=6LfkcHgUAAAAAEkBqqbkgi-ebcVMhS6e0-XcB0ce&amp;co=aHR0cHM6Ly93d3cucGhpbGxpcGNhcGl0YWwuY29tLnRyOjQ0Mw..&amp;hl=tr&amp;v=4rwLQsl5N_ccppoTAwwwMrEN&amp;size=normal&amp;cb=ro2t25vkkxo6" width="304" height="78" role="presentation" name="a-do4f8x3eaz62" frameborder="0" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox"></iframe></div><textarea id="g-recaptcha-response" name="g-recaptcha-response" class="g-recaptcha-response" style="width: 250px; height: 40px; border: 1px solid rgb(193, 193, 193); margin: 10px 25px; padding: 0px; resize: none; display: none;"></textarea></div><iframe style="display: none;"></iframe></div>
+                                                        </div>
+                                                    *@
+                                                        <input id="GoogleCaptchaToken" name="GoogleCaptchaToken" type="hidden" />
+                                                        <button type="submit" id="submit">@Shared.GetTranslation(155)</button>
+                                                    @*
+                                                        }
+                                                    *@
+                                                }
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        @*
+                            <div class="left-support">
+                                <a class="left-support-live-button">
+                                    <svg class="svg-icon-2" xmlns="http://www.w3.org/2000/svg" width="21.619" height="24.598" viewBox="0 0 21.619 24.598">
+                                        <defs>
+                                            <style type="text/css">
+                                                .b {
+                                                    fill: #F47F01 !important
+                                                }
+                                            </style>
+                                        </defs>
+                                        <g transform="translate(-31)">
+                                            <g transform="translate(33.883 10.089)">
+                                                <path class="b" d="M93.162,210A2.164,2.164,0,0,0,91,212.162v5.861a2.162,2.162,0,0,0,4.324,0v-5.861A2.164,2.164,0,0,0,93.162,210Z" transform="translate(-91 -210)"></path>
+                                            </g>
+                                            <g transform="translate(31 11.644)">
+                                                <path class="b" d="M32.441,242.973a3.575,3.575,0,0,1,.061-.607,2.158,2.158,0,0,0-1.5,2.048v2.979a2.158,2.158,0,0,0,1.5,2.048,3.576,3.576,0,0,1-.061-.607Z" transform="translate(-31 -242.366)"></path>
+                                            </g>
+                                            <g transform="translate(39.648 10.089)">
+                                                <path class="b" d="M218.927,210a2.164,2.164,0,0,0-2.162,2.162v5.861a2.164,2.164,0,0,0,2.162,2.162,2.133,2.133,0,0,0,.619-.1,2.158,2.158,0,0,1-2.061,1.543h-2.295a2.162,2.162,0,1,0,0,1.441h2.295a3.607,3.607,0,0,0,3.6-3.6v-7.3A2.164,2.164,0,0,0,218.927,210Z" transform="translate(-211 -210)"></path>
+                                            </g>
+                                            <g transform="translate(51.117 11.644)">
+                                                <path class="b" d="M449.722,242.366a3.578,3.578,0,0,1,.061.607v5.861a3.579,3.579,0,0,1-.061.607,2.158,2.158,0,0,0,1.5-2.048v-2.979A2.158,2.158,0,0,0,449.722,242.366Z" transform="translate(-449.722 -242.366)"></path>
+                                            </g>
+                                            <g transform="translate(31)">
+                                                <path class="b" d="M41.81,0A10.822,10.822,0,0,0,31,10.81v.018a3.568,3.568,0,0,1,1.474-.669,9.357,9.357,0,0,1,18.671,0,3.57,3.57,0,0,1,1.474.669V10.81A10.822,10.822,0,0,0,41.81,0Z" transform="translate(-31)"></path>
+                                            </g>
+                                        </g>
+                                    </svg>
+                                    Canlı Destek
+                                </a>
+                                <a class="left-support-button"> Destek Merkezi </a>
+                                <div class="left-support-icon">
+                                    <svg class="svg-icon-1" style="width:123px;height:128px" xmlns="http://www.w3.org/2000/svg" width="122.096" height="127.743" viewBox="0 0 122.096 127.743">
+                                        <defs>
+                                            <style type="text/css">
+                                                .a {
+                                                    fill: #f47f01
+                                                }
+                                            </style>
+                                        </defs>
+                                        <g transform="translate(-11.318)"><path class="a" d="M76.108,22.208V0H11.318V87.818H31.832l25.7,18.2v-18.2H68.623v22.208H87.2v17.717l25.7-17.717h20.514V22.208Zm49.82,80.333H110.518L94.684,113.752V102.541H76.108V29.693h49.821v72.849Zm-75.881-11L34.213,80.334H18.8V7.485h49.82V80.333H50.048V91.544Z"></path><circle class="a" cx="3.742" cy="3.742" r="3.742" transform="translate(97.276 86.575)"></circle><path class="a" d="M315.913,171.809a8.106,8.106,0,1,1,8.028,9.242H320.2v16.133h7.485v-9.108a15.663,15.663,0,0,0,7.564-4.4,15.466,15.466,0,0,0,4.263-11.557,15.592,15.592,0,0,0-31.162.824h7.485A8.232,8.232,0,0,1,315.913,171.809Z" transform="translate(-222.922 -118.093)"></path><circle class="a" cx="3.742" cy="3.742" r="3.742" transform="translate(38.318 18.577) rotate(-31.72)"></circle><rect class="a" width="8" height="39" transform="translate(39.318 28.743)"></rect></g>
+                                    </svg>
+                                </div>
+                            </div>
+                        *@
+                    </div>
+                    @* Pages *@
+                    <div class="page-container">
+                        <div class="page-inner-wrapper">
+                            <div class="page-inner">
+                                <link href="/Content/css/all.min.css" rel="stylesheet" />
+                                <link href="/Content/css/owl.carousel.css" rel="stylesheet" />
+                                <link href="/Content/css/owl.theme.css" rel="stylesheet" />
+                                <link href="/Content/css/material-icons.css" rel="stylesheet" />
+                                <link href="/Content/css/style.css?v=1" rel="stylesheet" />
+                                <link href="/Content/css/responsive.css" rel="stylesheet" />
+                                <script type="text/javascript">
+                                    $(document).ready(function () {
+                                        // Set Event
+                                        $(".accordion div a").click(function () {
+                                            // Open?
+                                            if ($(this).attr("id").indexOf("open") > -1) {
+                                                var top = $(this).parent();
+                                                setTimeout(function () {
+                                                    // Scroll to the top of the element
+                                                    $('html, body').animate({
+                                                        scrollTop: top.offset().top
+                                                    }, 500);
+                                                }, 120);
+                                            }
+                                        });
+                                    });
+                                </script>
+                                @* Display Name *@
+                                @if (!UrlData[1].IsInt())
+                                {
+                                    <h2>@itemPage.DisplayName</h2>
+                                }
+                                @* Sub Title *@
+                                @if (!string.IsNullOrEmpty(itemPage.SubTitle))
+                                {
+                                    <h4>@itemPage.SubTitle</h4>
+                                }
+                                @* Short Content *@
+                                @{
+                                    if (!itemPage.ShortContent.IsEmpty())
+                                    {
+                                        <div>
+                                            <p>
+                                                @Html.Raw(itemPage.ShortContent)
+                                            </p>
+                                        </div>
+                                    }
+                                }
+                                @* Body *@
+                                @Html.Raw(itemPage.Body)
+                                @* Forms *@
+                                @{
+                                    @Html.Raw(strRenderHtml)
+                                    if (itemPage.FormID > 0)
+                                    {
+                                        Form getModule = ConnXml.Form.FirstOrDefault(x => x.FormID == itemPage.FormID);
+                                        object[] data = new object[] { getModule.FormID };
+                                        @RenderPage("~/App_Module/Form/" + getModule.Module, data)
+                                    }
+                                }
+                                @* Photo Galeries *@
+                                @{
+                                    if (itemPage.PhotoGaleries != "0")
+                                    {
+                                        object[] data = new object[] { itemPage.PhotoGaleries };
+                                        @RenderPage("~/App_Module/Module/PhotoGallery.cshtml", data)
+                                    }
+                                }
+                                @* FAQ *@
+                                @{
+                                    if (itemPage.FAQCatergoryID > 0)
+                                    {
+                                        @* FAQ Header *@
+                                        <div class="sikca-sorulan-sorular-arama-wrapper-grid">
+                                            <div>
+                                                <img src="~/Content/images/magnifiying-glass.svg" class="search-icon" />
+                                            </div>
+                                            <div>
+                                                <input id="txtFAQSearchIcon" type="text" placeholder="@Shared.GetTranslation(141)" class="input-icon" />
+                                            </div>
+                                        </div>
+                                        @* FAQ Accordion *@
+                                        <div class="accordion" allFAQ>
+                                            <span class="target-fix" id="accordion"></span>
+                                            @Html.Raw(faqList(ConnXml, itemPage.FAQCatergoryID))
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}

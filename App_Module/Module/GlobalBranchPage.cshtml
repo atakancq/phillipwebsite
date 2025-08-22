@@ -1,0 +1,127 @@
+﻿@functions{
+    string branchList(MvcXmlEntities ConnXml, int getLang, int getCity, string getCityName)
+    {
+        System.Text.StringBuilder sbAccordion = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbOffice = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbPhone = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbFax = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbEmail = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbWebsite = new System.Text.StringBuilder();
+        //
+        string strAccordion = @"    <div>
+            <span class='target-fix' id='accordion{0}'></span>
+            <!-- Link to open accordion, hidden when open -->
+            <a href='#accordion{0}' class='baslik-link' id='open-accordion{0}' title='open' data-id='area{0}' >
+                <div class='acc-inner'>
+                    <img class='history-text-before-img' src='/Content/images/location-pin.svg' />
+                    <div class='text-acc-header'><h5>{1}</h5></div>
+                    <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                </div>
+            </a>
+            <a href='#accordion' class='baslik-link' id='close-accordion{0}' title='close' >
+                <div class='acc-inner'>
+                    <img class='history-text-before-img' src='/Content/images/location-pin.svg' />
+                    <div class='text-acc-header'><h5>{1}</h5></div>
+                    <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                </div>
+            </a>
+            <div class='accordion-content' id='area{0}'>
+                <div class='ofislerimiz-inner'>
+                    <h3>{1}</h3>
+                    {2}
+                </div>
+            </div>
+        </div>";
+        //
+        string strOffice = @"
+        <div class='sehir-ofisleri'>
+            <div class='ofis'>
+                <h3 class='siyah-header'>{1}</h3>
+                <p>
+                    {2}
+                    {3}
+                    {4}
+                </p>
+                 {5}
+                 {6}
+            </div>
+        </div>";
+        string telTitle = Shared.GetTranslation(12);
+        string faxTitle = Shared.GetTranslation(13);
+        string strParam = "<br />{0}: {1}";
+        string strParamEmail = "<a href='mailto:{0}'>{1}</a> / ";
+        string strParamWeb = "<a href='https://{0}' target='_blank'>{1}</a> / ";
+        var query = from ar in ConnXml.GlobalBranch
+                    where ar.CountryID == getCity && ar.Lang == getLang
+                    orderby ar.Line
+                    select new
+                    {
+                        ar.GlobalBranchID,
+                        ar.ShortContent,
+                        ar.Address,
+                        ar.Phone,
+                        ar.Fax,
+                        ar.Web,
+                        ar.Email
+                    };
+        var cityDisplay = Shared.GetTranslation(11).Replace("{0}", getCityName);
+        foreach (var item in query)
+        {
+            string strPhone = "";
+            string strFax = "";
+            if (!string.IsNullOrEmpty(item.Phone)) sbPhone.AppendFormat(strParam, telTitle, item.Phone);
+            if (!string.IsNullOrEmpty(item.Fax)) sbFax.AppendFormat(strParam, faxTitle, item.Fax);
+            if (!string.IsNullOrEmpty(item.Web))
+            {
+                //if (item.Web.Contains(','))
+                //{
+                string[] wArr = item.Web.Split(',');
+                sbWebsite.Append("<p>");
+                foreach (var it in wArr)
+                {
+                    sbWebsite.AppendFormat(strParamWeb, it.Trim(), it.Trim());
+                }
+                sbWebsite.Append("</p>");
+                //}
+            }
+            if (!string.IsNullOrEmpty(item.Email))
+            {
+                //if (item.Email.Contains(','))
+                //{
+                string[] wArr = item.Email.Split(',');
+                sbEmail.Append("<p>");
+                foreach (var it in wArr)
+                {
+                    sbEmail.AppendFormat(strParamEmail,  it.Trim(), it.Trim());
+                }
+                sbEmail.Append("</p>");
+                //}
+            }
+            sbOffice.AppendFormat(strOffice, getCity, item.ShortContent, item.Address, sbPhone.ToString(), sbFax.ToString(), sbWebsite.ToString().Replace("/ </p>", "</p>"), sbEmail.ToString().Replace(",</p>", "</p>"));
+            sbPhone.Clear();
+            sbFax.Clear();
+            sbEmail.Clear();
+            sbWebsite.Clear();
+        }
+        sbAccordion.AppendFormat(strAccordion, getCity, cityDisplay, sbOffice.ToString());
+        return sbAccordion.ToString();
+    }
+}
+@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        var getCityIds = from ar in ConnXml.GlobalBranch
+                         where ar.Status
+                         select new { ar.CountryID };
+        <div class="accordion">
+            <span class="target-fix" id="accordion"></span>
+            @{
+                foreach (var item in ConnXml.Country.Where(x => getCityIds.Any(ur => ur.CountryID == x.CountryID)))
+                {
+                    @Html.Raw(branchList(ConnXml, getLang, item.CountryID, item.Country_Name))
+                }
+            }
+        </div>
+    }
+}

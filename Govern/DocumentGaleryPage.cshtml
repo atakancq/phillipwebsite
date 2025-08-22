@@ -1,0 +1,98 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    if (IsPost)
+    {
+        if (!Request.Form["drpLang"].IsEmpty())
+        {
+            reqLangID = Request.Form["drpLang"].AsInt();
+        }
+    }
+}
+@functions {
+    public string GetSubPage(int i, List<DocumentGalery> Pages, int getPageID, int getLangID)
+    {
+        string left = "<img src='Images/Node.png' style='margin-left:" + (i * 30) + "px;' /> ";
+        string str = "";
+        foreach (DocumentGalery itemPages in Pages.Where(x => x.DocumentGaleryParentID == getPageID && x.Lang == getLangID))
+        {
+            str += "<tr thisVal=" + itemPages.DocumentGaleryID + " " + (itemPages.Status == false ? "class='Yellow sssicon' title='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            str += "<td class=\"Min grippy\"></td>";
+            str += "<td class='Big'>" + left + itemPages.Name + "</td>";
+            str += "<td class='Big'>";
+            str += "<a class='Green' href='EditDocumentGaleryPage?ParentID=" + itemPages.DocumentGaleryID + "&Lang=0'>Alt Galeri Ekle</a>";
+            str += "<a class='Blue' href='DocumentGaleryPageFile?GaleryID=" + itemPages.DocumentGaleryID + "'>Dosyalar</a>";
+            str += "<a class='Blue' href='EditDocumentGaleryPage?ID=" + itemPages.DocumentGaleryID + "'>Düzenle</a>";
+            str += "<a class='Red' href='EditDocumentGaleryPage?Delete=" + itemPages.DocumentGaleryID + "'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+            str += GetSubPage(i + 1, Pages, itemPages.DocumentGaleryID, getLangID);
+        }
+        return str;
+    }  
+}
+<script type="text/javascript">
+    <!-- 
+    function newPage(num, reqLangID) {
+        var url = new Array();
+        url[0] = "EditDocumentGaleryPage?Lang=" + reqLangID;
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Döküman Galerisi</div>
+<form method="post">
+    <div class="Content">
+        <div class="ButtonPanel">
+            @{
+                List<SelectListItem> lstLang = new List<SelectListItem>();
+                for (int i = 0; i < Shared.Lang.Length; i++)
+                {
+                    lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                }
+                lstLang.FirstOrDefault(x => x.Value == reqLangID.ToString()).Selected = true;
+                IEnumerable<SelectListItem> drplstLangs = lstLang;
+            }
+            @Html.ListBox("drpLang", drplstLangs, new { @class = "inputdrp", @onchange = "submit();" })
+            <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add"  onclick="newPage(0,@reqLangID)" value="Yeni Galeri Ekle" />
+        </div>
+        <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+            <thead>
+                <td class="Min"></td>
+                <td class="Big">Görünen Ad</td>
+                <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetSubPage(0, ConnXml.DocumentGalery.ToList(), 0, reqLangID);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(GetSubPage(0, ConnXml.DocumentGalery.ToList(), 0,reqLangID));
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Galeri Bulunamadı<br />
+                                    <br />
+                                    <a href='javascript:;' onclick="newPage(0,@reqLangID)">Yeni Galeri Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Min"></td>
+                <td class="Big">Görünen Ad</td>
+                <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

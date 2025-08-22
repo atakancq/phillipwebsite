@@ -1,0 +1,139 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    if (IsPost)
+    {
+        if (!Request.Form["drpLang"].IsEmpty())
+        {
+            reqLangID = Request.Form["drpLang"].AsInt();
+        }
+    }
+}
+@functions {
+    public string GetDetail(int getLangID)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (ModelPortfolio itemPages in ConnXml.ModelPortfolio.Where(x => x.Lang == getLangID).OrderBy(x => x.Date))
+        {
+            str += "<tr thisVal=" + itemPages.ModelPortfolioID + " " + (itemPages.Status == false ? "class='Yellow sssicon' title='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            //str += "<td class></td>";
+            if (!itemPages.ImageUrl.IsEmpty())
+            {
+                string imgDir = "~/" + Setting.Documentdir + "/ModelPortfolio/" + itemPages.ImageUrl;
+                string ext = itemPages.ImageUrl.Split('.').Last();
+                if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                {
+                    str += "<td class='Min'>";
+                    switch (ext.ToLower())
+                    {
+                        case "jpg":
+                        case "jpeg":
+                        case "png":
+                            str += "<img src=\"" + imgDir.Replace("~/", "../") + "\" width=\"100\" />";
+                            break;
+                        case "pdf":
+                            str += "<a href='" + imgDir.Replace("~/", "../") + "' target='_blank'><img src='images/pdf_icon.png'  /></a>";
+                            break;
+                        case "mp4":
+                            str += "<a href='" + imgDir.Replace("~/", "../") + "' target='_blank'><img src='images/video_icon.png' /></a>";
+                            break;
+                    }
+                    str += "</td>";
+                }
+                else
+                {
+                    str += "<td class='Min'>Resim Bulunamadı</td>";
+                }
+            }
+            else
+            {
+                str += "<td class='Min'>Resim Bulunamadı</td>";
+            }
+            str += "<td class='Normal'>" + itemPages.Title + "</td>";
+            str += "<td class='Normal'>" + itemPages.Date.ToString("dd/MM/yyyy") + "</td>";
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditModelPortfolioPage?ID=" + itemPages.ModelPortfolioID + "&Lang=" + getLangID + "'>Düzenle</a>";
+            str += "<a class='Red' onclick='return confirmDelete();' href='EditModelPortfolioPage?Delete=" + itemPages.ModelPortfolioID + "&Lang=" + getLangID + "'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<script type="text/javascript">
+    <!--
+    function newPage(num, reqLangID) {
+        var url = new Array();
+        url[0] = "EditModelPortfolioPage?Lang=" + reqLangID;
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Model Portfölye</div>
+<form method="post">
+    <input type="hidden" id="PageName" value="" />
+    <input type="hidden" id="PageNameQ" value="" />
+    <input type="hidden" id="SelectedItems" name="SelectedItems" class="SelectedItems" runat="server" />
+    <input type="hidden" id="PassiveItems" name="PassiveItems" class="PassiveItems" runat="server" />
+    <input type="hidden" id="SortItems" name="SortItems" class="SortItems" runat="server" />
+    <div class="Content">
+        <div class="ButtonPanel">
+            @{
+                List<SelectListItem> lstLang = new List<SelectListItem>();
+                for (int i = 0; i < Shared.Lang.Length; i++)
+                {
+                    lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                }
+                lstLang.FirstOrDefault(x => x.Value == reqLangID.ToString()).Selected = true;
+                IEnumerable<SelectListItem> drplstLangs = lstLang;
+            }
+            @Html.ListBox("drpLang", drplstLangs, new { @class = "inputdrp", @onchange = "submit();" })
+            @*<input name="btnSort" type="submit" value="Sıralamayı Kaydet" id="btnSort" class="inputbutton Save">*@
+            <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0,@reqLangID)" value="Yeni Model Portfölye Ekle" />
+        </div>
+        <table class="GridWiew" cellpadding="5" cellspacing="0">
+            <thead>
+                @*<td class="Min"></td>*@
+            <td class="Min">Dosya</td>
+            <td class="Normal">Başlık</td>
+            <td class="Normal">Tarih</td>
+            <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetDetail(reqLangID);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Model Portfölye Bulunamadı<br />
+                                    <br />
+                                    <a href="javascript:;" onclick="newPage(0,@reqLangID)">Model Portfölyo Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                @*<td class="Min"></td>*@
+            <td class="Min">Dosya</td>
+            <td class="Normal">Başlık</td>
+            <td class="Normal">Tarih</td>
+            <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

@@ -1,0 +1,274 @@
+﻿@{
+    int getLang = Shared.GetLang();
+    System.Globalization.CultureInfo cultureinfo = new System.Globalization.CultureInfo(getLang.toLangCulture());
+}
+@functions
+{
+    string getHeaderMenuMobile(int getLang)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        string strFormat = @"<li><a href='{0}' target='{2}'>{1}</a></li>";
+        string strFormatATag = @"<a href='{0}' target='{2}'>{1}</a>";
+        string strFormatDropdown = @"<li>{1}<ul>{0}</ul></li>";
+        System.Text.StringBuilder SbList = new System.Text.StringBuilder();
+        IQueryable<Pages> IqPageList = ConnXml.Pages.Where(x => (x.Status) && (x.ShowHeaderMenu) && x.Lang == getLang && x.ParentID == 0).OrderBy(x => x.Line);
+        foreach (Pages itemPages in IqPageList)
+        {
+            if (!ConnXml.Pages.Any(x => x.Status && x.ParentID == itemPages.PageID && x.Lang == getLang))
+            {
+                SbList.AppendFormat(strFormat, itemPages.RawUrl, itemPages.DisplayName, itemPages.Target);
+            }
+            else
+            {
+                System.Text.StringBuilder strSubPage = new System.Text.StringBuilder();
+                System.Text.StringBuilder strSubPageTitle = new System.Text.StringBuilder();
+                strSubPageTitle.AppendFormat(strFormatATag, itemPages.RawUrl, itemPages.DisplayName, itemPages.Target);
+                foreach (Pages itemSubPage in ConnXml.Pages.Where(x => x.Status && x.ParentID == itemPages.PageID && x.Lang == getLang).OrderBy(x => x.Line))
+                {
+                    strSubPage.AppendLine("<li><a target='" + itemSubPage.Target + "' href='" + itemSubPage.RawUrl + "'>" + itemSubPage.DisplayName + "</a>");
+                    if (ConnXml.Pages.Any(x => x.Status && x.ParentID == itemSubPage.PageID && x.Lang == getLang))
+                    {
+                        strSubPage.AppendLine(@"<ul>");
+                        foreach (Pages itemSubSubPage in ConnXml.Pages.Where(x => x.Status && x.ParentID == itemSubPage.PageID && x.Lang == getLang).OrderBy(x => x.Line))
+                        {
+                            strSubPage.AppendLine("<li><a target='" + itemSubSubPage.Target + "' href='" + itemSubSubPage.RawUrl + "'>" + itemSubSubPage.DisplayName + "</a></li>");
+                        }
+                        strSubPage.AppendLine(@"</ul>");
+                    }
+                    strSubPage.AppendLine("</li>");
+                }
+                SbList.AppendFormat(strFormatDropdown, strSubPage.ToString(), strSubPageTitle.ToString());
+            }
+        }
+        return SbList.ToString();
+    }
+}
+<!DOCTYPE html>
+<html lang="@Shared.GetLang().toLangCulture()">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="~/Content/favicon/favicon.ico" />
+    <link rel="icon" type="image/png" href="~/Content/favicon/favicon-16x16.png" sizes="16x16" />
+    <link rel="icon" type="image/png" href="~/Content/favicon/favicon-32x32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" type="image/png" href="~/Content/favicon/apple-touch-icon.png" sizes="180x180" />
+    <link rel="android-chrome-192x192" type="image/png" href="~/Content/favicon/android-chrome-192x192.png" sizes="192x192" />
+    <link rel="android-chrome-512x512" type="image/png" href="~/Content/favicon/android-chrome-512x512.png" sizes="512x512" />
+    <title>@Page.Title</title>
+
+    <script src="" type="text/javascript"></script>
+    <link rel="stylesheet" href="~/content/jquery.fancybox.min.css" />
+    <link href="~/content/css/events.css" rel="stylesheet" />
+    <link href="~/content/chatbot.css" rel="stylesheet" />
+    <link href="~/Content/owl/owl.carousel.min.css" rel="stylesheet" />
+    <link href="~/Content/owl/owl.theme.default.min.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-icons.min.css" rel="stylesheet" />
+    <link href="~/ckeditor/outputxhtml.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/site.css" rel="stylesheet" />
+    <link href="~/Content/css/jquery.datetimepicker.min.css" rel="stylesheet" />
+    <link href="~/Content/css/fonts.min.css" rel="stylesheet" />
+    <link href="~/content/css/tv.css" rel="stylesheet" />
+    <link href="~/content/css/event.css" rel="stylesheet" />
+    <link href="~/content/css/modal-tsbp.css" rel="stylesheet" />
+    <script src="~/Scripts/sweetalert2.11.js" defer></script>
+    <script src="~/Scripts/modernizr-2.8.3.js" type="text/javascript"></script>
+    <script src="~/Scripts/jquery-3.6.0.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/bootstrap.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/fslightbox.js" type="text/javascript"></script>
+    <script src="~/Scripts/owl/owl.carousel.min.js" type="text/javascript"></script>
+    @*<script src="~/Scripts/youtube.functions.js" type="text/javascript"></script>*@
+    <script src="~/Scripts/functions.js" type="text/javascript"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.datetimepicker.full.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.validate.min.js"></script>
+    @*<script type="text/javascript" src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>*@
+    <script src="https://maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
+    <script src="~/Scripts/gmap3.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/jquery-input-mask-phone-number.js"></script>
+    <script src="~/Scripts/moment.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/main.js?v=4" type="text/javascript"></script>
+    <script src="~/Scripts/tabs.js" type="text/javascript" async defer></script>
+    <script src="~/Scripts/tv.js"></script>
+    <script src="~/Scripts/modal.js"></script>
+    <script src="https://kit.fontawesome.com/72327ed5f9.js" crossorigin="anonymous"></script>
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-KX76SPX');</script>
+    <!-- End Google Tag Manager -->
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-134268289-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-134268289-1');
+    </script>
+    <!-- 22 05 2024 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11006835987"></script>
+
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'AW-', { ' allow_enhanced_conversions': true });
+    </script>
+
+    <!-- 22 05 2024 -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'AW-', { ' allow_enhanced_conversions': true });
+    </script>
+
+
+    <!-- Global site tag (gtag.js) - Google Ads: 10936174659 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-10936174659"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11006835987"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'AW-10936174659');
+    </script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-10936174659"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'AW-10936174659');
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render=6Lf6f6YnAAAAAIEiOQ0FUK-j2F3Axxr31quUhqoo"></script>
+    <script>
+        $(document).ready(() => {
+            grecaptcha.ready(function () {
+                grecaptcha.execute('6Lf6f6YnAAAAAIEiOQ0FUK-j2F3Axxr31quUhqoo', { action: '' }).then(function (token) {
+                    $("#GoogleCaptchaToken").val(token);
+                });
+            });
+        })
+    </script>
+    @RenderSection("head", required: false)
+</head>
+<body>
+    @*<button id="chatbot-button">
+        <img src="/images/questionico.png" style="
+            width: 37px;
+            margin-left: -8px;
+            margin-top: -3px;">
+    </button>*@
+
+    @*<a href="" id="whatsapp-button"> 
+        <img src="/images/WhatsApp.png" style="
+         width: 65px;
+         margin-left: -23px;
+         margin-top: -17px;
+         ">
+    </a>*@
+
+    <div id="chatbot-form">
+        <div class="screen1" id="screen1">
+            <div class="chatbot-header" style="width: 100%;">
+                <div class="chatbot-header-img">
+                    <img src="~/images/chatbot.png" style="width: 36px; height: 36px; margin: auto;" />
+                </div>
+                <div class="chatbot-header-text">
+                    <p>Yapay zeka destekli asistanımız, 7/24 hizmetinizde. Sorununuzu paylaşarak anında destek alabilirsiniz.</p>
+                </div>
+            </div>
+            <input type="text" id="name" placeholder="Adınız" required />
+            <input type="email" id="email" placeholder="E-posta" required />
+            <button onclick="sendMessage()">Görüşme Başlat</button>
+        </div>
+        <div class="screen2" id="screen2">
+            <h6 style="margin-bottom: 11px;">
+                Canlı Destek
+            </h6>
+            <div class="seperator" style="width: 100%; height: 1px;background: #bbbbbb;"></div>
+            <div class="started-chat" id="started-chat-time"></div>
+            <div id="message-area" class="messages">
+                <div id="chat-messages"></div>
+                <div class="dots writing" id="writing-area"></div>
+                @*<div class="from">
+                        <p>
+                            Selam Ahmet! PhillipCapital ailesi olarak size hizmet vermekten mutluluk duyuyoruz. Size Nasıl yardımcı olabiliriz?
+                        </p>
+                    </div>*@
+                @*<div class="me">
+                        <p>
+                            Merhaba, emir iletiminde gecikme yaşıyorum.
+                        </p>
+                    </div>*@
+            </div>
+            <div class="message-area" style="position: absolute;bottom: 0;width: 100%;">
+                <input type="text" class="sender" id="msgarea">
+                <div class="btn btn-primary send-btn" onclick="sendMessageArea()">
+                    <img src="~/content/images/dws.png" style="width:15px;height:15px;" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="cookies">
+        <div class="leftSide1">
+            <div class="column">
+                Sitemizden en iyi şekilde faydalanabilmeniz için çerezler kullanılmaktadır.<br /> Detaylar için <a href="cerez-politikasi" target="_blank">veri politikamızı</a> inceleyebilirsiniz.
+            </div>
+        </div>
+        <div class="rightSide3">
+            <button class="rightSide1">Çerezleri Kabul Et</button>
+            <button class="rightSide2">Çerezleri Reddet</button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
+    <script>
+        const cookies = document.querySelector(".cookies");
+        const rightSide1 = document.querySelector(".rightSide1");
+        const rightSide2 = document.querySelector(".rightSide2");
+        rightSide1.addEventListener("click", () => {
+            cookies.classList.remove("active");
+            localStorage.setItem("cookieBannerDisplayed", "true");
+        });
+        rightSide2.addEventListener("click", () => {
+            cookies.classList.remove("active");
+            localStorage.setItem("cookieBannerDisplayed", "true");
+        });
+        setTimeout(() => {
+            if (!localStorage.getItem("cookieBannerDisplayed")) {
+                cookies.classList.add("active");
+            }
+        }, 2000);
+    </script>
+    <script src="~/Scripts/chatbot.js"></script>
+    @RenderPage("~/App_Module/Header.cshtml")
+    @RenderBody()
+    @RenderPage("~/App_Module/Footer.cshtml")
+    @RenderSection("scripts", required: false)
+    @*<div id="modal-tsbp" class="modal-tsbp">
+            <div class="modal-content-tsbp">
+                <span class="close-tsbp">&times;</span>
+                <h2>TSBP Bilgilendirme Metni</h2>
+                <p>
+                    Türkiye Sermaye Piyasaları Birliği’nin
+                    Dolandırıcılık Olaylarına Yönelik Güvenlik Uyarısı ve
+                    İzinsiz Sermaye Piyasası Faaliyetlerine İlişkin Bilgilendirme Metnine <a href="#" class="tsbp-link">tıklayarak</a> ulaşabilirsiniz.
+                </p>
+            </div>
+        </div>*@
+</body>
+</html>

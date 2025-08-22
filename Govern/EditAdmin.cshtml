@@ -1,0 +1,157 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Setting Setting = ConnXml.Setting.FirstOrDefault();
+    #region Değişkenler
+    var txtName = "";
+    var txtPassword = "";
+    string txtEmail = "";
+    string SifreMetni = "";
+    bool SifreZorunluluk = false;
+    int AdminID;
+    bool drpAdminStatus = true;
+    bool drpAdminUserAuth = true;
+    int drpAdminType = 0;
+    #endregion
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        Admin Pages = ConnXml.Admin.FirstOrDefault(x => x.AdminID == reqID);
+        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("Admin");
+    }
+    AdminID = Request.QueryString["ID"].AsInt();
+    Admin Getadmin = new Admin();
+    int reqAdminID = 0;
+    if (Request.QueryString["ID"] != null)
+    {
+        Getadmin = ConnXml.Admin.FirstOrDefault(x => x.AdminID == AdminID);
+        reqAdminID = Request.QueryString["ID"].AsInt();
+        if (ConnXml.Admin.Any(x => x.AdminID == reqAdminID))
+        {
+            Admin reqPage = ConnXml.Admin.FirstOrDefault(x => x.AdminID == reqAdminID);
+            txtName = reqPage.UserName;
+            txtEmail = reqPage.Email;
+            drpAdminStatus = reqPage.Status;
+            drpAdminUserAuth = reqPage.UserAuth;
+        }
+        else
+        {
+            Response.Redirect("Admin");
+        }
+    }
+    if (IsPost)
+    {
+        //AntiForgery.Validate();
+        if (Request.QueryString["ID"] != null)
+        {
+            if (ConnXml.Admin.Any(x => x.AdminID == reqAdminID))
+            {
+                Admin reqPage = ConnXml.Admin.FirstOrDefault(x => x.AdminID == reqAdminID);
+                reqPage.UserName = Request.Form["txtName"];
+                reqPage.Email = Request.Form["txtEmail"];
+                reqPage.Status = Request.Form["drpPageStatus"] == "0" ? false : true;
+                reqPage.UserAuth = Request.Form["UserAuth"] == "0" ? false : true;
+                reqPage.PassWord =  Request.Form["txtPassword"].IsEmpty() ? reqPage.PassWord : Request.Form["txtPassword"].md5();
+                int ConnStatus = 0;
+                ConnXml.Entry(reqPage).State = System.Data.EntityState.Modified;
+                ConnStatus = ConnXml.SaveChanges();
+                if (ConnStatus > 0)
+                {
+                    Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+                }
+                else
+                {
+                    Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+                }
+                Response.Redirect("Admin");
+            }
+            else
+            {
+                Response.Redirect("Admin");
+            }
+        }
+        else
+        {
+            Admin itemPage = new Admin();
+            itemPage.UserName = Request.Form["txtName"];
+            itemPage.Email = Request.Form["txtEmail"];
+            itemPage.Status = Request.Form["drpPageStatus"] == "0" ? false : true;
+            itemPage.UserAuth = Request.Form["UserAuth"] == "0" ? false : true;
+            itemPage.PassWord = Request.Form["txtPassword"].md5();
+            int ConnStatus = 0;
+            ConnXml.Admin.Add(itemPage);
+            ConnStatus = ConnXml.SaveChanges();
+            if (ConnStatus > 0)
+            {
+                Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            }
+            else
+            {
+                Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+            }
+            Response.Redirect("Admin");
+        }
+    }
+}
+<div class="Title">Admin Bilgileri Ekle</div>
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @HelperAdminControl.inputText("txtName", " Kullanıcı Adı", false, true, txtName)
+                @HelperAdminControl.inputText("txtEmail", " E-Mail", false, true, txtEmail)
+                @if (Request.QueryString["ID"] != null)
+                {
+                    SifreMetni = "Şifre (Boş Bırakıldığında Eski Şifre Geçerli Kalır)";
+                    SifreZorunluluk = false;
+                }
+                else
+                {
+                    SifreMetni = "Şifre ";
+                    SifreZorunluluk = true;
+                }
+                @HelperAdminControl.inputText("txtPassword", SifreMetni, false, SifreZorunluluk, txtPassword)
+                @{
+                   string drpPageStatusTrue = drpAdminStatus == true ? "checked='checked'" : ""; 
+                   string drpPageStatusFalse = drpAdminStatus == false ? "checked='checked'" : "";
+                   string drpUserAuthTrue = drpAdminUserAuth == true ? "checked='checked'" : "";
+                   string drpUserAuthFalse = drpAdminUserAuth == false ? "checked='checked'" : "";
+                   string drpPageAdminTypeZero = drpAdminType == 0 ? "checked='checked'" : "";
+                   string drpPageAdminTypeOne = drpAdminType == 1 ? "checked='checked'" : "";
+                   string drpPageAdminTypeTwo = drpAdminType == 2 ? "checked='checked'" : "";
+                }
+                <div class="Title">Durum</div>
+                <div class="Input">
+                    <input type="radio" id="drpPageStatus0" name="drpPageStatus" value="0" @drpPageStatusFalse><label for="drpPageStatus0">Pasif</label>
+                    <input type="radio" id="drpPageStatus1" name="drpPageStatus" value="1" @drpPageStatusTrue><label for="drpPageStatus1">Aktif</label>
+                </div>
+                <div class="Title">Kullanıcı yönetimi yapabilsin mi?</div>
+                <div class="Input">
+                    <input type="radio" id="UserAuth0" name="UserAuth" value="0" @drpUserAuthFalse><label for="UserAuth0">Hayır</label>
+                    <input type="radio" id="UserAuth1" name="UserAuth" value="1" @drpUserAuthTrue><label for="UserAuth1">Evet</label>
+                </div>
+            </div>
+            <div class="ButtonPanel">
+                <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="Kaydet" />
+            </div>
+        </div>
+    </div>
+</form>

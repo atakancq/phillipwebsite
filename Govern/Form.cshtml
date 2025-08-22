@@ -1,0 +1,330 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Form getFormView = ConnXml.Form.FirstOrDefault();
+    int reqFormID = 0;
+    int reqMounth = 0;
+    int reqDay = 0;
+    int reqYear = 0;
+    string[] strHeaderList = new string[] { };
+    string[] strListIndex = new string[] { };
+    var filterUrl = "";
+    //if (IsPost)
+    //{
+    //    reqDay = Request.Form["drpDay"] != "Gün Seçiniz" ? Request.Form["drpDay"].AsInt() : 0;
+    //    reqMounth = Request.Form["drpMounth"] != "Ay Seçiniz" ? Request.Form["drpMounth"].AsInt() : 0;
+    //    reqYear = Request.Form["drpYear"] != "Yıl Seçiniz" ? Request.Form["drpYear"].AsInt() : 0;
+    //    if (reqDay > 0)
+    //    {
+    //        filterUrl = "&drpDay=" + reqDay;
+    //    }
+    //    if (reqMounth > 0)
+    //    {
+    //        filterUrl += "&drpMounth=" + reqMounth;
+    //    }
+    //    if (reqYear > 0)
+    //    {
+    //        filterUrl += "&drpYear=" + reqYear;
+    //    }
+    //}
+    //else
+    //{
+        if (!Request.QueryString["drpDay"].IsEmpty())
+        {
+            reqDay = Request.QueryString["drpDay"].AsInt();
+            filterUrl = "&drpDay=" + reqDay;
+        }
+        if (!Request.QueryString["drpMounth"].IsEmpty())
+        {
+            reqMounth = Request.QueryString["drpMounth"].AsInt();
+            filterUrl += "&drpMounth=" + reqMounth;
+        }
+        if (!Request.QueryString["drpYear"].IsEmpty())
+        {
+            reqYear = Request.QueryString["drpYear"].AsInt();
+            filterUrl += "&drpYear=" + reqYear;
+        }
+    //}
+    if (Request.QueryString["ID"] == null)
+    {
+        try
+        {
+            reqFormID = getFormView.FormID;
+            //Response.Redirect("Form?ID=" + reqFormID);
+        }
+        catch
+        {
+        }
+    }
+    else
+    {
+        reqFormID = Request.QueryString["ID"].AsInt();
+        getFormView = ConnXml.Form.FirstOrDefault(x => x.FormID == reqFormID);
+        strHeaderList = getFormView.Header.Split(';');
+        strListIndex = getFormView.ListIndex.Split(';');
+    }
+}
+<script type="text/javascript">
+    <!--
+    function newPage(num) {
+        var url = new Array();
+        url[0] = "ExportForm?ID=@reqFormID&drpDay=@reqDay&drpMounth=@reqMounth&drpYear=@reqYear";
+        window.location = url[num];
+    }
+    // -->
+    $(document).ready(function e() {
+        $(".MainRight .Page .Content .ButtonPanel #drpForms").change(function () {
+            window.location.href = "Form?ID=" + $(this).val();
+        });
+    });
+</script>
+<div class="Title">Formlar</div>
+<div class="Content">
+    <div class="ButtonPanel">
+        <form method="GET">
+            <input type="hidden" name="ID" value="@reqFormID" />
+            @{
+                List<SelectListItem> lstDay = new List<SelectListItem>();
+                lstDay.Add(new SelectListItem { Text = "Gün Seçiniz", Value = "0" });
+                for (int i = 1; i <= 31; i++)
+                {
+                    lstDay.Add(new SelectListItem { Text = i.ToString().Length == 1 ? "0" + i.ToString() : i.ToString(), Selected = (reqDay == i ? true : false) });
+                }
+                IEnumerable<SelectListItem> drpDayItem = lstDay;
+                <div style="float: left">
+                    @HelperAdminControl.DropDownList("drpDay", "Gün", drpDayItem)
+                </div>
+                List<SelectListItem> lstMounth = new List<SelectListItem>();
+                lstMounth.Add(new SelectListItem { Text = "Ay Seçiniz", Value = "0" });
+                for (int i = 1; i <= 12; i++)
+                {
+                    lstMounth.Add(new SelectListItem { Text = i.ToString().Length == 1 ? "0" + i.ToString() : i.ToString(), Selected = (reqMounth == i ? true : false) });
+                }
+                IEnumerable<SelectListItem> drpMounthItem = lstMounth;
+                <div style="float: left">
+                    @HelperAdminControl.DropDownList("drpMounth", "Ay", drpMounthItem)
+                </div>
+                List<SelectListItem> lstYear = new List<SelectListItem>();
+                lstYear.Add(new SelectListItem { Text = "Yıl Seçiniz", Value = "0" });
+                for (int i = 2013; i <= DateTime.Now.AddYears(1).Year; i++)
+                {
+                    lstYear.Add(new SelectListItem { Text = i.ToString(), Selected = (reqYear == i ? true : false) });
+                }
+                IEnumerable<SelectListItem> drpYearItem = lstYear;
+                <div style="float: left">
+                    @HelperAdminControl.DropDownList("drpYear", "Yıl", drpYearItem)
+                </div>
+                <div class="ButtonPanel" style="float: left; margin-bottom: 0; margin-top: 28px;">
+                    <input id="btnSearch" name="btnSearch" type="submit" class="inputbutton Add" value="Filitre" />
+                </div>
+            }
+        </form>
+        @{
+            List<SelectListItem> lstModule = new List<SelectListItem>();
+            lstModule.AddRange(ConnXml.Form.AsEnumerable().Select(x => new SelectListItem { Value = x.FormID.ToString(), Text = x.FormName, Selected = (x.FormID == reqFormID ? true : false) }));
+            IEnumerable<SelectListItem> drpModuleItem = lstModule;
+            @Html.ListBox("drpForms", drpModuleItem, new { @class = "inputdrp" })
+        }
+        <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0)" value="Excel Olarak Çıkart" />
+    </div>
+    @{
+        string FormHeader = "";
+        FormHeader += "<td class=\"Min\">ID</td>";
+        for (int i = 0; i < strHeaderList.Length; i++)
+        {
+            FormHeader += "<td class=\"Normal\">" + strHeaderList[i] + "</td>";
+        }
+        string getList = "";
+        switch (reqFormID)
+        {
+            case 1:
+                foreach (ContactForm item in ConnXml.ContactForm.Where(x =>
+                    (reqYear > 0 ? x.AddDate.Year == reqYear : true)
+                    &&
+                    (reqMounth > 0 ? x.AddDate.Month == reqMounth : true)
+                    &&
+                    (reqDay > 0 ? x.AddDate.Day == reqDay : true)
+                ).OrderByDescending(x => x.AddDate).Paging(50))
+                {
+                    getList += "<tr>";
+                    getList += "<td>" + item.ContactFormID + "</td>";
+                    getList += "<td>" + item.NameSurname + "</td>";
+                    getList += "<td>" + item.Phone + "</td>";
+                    getList += "<td>" + item.Email + "</td>";
+                    getList += "<td>" + item.AddDate + "</td>";
+                    getList += "<td class=\"Normal\"><a class='Blue' target='_Blank' href='FormDetailList?ID=" + reqFormID + "&ItemID=" + item.ContactFormID + "'>Detaylar</a></td>";
+                    getList += "</tr>";
+                }
+            break;
+            case 2:
+                foreach (JobApplicationForm item in ConnXml.JobApplicationForm.Where(x =>
+                    (reqYear > 0 ? x.AddDate.Year == reqYear : true)
+                    &&
+                    (reqMounth > 0 ? x.AddDate.Month == reqMounth : true)
+                    &&
+                    (reqDay > 0 ? x.AddDate.Day == reqDay : true)
+                ).OrderByDescending(x => x.AddDate).Paging(50))
+                {
+                    getList += "<tr>";
+                    getList += "<td>" + item.JobApplicationFormID + "</td>";
+                    getList += "<td>" + item.NameSurname + "</td>";
+                    getList += "<td>" + item.Phone + "</td>";
+                    getList += "<td>" + item.Email + "</td>";
+                    getList += "<td>" + item.Gender + "</td>";
+                    getList += "<td>" + item.BirthDate + "</td>";
+                    getList += "<td>" + item.AddDate + "</td>";
+                    getList += "<td class=\"Normal\"><a class='Blue' target='_Blank' href='FormDetailList?ID=" + reqFormID + "&ItemID=" + item.JobApplicationFormID + "'>Detaylar</a></td>";
+                    getList += "</tr>";
+                }
+            break;
+            case 3:
+                foreach (NewsletterForm item in ConnXml.NewsletterForm.Where(x =>
+                    (reqYear > 0 ? x.AddDate.Year == reqYear : true)
+                    &&
+                    (reqMounth > 0 ? x.AddDate.Month == reqMounth : true)
+                    &&
+                    (reqDay > 0 ? x.AddDate.Day == reqDay : true)
+                ).OrderByDescending(x => x.AddDate).Paging(50))
+                {
+                    getList += "<tr>";
+                    getList += "<td>" + item.NewsletterFormID + "</td>";
+                    getList += "<td>" + item.Email + "</td>";
+                    getList += "<td>" + item.AddDate + "</td>";
+                    getList += "<td class=\"Normal\"><a class='Blue' target='_Blank' href='FormDetailList?ID=" + reqFormID + "&ItemID=" + item.NewsletterFormID + "'>Detaylar</a></td>";
+                    getList += "</tr>";
+                }
+            break;
+            case 4:
+                foreach (PasswordRequestForm item in ConnXml.PasswordRequestForm.Where(x =>
+                    (reqYear > 0 ? x.AddDate.Year == reqYear : true)
+                    &&
+                    (reqMounth > 0 ? x.AddDate.Month == reqMounth : true)
+                    &&
+                    (reqDay > 0 ? x.AddDate.Day == reqDay : true)
+                ).OrderByDescending(x => x.AddDate).Paging(50))
+                {
+                    getList += "<tr>";
+                    getList += "<td>" + item.PasswordRequestFormID + "</td>";
+                    getList += "<td>" + item.Email + "</td>";
+                    getList += "<td>" + item.AccountNumber + "</td>";
+                    getList += "<td>" + item.KVKK + "</td>";
+                    getList += "<td>" + item.AcceptElectronicMessage + "</td>";
+                    getList += "<td>" + item.AddDate + "</td>";
+                    getList += "<td>" + item.LangID.toLang() + "</td>";
+                    getList += "<td>" + item.IpAddress + "</td>";
+                    getList += "<td class=\"Normal\"><a class='Blue' target='_Blank' href='FormDetailList?ID=" + reqFormID + "&ItemID=" + item.PasswordRequestFormID + "'>Detaylar</a></td>";
+                    getList += "</tr>";
+                }
+            break;
+            case 5:
+                foreach (ComplainForm item in ConnXml.ComplainForm.Where(x =>
+                    (reqYear > 0 ? x.AddDate.Year == reqYear : true)
+                    &&
+                    (reqMounth > 0 ? x.AddDate.Month == reqMounth : true)
+                    &&
+                    (reqDay > 0 ? x.AddDate.Day == reqDay : true)
+                ).OrderByDescending(x => x.AddDate).Paging(50))
+                {
+                    getList += "<tr>";
+                    getList += "<td>" + item.ComplainFormID + "</td>";
+                    getList += "<td>" + item.NameSurname + "</td>";
+                    getList += "<td>" + item.Email + "</td>";
+                    getList += "<td>" + item.Phone + "</td>";
+                    getList += "<td>" + item.AddDate + "</td>";
+                    getList += "<td class=\"Normal\"><a class='Blue' target='_Blank' href='FormDetailList?ID=" + reqFormID + "&ItemID=" + item.ComplainFormID + "'>Detaylar</a></td>";
+                    getList += "</tr>";
+                }
+            break;
+            case 7:
+                foreach (AccountForm item in ConnXml.AccountForm.Where(x =>
+                    (reqYear > 0 ? x.AddDate.Year == reqYear : true)
+                    &&
+                    (reqMounth > 0 ? x.AddDate.Month == reqMounth : true)
+                    &&
+                    (reqDay > 0 ? x.AddDate.Day == reqDay : true)
+                ).OrderByDescending(x => x.AddDate).Paging(50))
+                {
+                    getList += "<tr>";
+                    getList += "<td>" + item.AccountFormID + "</td>";
+                    getList += "<td>" + item.NameSurname + "</td>";
+                    getList += "<td>" + item.Email + "</td>";
+                    getList += "<td>" + item.Phone + "</td>";
+                    getList += "<td>" + item.AddDate + "</td>";
+                    getList += "<td class=\"Normal\"><a class='Blue' target='_Blank' href='FormDetailList?ID=" + reqFormID + "&ItemID=" + item.AccountFormID + "'>Detaylar</a></td>";
+                    getList += "</tr>";
+                }
+            break;
+            case 9:
+                foreach (SeminarForm item in ConnXml.SeminarForm.Where(x =>
+                    (reqYear > 0 ? x.AddDate.Year == reqYear : true)
+                    &&
+                    (reqMounth > 0 ? x.AddDate.Month == reqMounth : true)
+                    &&
+                    (reqDay > 0 ? x.AddDate.Day == reqDay : true)
+                ).OrderByDescending(x => x.AddDate).Paging(50))
+                {
+                    getList += "<tr>";
+                    getList += "<td>" + item.SeminarFormID + "</td>";
+                    getList += "<td>" + item.NameSurname + "</td>";
+                    getList += "<td>" + item.Email + "</td>";
+                    getList += "<td>" + item.Phone + "</td>";
+                    getList += "<td>" + item.AddDate + "</td>";
+                    getList += "<td class=\"Normal\"><a class='Blue' target='_Blank' href='FormDetailList?ID=" + reqFormID + "&ItemID=" + item.SeminarFormID + "'>Detaylar</a></td>";
+                    getList += "</tr>";
+                }
+            break;
+            case 10:
+                foreach (AskYourStockForm item in ConnXml.AskYourStockForm.Where(x =>
+                    (reqYear > 0 ? x.AddDate.Year == reqYear : true)
+                    &&
+                    (reqMounth > 0 ? x.AddDate.Month == reqMounth : true)
+                    &&
+                    (reqDay > 0 ? x.AddDate.Day == reqDay : true)
+                ).OrderByDescending(x => x.AddDate).Paging(50))
+                {
+                    getList += "<tr>";
+                    getList += "<td>" + item.AskYourStockFormID + "</td>";
+                    getList += "<td>" + item.NameSurname + "</td>";
+                    getList += "<td>" + item.AccountNo + "</td>";
+                    getList += "<td>" + item.StockCode + "</td>";
+                    getList += "<td>" + item.Email + "</td>";
+                    getList += "<td>" + item.Phone + "</td>";
+                    getList += "<td>" + item.AddDate + "</td>";
+                    getList += "<td class=\"Normal\"><a class='Blue' target='_Blank' href='FormDetailList?ID=" + reqFormID + "&ItemID=" + item.AskYourStockFormID + "'>Detaylar</a></td>";
+                    getList += "</tr>";
+                }
+            break;
+        }
+    }
+    <table class="GridWiew" cellpadding="5" cellspacing="0">
+        <thead>
+            @Html.Raw(FormHeader)
+            <td class="Normal"></td>
+        </thead>
+        <tbody>
+            @{
+                if (!getList.IsEmpty())
+                {
+                    @Html.Raw(getList);
+                }
+                else
+                {
+                    <tr>
+                        <td class='Big' colspan='15'>
+                            <div class='NoneItemPage'>
+                                Henüz gönderilmiş bir form verisi yok
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+        <tfoot>
+            @Html.Raw(FormHeader)
+            <td class="Normal"></td>
+        </tfoot>
+    </table>
+    <div class="Paging">
+        @Html.Raw(Pager.Control2())
+    </div>
+</div>

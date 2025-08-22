@@ -1,0 +1,116 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+}
+@functions {
+    public string GetDetail(int getLang)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (BoardOfDirectorsHistory itemPages in ConnXml.BoardOfDirectorsHistory.Where(x => x.Lang == getLang).OrderByDescending(x => x.HistoryCreateDate))
+        {
+            var userName = "";
+            if (itemPages.ModifiedId > 0)
+            {
+                var admin = ConnXml.Admin.FirstOrDefault(x => x.AdminID == itemPages.ModifiedId);
+                if (admin != null)
+                {
+                    userName = admin.UserName;
+                }
+            }
+            str += "<tr";
+            str += "<td class=\"Min grippy\"></td>";
+            if (!itemPages.ImageUrl.IsEmpty())
+            {
+                string imgDir = "~/" + Setting.Documentdir + "/BoardOfDirectorsPage/" + itemPages.ImageUrl;
+                if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                {
+                    str += "<td class='Min'><img src=\"" + imgDir.Replace("~/", "../") + "\" width=\"100\" /></td>";
+                }
+                else
+                {
+                    str += "<td class='Min'>Resim Bulunamadı</td>";
+                }
+            }
+            else
+            {
+                str += "<td class='Normal'>Resim Bulunamadı</td>";
+            }
+            str += "<td class='Normal'>" + itemPages.NameSurname + "</td>";
+            str += "<td class='Normal'>" + itemPages.Degree + "</td>";
+            str += "<td class='Normal'>";
+            if (itemPages.DirectorType == 0)
+            {
+                str += "Yönetim Kurulu";
+            }
+            else if (itemPages.DirectorType == 1)
+            {
+                str += "Üst Yönetim";
+            }
+            else if (itemPages.DirectorType == 2)
+            {
+                str += "Yönetim & Üst Yönetim";
+            }
+            str += "<td class='Normal'>" + userName + "</td>";
+            str += "<td class='Normal'>" + itemPages.HistoryCreateDate + "</td>";
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditMainPageQuickMenuPage?HistoryID=" + itemPages.BoardOfDirectorsHistoryID + "'>Geçmişi Görüntüle</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<div class="Title">Yönetim Kurulu Geçmiş Listesi</div>
+<form method="post">
+    <input type="hidden" id="PageName" value="" />
+    <input type="hidden" id="PageNameQ" value="" />
+    <input type="hidden" id="SelectedItems" name="SelectedItems" class="SelectedItems" runat="server" />
+    <input type="hidden" id="PassiveItems" name="PassiveItems" class="PassiveItems" runat="server" />
+    <input type="hidden" id="SortItems" name="SortItems" class="SortItems" runat="server" />
+    <div class="Content">
+        <table class="GridWiew" cellpadding="5" cellspacing="0">
+            <thead>
+                <td class="Normal">Resim</td>
+                <td class="Normal">Ad Soyad</td>
+                <td class="Normal">Ünvan</td>
+                <td class="Normal">Yönetici Tipi</td>
+                <td class="Normal">Düzenleyen</td>
+                <td class="Normal">Geçmişin Oluşturulma Tarihi</td>
+                <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetDetail(reqLangID);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Yönetici Bulunamadı<br />
+                                    <br />
+                                    <a href='javascript:;' onclick="newPage(0,@reqLangID)">Yeni Yönetici Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Normal">Resim</td>
+                <td class="Normal">Ad Soyad</td>
+                <td class="Normal">Ünvan</td>
+                <td class="Normal">Yönetici Tipi</td>
+                <td class="Normal">Düzenleyen</td>
+                <td class="Normal">Geçmişin Oluşturulma Tarihi</td>
+                <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

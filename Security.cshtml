@@ -1,0 +1,199 @@
+﻿@{
+    Layout = "";
+}
+<style>
+    body {
+        background-color: #222;
+    }
+</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="PhillipCapital'de şimdi hesap aç. PhillipCapital'de Şimdi Hesap Açın. Bir Dünya Devi ile Çalışmanın Avantajlarından Faydalanın. Hesap Aç. Araştırma Raporları. ">
+    <meta name="keywords" content="BIST, VIOP, Yurtdışı hisse, Hesap Aç, Bireysel Portföy Yönetimi, Kurumsal Finansman, Hisse Senedi, Yatırım Önerileri">
+    <link rel="icon" type="image/x-icon" href="~/Content/favicon/favicon.ico" />
+    <link rel="icon" type="image/png" href="~/Content/favicon/favicon-16x16.png" sizes="16x16" />
+    <link rel="icon" type="image/png" href="~/Content/favicon/favicon-32x32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" type="image/png" href="~/Content/favicon/apple-touch-icon.png" sizes="180x180" />
+    <link rel="android-chrome-192x192" type="image/png" href="~/Content/favicon/android-chrome-192x192.png" sizes="192x192" />
+    <link rel="android-chrome-512x512" type="image/png" href="~/Content/favicon/android-chrome-512x512.png" sizes="512x512" />
+    <title>PhillipCapital | Şimdi Hesap Aç</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body style="background-color:#2c2c2c; color:white;">
+    <div class="container">
+        <main role="main" class="pb-3 mt-5">
+            <div id="verify-container">
+                <div class="text-left">
+                    <h2 class="display-4" style="font-size: 35px;font-style: italic; font-weight:bold; display:none;">
+                        PhillipCapital'de şimdi hesap aç. PhillipCapital'de Şimdi Hesap Açın. Bir Dünya Devi ile Çalışmanın Avantajlarından Faydalanın. Hesap Aç. Araştırma Raporları.
+                    </h2>
+                    <h5 class="display-4" style="font-size: 35px;font-style: italic; font-weight:bold;">
+                        www.phillipcapital.com.tr
+                    </h5>
+                    <h6 class="display-4" style="font-size: 20px;">
+                        Site bağlantısının güvenli olup olmadığı kontrol ediliyor
+                    </h6>
+                    <div class="refresh-button" id="redirect-msg" style="display:none;">
+                        <p>
+                            <h6 class="display-4" style="font-size: 20px;">
+                                Bağlantı başarılı yönlendiriliyorsunuz
+                            </h6>
+                        </p>
+                    </div>
+                    <form id="secure-form" class="mt-5">
+                        <div style="" class="cf-turnstile"
+                             refresh-expired="3000" data-appearance="interaction-only" data-sitekey="0x4AAAAAAASCbMKzaZt6ZHh4" data-callback="javascriptCallback"></div>
+                        <input class="cf-turnstile-response" id="cf-turnstile-response" name="cf-turnstile-response" type="hidden" />
+                    </form>
+                </div>
+            </div>
+        </main>
+        @* <div class="refresh-button">
+            <button class="btn btn-primary" onclick="resetTurnstile()">Yenile</button>
+            </div>
+            <div class="control-button">
+            <button class="btn btn-primary" onclick="readyCheck()">Kontrol</button>
+            </div> *@
+        <div id="verify-message">
+            <p>
+                <h6 class="display-4" style="font-size: 20px;">
+                    Bağlantıya ilerlemeden önce site bağlantısının güvenli olup olmadığı kontrol ediliyor
+                </h6>
+            </p>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+            crossorigin="anonymous"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Scripts/security/cflare.js" asp-append-version="true"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=turnstileLoad"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" defer></script>
+    <script>
+        $(document).ready(() => {
+            var checkCookie = checkCookieValidity("cfv");
+            if (checkCookie)
+                window.location.href = "/";
+        });
+
+        window.onloadTurnstileCallback = function () {
+            turnstile.render('#verify-container', {
+                sitekey: '0x4AAAAAAASO4bKbM1gXq5hB',
+                callback: function (token) {
+                    handleResponse(token);
+                },
+            });
+        };
+
+        function resetTurnstile() {
+            var widgetSelector = "#verify-container";
+            try {
+                console.log("Trying to reset Turnstile with widgetSelector =", widgetSelector);
+                if (widgetSelector && turnstile && typeof turnstile.reset === "function") {
+                    turnstile.reset(widgetSelector);
+                    console.log("Turnstile reset");
+                } else {
+                    console.log("Turnstile or reset function is undefined");
+                }
+            } catch (e) {
+                console.error("Error resetting Turnstile:", e);
+            }
+        }
+
+        function readyCheck() {
+            turnstile.ready(function () {
+                turnstile.render('#verify-container', {
+                    sitekey: '0x4AAAAAAASO4bKbM1gXq5hB',
+                    callback: function (token) {
+                        console.log(`token ${token}`);
+                    },
+                });
+            });
+        }
+
+
+        function handleResponse(tokenx) {
+            var widgetSelector = "#verify-container";
+            $.ajax({
+                url: `/WebServices/ClientServices.asmx/VerifyToken?token=${String(tokenx)}`,
+                type: 'POST',
+                contentType: 'application/x-www-form-urlencoded',
+                //dataType: 'json',
+                data: { token: String(tokenx) },
+                success: function (res) {
+                    var xmlResponse = new XMLSerializer().serializeToString(res);
+                    if (xmlResponse.includes("true")) {
+                        /* console.log("ttt", res);*/
+                        const d = new Date();
+                        var t = d.getTime() + (14 * 24 * 60 * 60 * 1000);
+                        d.setTime(t);
+                        let expires = "expires=" + d.toUTCString();
+                        document.cookie = `cfv=${true}; expires=${expires}`;
+                        turnstile.remove(widgetSelector);
+                        $("#redirect-msg").show();
+                        $("#verify-message").hide();
+                        setTimeout(() => {
+                            document.location.href = "/";
+                        }, 800)
+
+                    }
+                },
+                error: (err) => {
+                    console.log(err)
+                }
+            })
+        }
+
+        function checkCookieValidity(cname) {
+            var cookieValue = getCookie(cname);
+            if (cookieValue !== "") {
+                var cookieExpiration = new Date(getCookieExpiration(cname));
+                var currentDate = new Date();
+                if (cookieExpiration > currentDate) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                console.log("Çerez bulunamadı.");
+            }
+        }
+
+        function getCookie(cname) {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        function getCookieExpiration(cname) {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length).split('=')[1];
+                }
+            }
+            return "";
+        }
+    </script>
+</body>
+</html>

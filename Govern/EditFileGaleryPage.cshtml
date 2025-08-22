@@ -1,0 +1,53 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    if (!Request.QueryString["Delete"].IsEmpty())
+    {
+        string deleteName = Request.QueryString["Delete"];
+        string imgDir = "~/Files/Upload/" + deleteName;
+        if (System.IO.File.Exists(Server.MapPath(imgDir)))
+        {
+            System.IO.File.Delete(Server.MapPath(imgDir));
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            Response.Redirect("FileGaleryPage");
+        }
+        else
+        {
+            Session["Error"] = "Dosya bulunamadı!";
+            Response.Redirect("FileGaleryPage");
+        }
+    }
+    if (IsPost)
+    {
+        if (Request.Files.Count > 0)
+        {
+            var uploadedFile = Request.Files["fuImageUrl"];
+            if (uploadedFile.ContentLength > 0)
+            {
+                var fileSavePath = Server.MapPath("~/Files/Upload/" + uploadedFile.FileName);
+                uploadedFile.SaveAs(fileSavePath);
+                Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            }
+            else
+            {
+                Session["Error"] = "Dosya seçmediniz!";
+            }
+        }
+        Response.Redirect("FileGaleryPage");
+    }
+}
+<div class="Title">Yeni Dosya Ekle</div>
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @HelperAdminControl.fileUpload("fuImageUrl", "Dosya")
+                <div class="ButtonPanel">
+                    <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="Kaydet" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,101 @@
+﻿body { }
+/* Inner Page General */
+.inner-page { margin: 0 auto; padding: 40px 0; width: calc(100% - 20px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.inner-page > p { margin: 20px 0 0 0; }
+.inner-page .table { margin: 20px auto 0 auto; padding: 10px; width: 100%; height: 100%; border-collapse: collapse; border-radius: 10px;
+                     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.33); display: block; overflow-x: scroll; }
+.inner-page .table thead { margin: 0 auto; padding: 0; width: 100%; }
+.inner-page .table thead tr { margin: 0 auto; padding: 0; width: 100%; }
+.inner-page .table thead tr th,
+.inner-page .table thead tr td { margin: 0; padding: 0 10px; width: 100%; text-align: center; vertical-align: middle; }
+.inner-page .table tbody { margin: 0 auto; padding: 0; width: 100%; }
+.inner-page .table tbody tr { margin: 0 auto; padding: 0; width: 100%; }
+.inner-page .table tbody tr th,
+.inner-page .table tbody tr td { margin: 0; padding: 0 10px; width: 100%; text-align: center; vertical-align: middle; }
+.inner-page .table tbody tr th:last-child,
+.inner-page .table tbody tr td:last-child { min-width: 250px; color: #ced4da; }
+.inner-page .table tbody tr th:first-child,
+.inner-page .table tbody tr td:first-child { min-width: 50px; cursor: pointer; }
+.inner-page section { margin: 0; padding: 0 20px; width: 100%; }
+.inner-page .form-group { margin: 20px 10px; }
+/* Login Form */
+.inner-page #loginForm { max-width: 400px; }
+.inner-page #loginForm .user,
+.inner-page #loginForm .pass { position: relative; width: 100%; height: 36px; }
+.inner-page #loginForm .user input:first-child,
+.inner-page #loginForm .pass input:first-child { padding: 0 0 0 45px; height: 36px; }
+.inner-page #loginForm .user::before,
+.inner-page #loginForm .pass::before { position: absolute; top: 0; left: 0; width: 40px; height: 36px; background: #eee; color: #707070;
+    font-family: bootstrap-icons !important; font-style: normal; font-weight: normal !important; font-variant: normal; font-size: 21px; line-height: 1;
+    border: 1px solid #ced4da; border-radius: 0.25rem 0 0 0.25rem; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    display: flex; align-items: center; justify-content: center;
+}
+.inner-page #loginForm .user::before { content: '\f4da'; }
+.inner-page #loginForm .pass::before { content: '\f44e'; }
+.inner-page #loginForm .btn-login { position: relative; margin: 0 auto; padding: 5px 10px; width: 120px; border: 0; border-radius: 5px;
+                                    background: #f47f01; color: #fff; box-shadow: 0 0 3px #f47f01; display: block; }
+/* Dashboard */
+.inner-page .dashboard { position: relative; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.inner-page .dash-top { position: relative; margin: 0; padding: 0; width: 100%; }
+.inner-page ul.dash-list { position: relative; margin: 0; padding: 0 !important; width: 100%; height: 100%; list-style: none;
+                           display: flex; align-items: center; justify-content: center; }
+.inner-page ul.dash-list li { position: relative; margin: 0; border: 1px solid #ced4da; border-radius: 5px; box-shadow: 0 2px rgba(0, 0, 0, 0.16);
+                              display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.inner-page ul.dash-list li .lister { margin: 0; padding: 20px; width: 100%; height: 100%; text-decoration: none;
+                                      display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.inner-page ul.dash-list li .lister .counter { margin: 0; padding: 0; width: 100%; height: calc(100% - 40px); font-size: 24px;
+                                               display: flex; align-items: center; justify-content: center; }
+.inner-page ul.dash-list li .lister span { margin: 0; padding: 0; width: 100%; height: 40px; display: flex; align-items: center; justify-content: center; }
+.inner-page ul.dash-list li .lister:hover { box-shadow: 0 0 20px inset rgba(0, 0, 0, 0.33); }
+/* Button Styles */
+.lister, .creator, .informer, .editor, .deleter, .submitter { padding: 5px 12px; border: 1px solid #ced4da; border-radius: 5px; box-shadow: 0 0 0;
+                                                              background: #F47F01; color: #fff; text-decoration: none; cursor: pointer; }
+.lister:hover, .creator:hover, .informer:hover, .editor:hover, .deleter:hover, .submitter:hover { /* background: #efefef; */ color: #fff; }
+.lister:active, .creator:active, .informer:active, .editor:active, .deleter:active, .submitter:active { box-shadow: 0 0 5px inset rgba(0, 0, 0, 0.33); color: #fff; }
+.submitter { margin: 10px auto; min-width: 200px; display: block; }
+/* Info Display Styles (Get Methods) */
+.inner-page .inner-block { position: relative; width: 100%; display: flex; flex }
+.inner-page .inner-block .display { position: relative; width: 100%; height: calc(100% - 73.5px); overflow: scroll; }
+.inner-page .inner-block .display .display-group { position: relative; float: left; clear: none; margin: 5px 0; padding: 0 5px; width: 100%; height: 40px;
+                                                   border: 1px solid #ced4da; border-radius: 5px; display: flex; flex-direction: row; align-items: center;
+                                                   justify-content: start; }
+.inner-page .inner-block .display .display-group .display-label,
+.inner-page .inner-block .display .display-group .display-value { position: relative; padding: 10px; display: flex; align-items: center; justify-content: start; }
+.inner-page .inner-block .display .display-group .display-label { font-weight: bold; }
+.inner-page .inner-block .display .display-group .display-label::after { content: ":"; position: absolute; top: 50%; right: -4px; transform: translate(-50%, -50%); }
+.inner-page .inner-block .display .display-group .display-value { font-weight: normal; }
+.inner-page .inner-block .display-controls { margin: 0; padding: 10px; width: 100%; height: 42.5px; color: #ced4da; text-align: center; }
+/* Form Styles (Create Methods, Edit Methods) */
+.inner-page h2 { margin: 0; }
+.inner-page form { position: relative; width: 100%; height: calc(100% - 30px);  }
+.inner-page form .form-horizontal { position: relative; margin: 0 auto 20px auto; width: 100%; max-width: 400px; display: flex; flex-direction: column;
+                                    align-items: center; justify-content: center; }
+.inner-page form .form-horizontal hr { position: relative; width: 100%; display: block; }
+.inner-page form .form-horizontal .form-group { position: relative; margin: 5px 0; padding: 0 5px; width: 100%; min-height: 40px;
+                                                border: 1px solid #ced4da; border-radius: 5px; display: block; }
+.inner-page form .form-horizontal .form-group label { float: left; margin: 5px; height: 30px; display: flex; align-items: center; justify-content: center; }
+.inner-page form .form-horizontal .form-group input { float: right; margin: 5px 0; width: 200px; display: flex; align-items: center; justify-content: center; }
+.inner-page form .form-horizontal .form-group select { float: right; margin: 5px 0; width: 200px; height: 30px; display: flex; align-items: center; justify-content: center; }
+.inner-page form .form-horizontal .form-group .checkbox { float: right; width: 120px; height: 40px; display: flex; align-items: center; justify-content: center; }
+.inner-page form .form-horizontal .form-group .bottom-link { margin: 20px 0 0 0; }
+/* Popup Styles (Delete Methods) */
+@media (orientation: portrait) {
+    /* Dashboard */
+    .inner-page .dash-top { position: relative; margin: 0; padding: 0; width: 100%; height: 400px; }
+    .inner-page ul.dash-list { flex-direction: column; }
+    .inner-page ul.dash-list li { margin-bottom: 10px; width: 100%; height: calc((100% / 3) - 10px); }
+    .inner-page ul.dash-list li:last-child { margin-bottom: 0; }
+}
+@media (orientation: landscape) {
+    /* Dashboard */
+    .inner-page .dash-top { position: relative; margin: 0; padding: 0; width: 100%; height: 200px; }
+    .inner-page ul.dash-list { flex-direction: row; }
+    .inner-page ul.dash-list li { margin-right: 10px; width: calc((100% / 3) - 10px); height: 200px;  }
+    .inner-page ul.dash-list li:last-child { margin-right: 0; }
+}
+@media (min-width: 280px) {
+    .inner-page { padding: 20px 0; }
+}
+@media (min-width: 970px) {
+    .inner-page { padding: 40px 0; }
+}

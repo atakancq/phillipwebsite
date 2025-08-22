@@ -1,0 +1,154 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Form getFormView = ConnXml.Form.FirstOrDefault();
+    int reqFormID = 0;
+    string strList = "";
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        FormMailRelation FMailRe = ConnXml.FormMailRelation.FirstOrDefault(x => x.FormMailRelationID == reqID);
+        ConnXml.Entry(FMailRe).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("FormMailRelation");
+    }
+    if (Request.QueryString["ID"] == null)
+    {
+        reqFormID = getFormView.FormID;
+        Response.Redirect("FormMailRelation?ID=" + reqFormID);
+    }
+    else
+    {
+        reqFormID = Request.QueryString["ID"].AsInt();
+        strList = GetDetail(reqFormID);
+    }
+    if (IsPost)
+    {
+        if (!Request.Form["btnSave"].IsEmpty())
+        {
+            var getSelectValue = Request.Form["drpMailGroupID"];
+            FormMailRelation FormMailRelation = new FormMailRelation();
+            FormMailRelation.MailGroupID = int.Parse(getSelectValue);
+            FormMailRelation.FormID = reqFormID;
+            ConnXml.FormMailRelation.Add(FormMailRelation);
+            int ConnStatus = 0;
+            ConnStatus = ConnXml.SaveChanges();
+            if (ConnStatus > 0)
+            {
+                Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            }
+            else
+            {
+                Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+            }
+            Response.Redirect("FormMailRelation");
+        }
+    }
+}
+@functions
+{
+    public string GetDetail(int reqFormID)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (FormMailRelation itemPages in ConnXml.FormMailRelation.Where(x => x.FormID == reqFormID))
+        {
+            MailGroup getMailGroup = ConnXml.MailGroup.FirstOrDefault(x => x.MailGroupID == itemPages.MailGroupID);
+            str += "<tr thisVal='" + itemPages.MailGroupID + "'>";
+            str += "<td class='Big'>" + getMailGroup.MailGroupName + "</td>";
+            str += "<td class='Normal'>" + ConnXml.MailAccount.Where(x => x.MailGroupID == itemPages.MailGroupID).Count() + " - <a href='MailAccount?ID=" + itemPages.MailGroupID + "'>Kullanıcıları gör</a></td>";
+            str += "<td class='Normal'><a onclick='return confirmDelete();' href='FormMailRelation?Delete=" + itemPages.FormMailRelationID + "'>Kaldır</a></td>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<script type="text/javascript">
+    <!-- 
+    function newPage(num) {
+        var url = new Array();
+        url[0] = "EditNewsPage";
+        window.location = url[num];
+    }
+    // -->
+    $(document).ready(function e() {
+        $(".MainRight .Page .Content .ButtonPanel #drpLang").change(function () {
+            window.location.href = "FormMailRelation?ID=" + $(this).val();
+        });
+    });
+</script>
+<div class="Title">Form mail bağlantıları</div>
+<div class="Content">
+    <div class="ButtonPanel">
+        @{
+            List<SelectListItem> lstModule = new List<SelectListItem>();
+            lstModule.AddRange(ConnXml.Form.ToList().Select(x => new SelectListItem { Value = x.FormID.ToString(), Text = x.FormName, Selected = (x.FormID == reqFormID ? true : false) }));
+            IEnumerable<SelectListItem> drpModuleItem = lstModule;
+            @Html.ListBox("drpLang", drpModuleItem, new { @class = "inputdrp" })
+        }
+    </div>
+    <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+        <thead>
+            <td class="Big">Grup Adı</td>
+            <td class="Normal">Kullanıcı sayısı</td>
+            <td class="Normal"></td>
+        </thead>
+        <tbody>
+            @{
+                if (!strList.IsEmpty())
+                {
+                    @Html.Raw(strList);
+                }
+                else
+                {
+                    <tr>
+                        <td class='Big' colspan='15'>
+                            <div class='NoneItemPage'>
+                                Form Mail Bağlantısı Bulunamadı
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+        <tfoot>
+            <td class="Big">Grup Adı</td>
+            <td class="Normal">Kullanıcı sayısı</td>
+            <td class="Normal"></td>
+        </tfoot>
+    </table>
+    @{
+        if (strList.IsEmpty())
+        {
+        <form method="post">
+            <div id="AddPanel" runat="server">
+                <div class="Title">Yeni Grup Ekle</div>
+                <div class="Content">
+                    <div class="Item">
+                        @{
+                            List<SelectListItem> lstMailGroup = new List<SelectListItem>();
+                            lstMailGroup.AddRange(ConnXml.MailGroup.ToList().Select(x => new SelectListItem { Value = x.MailGroupID.ToString(), Text = x.MailGroupName }));
+                            IEnumerable<SelectListItem> drpMailGroup = lstMailGroup;
+                            @HelperAdminControl.DropDownList("drpMailGroupID", "Mail grubu", drpMailGroup)
+                            <div class="ButtonPanel">
+                                <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="Kaydet" />
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </form>
+        }
+    }
+</div>

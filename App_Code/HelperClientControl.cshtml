@@ -1,0 +1,309 @@
+﻿@using IValidator = System.Web.WebPages.IValidator;
+@using ValidationHelper = System.Web.WebPages.ValidationHelper;
+@functions {
+    public static ValidationHelper req;
+}
+@helper inputText(string inputID, string inputName, bool Multiline, bool Required, string CustomReq, string cssClass)
+{
+    if (Required)
+    {
+        WebPage page = CurrentPage as WebPage;
+        page.Validation.RequireField(inputID, inputName);
+        if (CustomReq == "Email")
+        {
+            page.Validation.Add(inputID, Validator.Regex(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$", ""));
+        }
+        req = page.Validation;
+    }
+    if (!Multiline)
+    {
+        <div class="label">
+            <label for="@inputID">@inputName</label>
+        </div>
+        <div class="@cssClass">
+            <input name="@inputID" id="@inputID" type="text" @if (Required) { @req.For(inputID) } autocomplete="off" />
+        </div>
+    }
+    else
+    {
+        <div class="label">
+            <label for="@inputID">@inputName</label>
+        </div>
+        <div class="Area">
+            <textarea class="@cssClass" id="@inputID" name="@inputID" @if (Required) { @req.For(inputID) }></textarea>
+            @Html.ValidationMessage(inputID)
+
+        </div>
+    }
+}
+@helper inputTextWithoutLabelWrapper(string inputID, string inputName, bool Multiline, bool Required, string CustomReq, string cssClass)
+{
+    if (Required)
+    {
+        WebPage page = CurrentPage as WebPage;
+        page.Validation.RequireField(inputID, inputName);
+        if (CustomReq == "Email")
+        {
+            page.Validation.Add(inputID, Validator.Regex(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$",
+            ""));
+        }
+        req = page.Validation;
+    }
+    if (!Multiline)
+    {
+        <input name="@inputID" id="@inputID" type="text" @if (Required) { @req.For(inputID) } autocomplete="off" placeholder="@inputName" class="@cssClass" />
+    }
+    else
+    {
+        <div class="Area">
+            <textarea class="@cssClass" id="@inputID" name="@inputID" @if (Required) { @req.For(inputID) }></textarea>
+            @Html.ValidationMessage(inputID)
+        </div>
+    }
+}
+@helper inputTextedit(string inputID, string inputName, bool Multiline, bool Required, string cssClass, string DivClass)
+{
+
+    if (Required)
+    {
+        WebPage page = CurrentPage as WebPage;
+        page.Validation.RequireField(inputID, inputName);
+        if (cssClass.Contains("Email"))
+        {
+            page.Validation.Add(inputID, Validator.Regex(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$", ""));
+        }
+        else if ((cssClass.Contains("Phone")))
+        {
+            page.Validation.Add(inputID, Validator.Regex(@"^(0\s*[-\/\.]?)?(\((\d{3})\)|(\d{3}))\s*[-\/\.]?\s*(\d{3})\s*[-\/\.]?\s*(\d{4})\s*(([xX]|[eE][xX][tT])\.?\s*(\d+))*$", "<img src='images/Validate.png' style='margin-top: 7px;' />"));
+        }
+        else if ((cssClass.Contains("Captcha")))
+        {
+            page.Validation.Add(inputID,
+            Validator.EqualsTo("hfCaptcha", "<img src='images/Validate.png' style='margin-top: 7px;' />"));
+        }
+        req = page.Validation;
+    }
+    if (!Multiline)
+    {
+        <div class="@DivClass">
+            <input type="text" class="@cssClass" id="@inputID" name="@inputID" placeholder="@inputName" @if (Required) { @req.For(inputID) }>
+        </div>
+    }
+    else
+    {
+        <div class="@DivClass">
+            <textarea class="@cssClass" id="@inputID" rows="4" name="@inputID" placeholder="@inputName" @if (Required) { @req.For(inputID) }></textarea>
+        </div>
+    }
+}
+@helper inputTextedit(string inputID, string inputName, bool Multiline, bool Required, string cssClass, string DivClass, string Value)
+{
+    if (Required)
+    {
+        WebPage page = CurrentPage as WebPage;
+        page.Validation.RequireField(inputID, inputName);
+        if (cssClass.Contains("Email"))
+        {
+            page.Validation.Add(inputID, Validator.Regex(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$",
+            "<img src='images/Validate.png' style='margin-top: 7px;' />"));
+        }
+        else if ((cssClass.Contains("Phone")))
+        {
+            page.Validation.Add(inputID, Validator.Regex(@"^(0\s*[-\/\.]?)?(\((\d{3})\)|(\d{3}))\s*[-\/\.]?\s*(\d{3})\s*[-\/\.]?\s*(\d{4})\s*(([xX]|[eE][xX][tT])\.?\s*(\d+))*$",
+             "<img src='images/Validate.png' style='margin-top: 7px;' />"));
+        }
+        else if ((cssClass.Contains("Captcha")))
+        {
+            page.Validation.Add(inputID,
+            Validator.EqualsTo("hfCaptcha", "<img src='images/Validate.png' style='margin-top: 7px;' />"));
+        }
+        req = page.Validation;
+    }
+    if (!Multiline)
+    {
+        <div class="@DivClass">
+            <input type="text" class="@cssClass" id="@inputID" value="@Value" name="@inputID" placeholder="@inputName" @if (Required) { @req.For(inputID) }>
+        </div>
+    }
+    else
+    {
+        <div class="@DivClass">
+            <textarea class="@cssClass" id="@inputID" name="@inputID" placeholder="@inputName" @if (Required) { @req.For(inputID) }>@Value</textarea>
+        </div>
+    }
+}
+@helper DropDownList(string drpID, string inputName, IEnumerable<SelectListItem> drpItems, string drpClass, string divClass)
+{
+    <div class="label">
+        <label for="drpPersonType">@inputName</label>
+    </div>
+    <div class="@divClass">
+        @Html.ListBox(drpID, drpItems, new { @class = drpClass })
+    </div>
+}
+@helper DropDownList(string drpID, string inputName, IEnumerable<SelectListItem> drpItems, string drpClass, string divClass, bool Required)
+{
+    <div class="label">
+        <label for="drpPersonType">@inputName</label>
+    </div>
+    <div class="@divClass">
+        @Html.ListBox(drpID, drpItems, new { @class = drpClass, @Required })
+    </div>
+}
+@helper DropDownListOnchange(string drpID, IEnumerable<SelectListItem> drpItems, string drpClass, string divClass)
+{
+    <div class="@divClass">
+        <span class="select"></span>
+        @Html.ListBox(drpID, drpItems, new { @class = "form-control valid", @onchange = "submit();" })
+    </div>
+}
+@helper DropDownList(string drpID, IEnumerable<SelectListItem> drpItems, bool Required)
+{
+    WebPage page = CurrentPage as WebPage;
+    if (Required)
+    {
+        page.Validation.RequireField(drpID, "*");
+        page.Validation.Add(drpID, Validator.Regex(@"^(?=.*[1-9])(?:[1-9]\d*\.?|0?\.)\d*$", drpItems.FirstOrDefault().Text));
+        req = page.Validation;
+    }
+    @*@page.Html.ValidationMessage(drpID,"Error");
+        @Html.ListBox(drpID, drpItems, new { @class = "inputdrp" })*@
+    <span class="select">@drpItems.FirstOrDefault().Text</span>
+    @Html.ListBox(drpID, drpItems, new { @class = "form-control valid" })
+}
+@helper DropDownListNotNumaric(string drpID, IEnumerable<SelectListItem> drpItems, bool Required)
+{
+    WebPage page = CurrentPage as WebPage;
+    if (Required)
+    {
+        page.Validation.RequireField(drpID, "*");
+        page.Validation.Add(drpID, Validator.Regex(@"(?!^\d+$)^.+$", "*"));
+        req = page.Validation;
+    }
+    @*@page.Html.ValidationMessage(drpID, "Error");*@
+    <span class="select">@drpItems.FirstOrDefault().Text</span>
+    @Html.ListBox(drpID, drpItems, new { @class = "inputdrp" })
+}
+@helper FileUpload(string FileUploadID, string inputName, string cssClass)
+{
+    <div class="label">
+        <label for="@FileUploadID">@inputName</label>
+    </div>
+    <div class="@cssClass">
+        <input type="file" id="@FileUploadID" name="@FileUploadID">
+    </div>
+}
+@helper maps(string mapDivID, string enlem, string boylam, string subeadi, string adres, string telefon)
+{
+    <script type="text/javascript">
+        function LoadMap() {
+            var locations = new Array([@enlem, @boylam]);
+            var x = 0;
+            var y = 0;
+            var xcont = 0;
+            for (var i = 0; i < locations.length; i++) {
+                x += locations[i][0];
+                y += locations[i][1];
+                xcont++;
+            }
+            x = x / xcont;
+            y = y / xcont;
+            //
+            var markers = new Array();
+            //
+            var mapOptions = {
+                center: new google.maps.LatLng(x, y),
+                zoom: 16,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                scrollwheel: false
+            };
+            //
+            var map = new google.maps.Map(document.getElementById('@mapDivID'), mapOptions);
+            //google.maps.event.addListener(map, "click", function (e) {
+            //    marker = new google.maps.Marker({ position: e.latLng, map: map });
+            //    var latLng = e.latLng;
+            //    alert(latLng);
+            //});
+            var detailcont = 0;
+            $.each(locations, function (index, location) {
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(location[0], location[1]),
+                    map: map,
+                    icon: 'Images/mapicon.png'
+                });
+                var myOptions = {
+                    content: '<div class="Mapzemin"><div class="MapHead">@subeadi</div><div class="MapContent"><span class="first">@adres</span><span class="second">@telefon</span></div></div>',
+                    disableAutoPan: false,
+                    maxWidth: 0,
+                    pixelOffset: new google.maps.Size(-50, -180),
+                    zIndex: null,
+                    closeBoxURL: "",
+                    infoBoxClearance: new google.maps.Size(1, 1),
+                    position: new google.maps.LatLng(location[0], location[1]),
+                    isHidden: false,
+                    pane: "floatPane",
+                    enableEventPropagation: false
+                };
+                marker.infobox = new InfoBox(myOptions);
+                marker.infobox.isOpen = false;
+                detailcont
+                var myOptions = {
+                    draggable: true,
+                    content: '<div class="marker"><div class="marker-inner"></div></div>',
+                    disableAutoPan: true,
+                    pixelOffset: new google.maps.Size(-21, -58),
+                    position: new google.maps.LatLng(location[0], location[1]),
+                    closeBoxURL: "",
+                    isHidden: false,
+                    // pane: "mapPane",
+                    enableEventPropagation: true
+                };
+                marker.marker = new InfoBox(myOptions);
+                marker.marker.open(map, marker);
+                markers.push(marker);
+                google.maps.event.addListener(marker, "click", function (e) {
+                    var curMarker = this;
+                    $.each(markers, function (index, marker) {
+                        // if marker is not the clicked marker, close the marker
+                        if (marker !== curMarker) {
+                            marker.infobox.close();
+                            marker.infobox.isOpen = false;
+                        }
+                    });
+                    if (curMarker.infobox.isOpen === false) {
+                        curMarker.infobox.open(map, this);
+                        curMarker.infobox.isOpen = true;
+                        map.panTo(curMarker.getPosition());
+                    } else {
+                        curMarker.infobox.close();
+                        curMarker.infobox.isOpen = false;
+                    }
+                });
+            });
+        }
+    </script>
+}
+@helper CheckBox(string drpID, string inputName, bool Required, string url)
+{
+    WebPage page = CurrentPage as WebPage;
+    if (Required)
+    {
+        page.Validation.RequireField(drpID, "*");
+        req = page.Validation;
+    }
+    <div class="label-chk-wrapper">
+        @{
+            if (Required)
+            {
+                @Html.CheckBox(drpID, new { @class = "inputdrp", @value = "ok", @Required })
+            }
+            else
+            {
+                @Html.CheckBox(drpID, new { @class = "inputdrp", @value = "ok" })
+            }
+        }
+        @*<label for="@drpID">@Html.Raw(inputName)</label>*@
+        <a target="_blank" href="@url">@Html.Raw(inputName)</a>
+    </div>
+    @Html.ValidationMessage(drpID);
+}

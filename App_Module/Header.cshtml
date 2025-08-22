@@ -1,0 +1,254 @@
+﻿@{
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        int getLang = Shared.GetLang();
+        System.Globalization.CultureInfo cultureinfo =
+        new System.Globalization.CultureInfo(getLang.toLangCulture());
+        string strHeaderMenu = "<a href='/{0}' target='{1}'>{2}</a>";
+        string strHeaderHasSubMenu = "<a href='{0}' target='{1}'><span>{2}</span></a>";
+        System.Text.StringBuilder sbHeaderMenu = new System.Text.StringBuilder();
+        var getPageList = ConnXml.Pages.Where(x => (x.Status) && (x.Lang == getLang) && (x.ParentID == 0) && (x.ShowHeaderMenu == true)).OrderBy(x => x.Line).Select(x => new
+        {
+            x.PageID,
+            x.ParentID,
+            x.RawUrl,
+            x.Target,
+            x.DisplayName,
+            x.Line,
+            x.ShowHeaderMenu
+        });
+        foreach (var itemPages in getPageList.OrderBy(x => x.Line))
+        {
+            sbHeaderMenu.Append("<li>");
+            var itemSubMenu = ConnXml.Pages.Where(x => (x.ParentID == itemPages.PageID) && (x.ShowHeaderMenu == true) && (x.Status)).OrderBy(x=> x.Line).Select(x => new
+            {
+                x.PageID,
+                x.ParentID,
+                x.RawUrl,
+                x.Target,
+                x.DisplayName,
+                x.Line,
+                x.ShowHeaderMenu
+            });
+            if (itemSubMenu.Count() > 0)
+            {
+                sbHeaderMenu.AppendFormat(strHeaderHasSubMenu, "javascript:;"/*itemPages.RawUrl*/, itemPages.Target, itemPages.DisplayName);
+                sbHeaderMenu.Append("<ul class='nav-sublist dropdown-menu navbar-collapse'>");
+                foreach (var item in itemSubMenu)
+                {
+                    sbHeaderMenu.Append("<li>");
+                    var itemSubMSubenu = ConnXml.Pages.Where(x => (x.ParentID == item.PageID) && (x.ShowHeaderMenu == true) && (x.Status)).OrderBy(x => x.Line).Select(x => new
+                    {
+                        x.PageID,
+                        x.ParentID,
+                        x.RawUrl,
+                        x.Target,
+                        x.DisplayName,
+                        x.Line,
+                        x.ShowHeaderMenu
+                    });
+                    if (itemSubMSubenu.Count() > 0)
+                    {
+                        sbHeaderMenu.AppendFormat(strHeaderHasSubMenu, item.RawUrl, item.Target, item.DisplayName);
+                        sbHeaderMenu.Append("<ul class='nav-sublist dropdown-menu navbar-collapse'>");
+                        foreach (var itemSub in itemSubMSubenu)
+                        {
+                            sbHeaderMenu.Append("<li>");
+                            sbHeaderMenu.AppendFormat(strHeaderMenu, itemSub.RawUrl, itemSub.Target, itemSub.DisplayName);
+                            sbHeaderMenu.Append("</li>");
+                        }
+                        sbHeaderMenu.Append("</ul>");
+                    }
+                    else
+                    {
+                        sbHeaderMenu.AppendFormat(strHeaderMenu, item.RawUrl, item.Target, item.DisplayName);
+                    }
+                    sbHeaderMenu.Append("</li>");
+                }
+                sbHeaderMenu.Append("</ul>");
+            }
+            else
+            {
+                sbHeaderMenu.AppendFormat(strHeaderMenu, itemPages.RawUrl, itemPages.Target, itemPages.DisplayName);
+            }
+            sbHeaderMenu.Append("</li>");
+        }
+        <div class="header">
+            <div class="nav-logo"> 
+                <a href="/@getLang.toLangHome()"></a>
+            </div>
+            <div class="nav-bar">
+                <ul class="nav-list">
+                    @Html.Raw(sbHeaderMenu.ToString())
+                </ul>
+            </div>
+            <div class="nav-right">
+                <div class="nav-sites">
+                    <a href="https://www.phillipportfoy.com.tr/" target="_blank">Portf&#246;y</a>
+                    <a href="https://www.phillipsigorta.com.tr/" target="_blank">Sigorta</a>
+                </div>
+                <div class="nav-actions">
+                    @*
+                        <div class="language-selector">
+                            <div class="language-selected">@getLang.toLangHome()</div>
+                            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32">
+                                <path class="chevron-color" d="M27.36 8.064L16 19.424 4.64 8.064 2.4 10.336l13.6 13.6 13.6-13.6-2.24-2.272z" fill="#012060" />
+                            </svg>
+                            <ul class="language">
+                                @{
+                                    for (int i = 0; i < Shared.Lang.Length; i++)
+                                    {
+                                        string strStyle = getLang == i ? "style='font-weight:bold'" : "";
+                                        <li><a href="@i.toLangHome()" @Html.Raw(strStyle)>@i.toLangHome()</a></li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    *@
+                    <script type="text/javascript">
+                        // Hide on outside click
+                        $(document).on("click touchend", function (e) {
+                            var elem;
+                            if (e.type == "touch") {
+                                elem = e.touches[0].target;
+                            } else {
+                                elem = $(e.target).parent();
+                            }
+                            if (elem.hasClass("language") == false && elem.hasClass("language-selector") == false) {
+                                $(".language").removeClass("active");
+                            }
+                        });
+                        // When selector clicked
+                        $(".language-selector").on("click", function () {
+                            $(this).find(".language").addClass("active");
+                        });
+                        // When selected
+                        $(".language li").on("click", function () {
+                            var selected = $(this).find("a").text() || "";
+                            $(".language-selected").text(selected);
+                            $(".language").removeClass("active");
+                        });
+                    </script>
+                    <a class="search" href="@Shared.GetTranslation(98)"> <i class="glyphicon-search"></i> </a>
+                    <a class="phone" href="tel:+902129822500"> <i class="glyphicon-phone"></i> </a> 
+                </div>
+                @* Nav Buttons *@
+            <div class="header-button-orange"> 
+                <a class="btn back orange" href="https://sube.phillip.com.tr" target="_blank">
+                    <span>İnternet Şubesi</span>
+                </a>
+                <a class="btn back orange" href="https://mobilg.phillip.com.tr/" target="_blank">
+                    <span>MobilG+</span>
+                </a> 
+            </div>
+            <div class="header-button-navies">
+                <a class="btn back navy" href="/banka-hesap-numaralari#accordion0">
+                    <span>Banka Hesap Bilgileri</span>
+                </a>
+                <a class="btn back navy" href="/hesap-ac">
+                    <span>@Shared.GetTranslation(105)</span>
+                </a>
+            </div>
+                @* Nav Toggler *@
+                <div class="nav-toggler" title="Toggle Navigation">
+                    <div class="btn">
+                        <i class="bi bi-list"></i>
+                    </div>
+                </div>
+                @* Nav Mobile *@
+                <div class="nav-mobile">
+                    @* Nav Mobile Top *@
+                    <div class="nav-top">
+                        <div class="nav-logo">
+                            <a href="@getLang.toLangHome()"></a>
+                        </div>
+                    </div>
+                    @* Nav Mobile Bar *@
+                    <div class="nav-bar">
+                        <ul class="nav-list">
+                            @Html.Raw(sbHeaderMenu.ToString().Replace("dropdown-menu navbar-collapse", ""))
+                        </ul>
+                    </div>
+                    @* Nav Mobile Sites *@
+                    <div class="nav-sites">
+                        <a href="https://www.phillipportfoy.com.tr/" target="_blank">@Shared.GetTranslation(140)</a>
+                        <a href="https://www.phillipsigorta.com.tr/" target="_blank">@Shared.GetTranslation(139)</a>
+                    </div>
+                    @* Nav Mobile Buttons *@
+                <div class="nav-buttons">
+                    <a class="btn back orange" href="https://sube.phillip.com.tr" target="_blank">
+                        <span>@Shared.GetTranslation(138)</span>
+                    </a>
+                    <a class="btn back orange" href="https://mobilg.phillip.com.tr/" target="_blank">
+                        <span>MobilG+</span>
+                    </a>
+                    <a class="btn back navy" href="/banka-hesap-numaralari#accordion0" target="_blank">
+                        <span>Banka Hesap Bilgileri</span>
+                    </a>
+                    <a class="btn back navy" href="/hesap-ac" target="_blank">
+                        <span>@Shared.GetTranslation(105)</span>
+                    </a> 
+                </div>
+                </div>
+            </div>
+            <script type="text/javascript">
+                (function () {
+                    /* Navigation Panel Close On Outside Clicks - Berker Yüceer - 19.02.2021 */
+                    $(document).click(function (e) {
+                        // Navigation Panel Close
+                        if (!$(e.target).hasClass('navbar-collapse')) {
+                            $('.navbar-collapse').removeClass('in');
+                        }
+                        // Theme Panel Close
+                        if (!$(e.target).hasClass('theme-b')) {
+                            $('.theme-d').removeClass('in');
+                        }
+                        // Mobile Panel Close
+                        if ($('.nav-toggler').hasClass('active')) {
+                            if ($(".nav-mobile").html().indexOf($(e.target).html()) == -1) {
+                                $('.nav-toggler').removeClass('active');
+                            }
+                        }
+                    });
+                    // Mobile Navigation Menu Clicks
+                    var toggler = $('.nav-toggler')[0];
+                    setClickEvent(toggler, function (obj) {
+                        if ($(obj).hasClass('active')) {
+                            $(obj).removeClass('active');
+                        } else {
+                            $(obj).addClass('active');
+                        }
+                    });
+                    // Mobile Navigation Sub Menu Clicks
+                    $('.nav-list li a').each(function () {
+                        setClickEvent(this, function (obj) {
+                            // Status Active?
+                            if ($(obj).hasClass('active')) {
+                                // Clear Active status
+                                $(obj).removeClass('active');
+                            } else {
+                                // Also claer Active status on siblings
+                                $(obj).parent().siblings().each(function () {
+                                    $(this).find('a').removeClass('active');
+                                });
+                                // Make this Active
+                                $(obj).addClass('active');
+                            }
+                        });
+                    });
+                })();
+            </script>
+        </div>
+
+
+        <div id="dailog-content" style="max-width:400px;display:none;">
+            <p>
+                Türkiye Sermaye Piyasaları Birliği’nin
+                Dolandırıcılık Olaylarına Yönelik Güvenlik Uyarısı ve
+                İzinsiz Sermaye Piyasası Faaliyetlerine İlişkin Bilgilendirme Metnine <a href="~/content/tsbp.pdf">tıklayarak</a> ulaşabilirsiniz.
+            </p>
+        </div>
+        <a id="fancyTrigger"  href="#dailog-content"></a>
+
+    }
+}

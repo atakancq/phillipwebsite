@@ -1,0 +1,65 @@
+﻿@{
+
+
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+
+        var start = new DateTime(2023, 12, 8, 23, 54, 0);
+        var end = new DateTime(2023, 12, 11, 0, 0, 0);
+
+
+        //var list = ConnXml.AskYourStockForm.Where(x => x.AddDate > start && x.AddDate < end).ToList();
+        //var a = list.Count();
+        //foreach (var item in list)
+        //{
+
+        //    Response.Write(item.AskYourStockFormID + " " + item.NameSurname + "<br> ");
+
+        //    string html = string.Empty;
+        //    string url = @"https://crmv3.phc.com.tr/api2/get_data?adsoyad=" + HttpUtility.UrlEncode(item.NameSurname) + "&epostaadresi=" + HttpUtility.UrlEncode(item.Email) + "&telefon=" + HttpUtility.UrlEncode(item.Phone) + "&kaynak=hisse_sor&leadtype=1";
+
+        //    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+        //    request.AutomaticDecompression = DecompressionMethods.GZip;
+
+        //    using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+        //    {
+        //        using (Stream stream = response.GetResponseStream())
+        //        {
+        //            using (StreamReader reader = new StreamReader(stream))
+        //            {
+        //                html = reader.ReadToEnd();
+        //            }
+        //        }
+        //    }
+        //}
+
+
+
+        var list = ConnXml.AccountForm.Where(x => x.AddDate > start && x.AddDate < end).ToList();
+        var a = list.Count();
+
+        foreach (var item in list)
+        {
+            Response.Write(item.AccountFormID + " " + item.NameSurname + "<br> ");
+
+            //string html = string.Empty;
+            //string url = @"https://crmv3.phc.com.tr/api2/get_data?adsoyad=" + HttpUtility.UrlEncode(item.NameSurname) + "&epostaadresi=" + HttpUtility.UrlEncode(item.Email) + "&telefon=" + HttpUtility.UrlEncode(item.Phone) + "&kaynak=Direct&alt_kaynak=%2Fhesap-ac%2F&leadtype=1&leaddagitim=hisse";
+
+            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            //request.AutomaticDecompression = DecompressionMethods.GZip;
+
+            //using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            //{
+            //    using (Stream stream = response.GetResponseStream())
+            //    {
+            //        using (StreamReader reader = new StreamReader(stream))
+            //        {
+            //            html = reader.ReadToEnd();
+            //        }
+            //    }
+            //}
+        }
+
+    }
+
+}

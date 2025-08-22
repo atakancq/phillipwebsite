@@ -1,0 +1,120 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    if (IsPost)
+    {
+        if (!Request.Form["drpLang"].IsEmpty())
+        {
+            reqLangID = Request.Form["drpLang"].AsInt();
+        }
+    }  
+}
+@functions
+{
+    public string GetDetail(int getLangID)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        IQueryable<OfficialAnnouncementCategory> IqOfficialAnnouncementCategory = ConnXml.OfficialAnnouncementCategory;
+        foreach (OfficialAnnouncement itemPages in ConnXml.OfficialAnnouncement.Where(x => x.Lang == getLangID).OrderByDescending(x => x.Date))
+        {
+            str += "<tr thisVal=" + itemPages.OfficialAnnouncementID + " " + (itemPages.Status == false ? "class='Yellow sssicon' title='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            str += "<td class></td>";
+            str += "<td class='Normal'>" + itemPages.Title + "</td>";
+            OfficialAnnouncementCategory itemRelease = IqOfficialAnnouncementCategory.FirstOrDefault(x => x.OfficialAnnouncementCategoryID == itemPages.OfficialAnnouncementCategoryID);
+            if (itemRelease != null)
+            {
+                str += "<td class='Normal'>" + itemRelease.Title + "</td>";
+            }
+            else
+            {
+                str += "<td class='Normal'>--------</td>";
+            }
+            if (!itemPages.ImageUrl.IsEmpty())
+            {
+                string imgDir = "~/" + Setting.Documentdir + "/OfficialAnnouncement/" + itemPages.ImageUrl;
+                if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                {
+                    str += "<td ><a href='" + imgDir.Replace("~/", "../") + "' target='_blank'>Mevcut Dosya</a></td>";
+                }
+                else str += "<td ></td>";
+            } else str += "<td ></td>";
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditOfficialAnnouncementPage?ID=" + itemPages.OfficialAnnouncementID + "&Lang=" + getLangID + "'>Düzenle</a>";
+            str += "<a class='Red' onclick='return confirmDelete();' href='EditOfficialAnnouncementPage?Delete=" + itemPages.OfficialAnnouncementID + "&Lang=" + getLangID + "'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<script type="text/javascript">
+    <!-- 
+    function newPage(num, reqLangID) {
+        var url = new Array();
+        url[0] = "EditOfficialAnnouncementPage?Lang=" + reqLangID;
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Resmi Duyurular</div>
+<form method="post">
+    <div class="Content">
+        <div class="ButtonPanel">
+            @{
+                List<SelectListItem> lstLang = new List<SelectListItem>();
+                for (int i = 0; i < Shared.Lang.Length; i++)
+                {
+                    lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                }
+                lstLang.FirstOrDefault(x => x.Value == reqLangID.ToString()).Selected = true;
+                IEnumerable<SelectListItem> drplstLangs = lstLang;
+            }
+            @Html.ListBox("drpLang", drplstLangs, new { @class = "inputdrp", @onchange = "submit();" })
+            <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0,@reqLangID)" value="Yeni Duyuru Ekle" />
+        </div>
+        <table class="GridWiew" cellpadding="5" cellspacing="0">
+            <thead>
+                <td class="Min"></td>
+                <td class="Normal">Duyuru Adı</td>
+                <td class="Normal">Kategori</td>
+                <td class="Normal">Dosya</td>
+                <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetDetail(reqLangID);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Duyuru Bulunamadı<br />
+                                    <br />
+                                    <a onclick="newPage(0,@reqLangID)">Yeni Duyuru Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Min"></td>
+                <td class="Normal">Duyuru Adı</td>
+                <td class="Normal">Kategori</td>
+                <td class="Normal">Dosya</td>
+                <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

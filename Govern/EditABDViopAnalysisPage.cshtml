@@ -1,0 +1,208 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    Login AdminLogin = new Login();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Setting Setting = ConnXml.Setting.FirstOrDefault();
+    #region Değişkenler
+    var txtTitle = "";
+    var txtDate = "";
+    int txtLine = 0;
+    var drpLang = reqLangID.ToString();
+    bool drpPageStatus = true;
+    var fuImageUrl = "";
+    var btnName = "Kaydet";
+    var txtPageTitle = "Yeni Yurt Dışı Vadeli Piyasa Teknik Analiz Raporu Ekle";
+    #endregion
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        ABDViopAnalysis Pages = ConnXml.ABDViopAnalysis.FirstOrDefault(x => x.ABDViopAnalysisID == reqID);
+        string imgDir = "~/" + Setting.Documentdir + "/ABDViopAnalysis/" + Pages.ImageUrl;
+        if (System.IO.File.Exists(Server.MapPath(imgDir)) && !Pages.ImageUrl.IsEmpty())
+        {
+            System.IO.File.Delete(Server.MapPath(imgDir));
+        }
+        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("ABDViopAnalysisPage?Lang=" + reqLangID);
+    }
+    if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+    {
+        int reqID = Request.QueryString["ID"].AsInt();
+        int historyID = (Request.QueryString["HistoryID"].AsInt());
+        ABDViopAnalysis reqPage = new ABDViopAnalysis();
+        if (reqID > 0)
+        {
+            reqPage = ConnXml.ABDViopAnalysis.FirstOrDefault(x => x.ABDViopAnalysisID == reqID);
+        }
+        else if (historyID > 0)
+        {
+            reqPage = ConnXml.ABDViopAnalysisHistory.FirstOrDefault(x => x.ABDViopAnalysisHistoryID == historyID).Cast<ABDViopAnalysis>();
+            btnName = "Geçmişe Dön";
+            txtPageTitle = reqPage.Title + " adlı menü'nün " + reqPage.ModifiedDate + " tarihinde kaydedilen versiyonu. (Geçmişe dönmeden düzenleme yapamazsınız)";
+        }
+        txtTitle = reqPage.Title;
+        txtDate = reqPage.Date.ToString("dd/MM/yyyy").Replace(".", "/");
+        drpPageStatus = reqPage.Status;
+        drpLang = reqPage.Lang.ToString();
+        if (!reqPage.ImageUrl.IsEmpty())
+        {
+            string imgDir = "~/" + Setting.Documentdir + "/ABDViopAnalysis/" + reqPage.ImageUrl;
+            if (System.IO.File.Exists(Server.MapPath(imgDir)))
+            {
+                fuImageUrl = "<div class=\"Input\"><span>(<a href='" + imgDir.Replace("~/", "../") + "' target='_blank'>Mevcut dosya</a> - <a class='DeleteFile' rel='" + reqPage.ABDViopAnalysisID + "'  type='ABDViopAnalysisImageUrl' href='javascript:void(0)' target='_blank'>Dosyayı Sil</a>)</span></div>";
+            }
+        }
+    }
+    if (IsPost)
+    {
+        if (!AdminLogin.IsLogin())
+        {
+            Response.Redirect(Shared.PageBasePath() + "Govern/Login");
+        }
+        // //AntiForgery.Validate();
+        ABDViopAnalysis itemPages = new ABDViopAnalysis();
+        ABDViopAnalysisHistory backup = new ABDViopAnalysisHistory();
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            int reqID = Request.QueryString["ID"].AsInt();
+            int historyID = (Request.QueryString["HistoryID"].AsInt());
+            if (reqID > 0)
+            {
+                itemPages = ConnXml.ABDViopAnalysis.FirstOrDefault(x => x.ABDViopAnalysisID == reqID);
+
+                backup = itemPages.Cast<ABDViopAnalysisHistory>();
+            }
+            else if (historyID > 0)
+            {
+                itemPages = ConnXml.ABDViopAnalysisHistory.FirstOrDefault(x => x.ABDViopAnalysisHistoryID == historyID).Cast<ABDViopAnalysis>();
+
+                backup = itemPages.Cast<ABDViopAnalysisHistory>();
+            }
+            itemPages.ModifiedDate = DateTime.Now;
+            itemPages.ModifiedId = AdminLogin.LoginUserID();
+            backup.ModifiedId = AdminLogin.LoginUserID();
+        }
+        else
+        {
+            itemPages.CreatedDate = DateTime.Now;
+            itemPages.ModifiedDate = DateTime.Now;
+            itemPages.CreatedId = AdminLogin.LoginUserID();
+            itemPages.ImageUrl = "";
+        }
+        itemPages.Title = Request.Form["txtTitle"];
+        if (Request.Form["txtDate"].ToString().IsEmpty())
+        {
+            itemPages.Date = DateTime.Now;
+        }
+        else
+        {
+            string strDate = Request.Form["txtDate"].ToString();
+            DateTime getDate = new DateTime(strDate.Substring(6, 4).AsInt(), strDate.Substring(3, 2).AsInt(), strDate.Substring(0, 2).AsInt());
+            itemPages.Date = getDate;
+        }
+        itemPages.Lang = Request.Form["drpLang"].AsInt();
+        itemPages.Status = (Request.Form["drpPageStatus"] == "1" ? true : false);
+        if (Request.Files.Count > 0)
+        {
+            var uploadedFile = Request.Files["fuImageUrl"];
+            if (uploadedFile.ContentLength > 0)
+            {
+                if (!itemPages.ImageUrl.IsEmpty())
+                {
+                    string imgDir = "~/" + Setting.Documentdir + "/ABDViopAnalysis/" + itemPages.ImageUrl;
+                    System.IO.File.Delete(Server.MapPath(imgDir));
+                }
+                string getExtentions = Path.GetExtension(uploadedFile.FileName);
+                string newFileName = System.Guid.NewGuid().ToString() + getExtentions;
+                var fileSavePath = Server.MapPath("~/" + Setting.Documentdir + "/ABDViopAnalysis/" + newFileName);
+                uploadedFile.SaveAs(fileSavePath);
+                itemPages.ImageUrl = newFileName;
+            }
+        }
+        int ConnStatus = 0;
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            ConnXml.Entry(itemPages).State = System.Data.EntityState.Modified;
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            ConnXml.ABDViopAnalysis.Add(itemPages);
+            ConnStatus = ConnXml.SaveChanges();
+            backup = itemPages.Cast<ABDViopAnalysisHistory>();
+        }
+        if (ConnStatus > 0)
+        {
+            backup.HistoryCreateDate = DateTime.Now;
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            ConnXml.ABDViopAnalysisHistory.Add(backup);
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("ABDViopAnalysisPage?Lang=" + reqLangID);
+    }
+}
+<div class="Title">@Html.Raw(txtPageTitle)</div>
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @HelperAdminControl.inputText("txtTitle", "Başlık", false, true, txtTitle)
+                @HelperAdminControl.fileUpload("fuImageUrl", "Dosya")
+                @Html.Raw(fuImageUrl)
+                @HelperAdminControl.inputText("txtDate", "Tarih", false, false, txtDate, "Date")
+                @{
+                    List<SelectListItem> lstLang = new List<SelectListItem>();
+                    for (int i = 0; i < Shared.Lang.Length; i++)
+                    {
+                        lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                    }
+                    lstLang.FirstOrDefault(x => x.Value == drpLang).Selected = true;
+                    IEnumerable<SelectListItem> drplstLangs = lstLang;
+                }
+                @HelperAdminControl.DropDownList("drpLang", "Dil", drplstLangs)
+                <div class="Title">Durum</div>
+                <div class="Input">
+                    @{
+                        string StatusFalse = "";
+                        string StatusTrue = "";
+                        if (!drpPageStatus)
+                        {
+                            StatusFalse = "checked='checked'";
+                        }
+                        else
+                        {
+                            StatusTrue = "checked='checked'";
+                        }
+                    }
+                    <input type="radio" id="drpPageStatus0" name="drpPageStatus" value="0" @StatusFalse><label for="drpPageStatus0">Pasif</label>
+                    <input type="radio" id="drpPageStatus1" name="drpPageStatus" value="1" @StatusTrue><label for="drpPageStatus1">Aktif</label>
+                </div>
+                <div class="ButtonPanel">
+                    <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="@Html.Raw(btnName)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

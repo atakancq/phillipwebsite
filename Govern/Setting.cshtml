@@ -1,0 +1,67 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    #region Değişkenler
+    var txtSMTPName = "";
+    var txtSMTPServer = "";
+    var txtSMTPEmail = "";
+    var txtSMTPPassword = "";
+    var txtSMTPPort = "";
+    var txtPagetitle = "";
+    var txtSitedomain = "";
+    #endregion
+    Setting itemPage = ConnXml.Setting.FirstOrDefault(x => x.SettingID == 1);
+    txtSMTPName = itemPage.SMTPName;
+    txtSMTPServer = itemPage.SMTPServer;
+    txtSMTPEmail = itemPage.SMTPEmail;
+    //txtSMTPPassword = itemPage.SMTPPassword;
+    txtSMTPPort = itemPage.SMTPPort.ToString();
+    txtPagetitle = itemPage.Pagetitle;
+    txtSitedomain = itemPage.Sitedomain;
+    if (IsPost)
+    {
+        itemPage.SMTPName = Request.Form["txtSMTPName"];
+        itemPage.SMTPServer = Request.Form["txtSMTPServer"];
+        itemPage.SMTPEmail = Request.Form["txtSMTPEmail"];
+        if (!Request.Form["txtSMTPPassword"].IsEmpty())
+        {
+            itemPage.SMTPPassword = Request.Form["txtSMTPPassword"];
+        }
+        itemPage.SMTPPort = Request.Form["txtSMTPPort"].AsInt();
+        itemPage.Pagetitle = Request.Form["txtPagetitle"];
+        itemPage.Sitedomain = Request.Form["txtSitedomain"];
+        ConnXml.Entry(itemPage).State = System.Data.EntityState.Modified;
+        int ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("Setting");
+    }
+}
+<div class="Title">Site Ayarları</div>
+    <form method="post">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @HelperAdminControl.inputText("txtSMTPName", "SMTP Görünen Adı", false, true, txtSMTPName)
+                @HelperAdminControl.inputText("txtSMTPServer", "SMTP Sunucu", false, true, txtSMTPServer)
+                @HelperAdminControl.inputText("txtSMTPEmail", "SMTP Email", false, true, txtSMTPEmail)
+                @HelperAdminControl.inputText("txtSMTPPassword", "SMTP Şifre (Değiştirmek istemiyorsanız boş bırakın)", false,false, txtSMTPPassword)
+                @HelperAdminControl.inputText("txtSMTPPort", "SMTP Port(varsayılan 587)", false, true, txtSMTPPort)
+                @HelperAdminControl.inputText("txtPagetitle", "Sayfa Başlığı", false, true, txtPagetitle)
+                @HelperAdminControl.inputText("txtSitedomain", "Site domain", false, true, txtSitedomain)
+                <div class="ButtonPanel">
+                    <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="Kaydet" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

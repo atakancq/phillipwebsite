@@ -1,0 +1,86 @@
+﻿@{
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Setting Setting = ConnXml.Setting.FirstOrDefault();
+    string WrongMessage = "";
+    if (IsPost)
+    {
+        string ImgWarning = "<img src='Images/warning.png' /> ";
+        string ImgError = "<img src='Images/error.png' /> ";
+        string txtUserName = Request.Form["txtUserName"];
+        string txtPassword = Request.Form["txtPassword"];
+        if (txtUserName == "" && txtPassword == "")
+        {
+            WrongMessage = ImgWarning + "Kullanıcı adını ve şifreyi girmediniz.";
+        }
+        else if (txtUserName == "" && txtPassword != "")
+        {
+            WrongMessage = ImgWarning + "Kullanıcı adını girmediniz.";
+        }
+        else if (txtUserName != "" && txtPassword == "")
+        {
+            WrongMessage = ImgWarning + "Şifreyi girmediniz.";
+        }
+        else if (txtUserName != "" && txtPassword != "")
+        {
+            Login Login = new Login();
+            bool LoginControl =  Login.SignInUser(txtUserName, txtPassword);
+            if (LoginControl)
+            {
+                try
+                {
+
+                    Response.Redirect("Default.cshtml", false);
+                }
+                catch (Exception ex)
+                {
+
+                    throw;
+                }
+            }
+            else
+            {
+                WrongMessage = ImgError + "Giriş başarısız.";
+            }
+        }
+    }
+}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <link href="Css/Login.css" rel="stylesheet" type="text/css" />
+        <title>@Setting.Pagetitle Yönetim Paneli Girişi</title>
+    </head>
+    <body>
+        <form method="post">
+            <div class="logincontainer">
+                <div align="center">
+                    <div class="form">
+                        <div class="logo">
+                            @Setting.Pagetitle Yönetim Paneli Girişi
+                        </div>
+                        <div class="items">
+                            <div class="item">
+                                <div class="left">Kullanıcı adı</div>
+                                <div class="right">
+                                    <input id="txtUserName" name="txtUserName" type="text" />
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="left">Parola</div>
+                                <div class="right">
+                                    <input id="txtPassword" name="txtPassword" type="password" />
+                                </div>
+                            </div>
+                            <div id="LoginControl" class="logincontrol">@Html.Raw(WrongMessage)</div>
+                            <div class="loginbuttonpanel">
+                                <input id="btnLogin" name="btnLogin" type="submit" value="Giriş" />
+                            </div>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="footer"><a href="https://cyberquote.com/tk/" target="_blank">CyberQuote Turkey </a> Yönetim Paneli</div>
+                </div>
+            </div>
+        </form>
+    </body>
+</html>

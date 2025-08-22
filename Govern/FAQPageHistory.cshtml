@@ -1,0 +1,96 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+}
+@functions
+{
+    public string GetDetail(int getLang)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        IQueryable<FAQCategory> IqFAQCategory = ConnXml.FAQCategory;
+        foreach (FAQHistory itemPages in ConnXml.FAQHistory.Where(x => x.Lang == getLang).OrderByDescending(x => x.HistoryCreateDate))
+        {
+            var userName = "";
+            if (itemPages.ModifiedId > 0)
+            {
+                var admin = ConnXml.Admin.FirstOrDefault(x => x.AdminID == itemPages.ModifiedId);
+                if (admin != null)
+                {
+                    userName = admin.UserName;
+                }
+            }
+            str += "<tr";
+            str += "<td class=\"Min grippy\"></td>";
+            str += "<td class='Normal'>" + itemPages.Question + "</td>";
+            str += "<td class='Normal'>" + itemPages.Answer + "</td>";
+            FAQCategory itemRelease = IqFAQCategory.FirstOrDefault(x => x.FAQCategoryID == itemPages.FAQCategoryID);
+            if (itemRelease != null)
+            {
+                str += "<td class='Normal'>" + itemRelease.Title + "</td>";
+            }
+            else
+            {
+                str += "<td class='Normal'>--------</td>";
+            }
+            str += "<td class='Normal'>" + userName + "</td>";
+            str += "<td class='Normal'>" + itemPages.HistoryCreateDate + "</td>";
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditFAQPage?HistoryID=" + itemPages.FAQHistoryID + "'>Geçmişi Görüntüle</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<div class="Title">Soru Listesi Geçmiş Listesi</div>
+<form method="post">
+    <input type="hidden" id="PageName" value="" />
+    <input type="hidden" id="PageNameQ" value="" />
+    <input type="hidden" id="SelectedItems" name="SelectedItems" class="SelectedItems" runat="server" />
+    <input type="hidden" id="PassiveItems" name="PassiveItems" class="PassiveItems" runat="server" />
+    <input type="hidden" id="SortItems" name="SortItems" class="SortItems" runat="server" />
+    <div class="Content">
+        <table class="GridWiew" cellpadding="5" cellspacing="0">
+            <thead>
+                <td class="Normal">Soru</td>
+                <td class="Normal">Cevap</td>
+                <td class="Normal">Kategori</td>
+                <td class="Normal">Düzenleyen</td>
+                <td class="Normal">Geçmişin Oluşturulma Tarihi</td>
+                <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetDetail(reqLangID);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Soru Bulunamadı<br />
+                                    <br />
+                                    <a href='javascript:;' onclick="newPage(0,@reqLangID)">Yeni Soru Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Normal">Soru</td>
+                <td class="Normal">Cevap</td>
+                <td class="Normal">Kategori</td>
+                <td class="Normal">Düzenleyen</td>
+                <td class="Normal">Geçmişin Oluşturulma Tarihi</td>
+                <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

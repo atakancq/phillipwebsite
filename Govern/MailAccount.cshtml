@@ -1,0 +1,122 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        MailAccount FMailRe = ConnXml.MailAccount.FirstOrDefault(x => x.MailAccountID == reqID);
+        ConnXml.Entry(FMailRe).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("MailAccount?ID=" + Request.QueryString["ID"]);
+    }
+    string strList = "";
+    if (Request.QueryString["ID"].IsInt())
+    {
+        strList = GetDetail(Request.QueryString["ID"].AsInt());
+    }
+    else
+    {
+        Response.Redirect(Shared.PageBasePath() + "govern/");
+    }
+    if (IsPost)
+    {
+        if (!Request.Form["btnSave"].IsEmpty())
+        {
+            string txtDisplayName = Request.Form["txtDisplayName"];
+            string txtAddress = Request.Form["txtAddress"];
+            MailAccount MailAccount = new MailAccount();
+            MailAccount.MailGroupID = Request.QueryString["ID"].AsInt();
+            MailAccount.DisplayName = txtDisplayName;
+            MailAccount.Address = txtAddress;
+            ConnXml.MailAccount.Add(MailAccount);
+            int ConnStatus = 0;
+            ConnStatus = ConnXml.SaveChanges();
+            if (ConnStatus > 0)
+            {
+                Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            }
+            else
+            {
+                Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+            }
+            Response.Redirect("MailAccount?ID=" + Request.QueryString["ID"]);
+        }
+    }
+}
+@functions
+{
+    public string GetDetail(int reqMailGroupID)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (MailAccount itemPages in ConnXml.MailAccount.Where(x => x.MailGroupID == reqMailGroupID))
+        {
+            str += "<tr thisVal='" + itemPages.MailAccountID + "'>";
+            str += "<td class='Big'>" + itemPages.DisplayName + "</td>";
+            str += "<td class='Normal'>" + itemPages.Address + "</td>";
+            str += "<td class='Normal'><a onclick='return confirmDelete();' href='MailAccount?Delete=" + itemPages.MailAccountID + "&ID=" + itemPages.MailGroupID + "'>Sil</a></td>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }  
+}
+<div class="Title">Mail Grupları</div>
+<div class="Content">
+    <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+        <thead>
+            <td class="Big">Grup Adı</td>
+            <td class="Normal">Kullanıcı sayısı</td>
+            <td class="Normal"></td>
+        </thead>
+        <tbody>
+            @{
+                if (!strList.IsEmpty())
+                {
+                    @Html.Raw(strList);
+                }
+                else
+                {
+                    <tr>
+                        <td class='Big' colspan='15'>
+                            <div class='NoneItemPage'>
+                                Kullanıcı bulunamadı
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+        <tfoot>
+            <td class="Big">Grup Adı</td>
+            <td class="Normal">Kullanıcı sayısı</td>
+            <td class="Normal"></td>
+        </tfoot>
+    </table>
+    <form method="post">
+        <div id="AddPanel" runat="server">
+            <div class="Title">Yeni Grup Ekle</div>
+            <div class="Content">
+                <div class="Item">
+                    @{
+                        @HelperAdminControl.inputText("txtDisplayName", "Görünen Ad", false, true, "")
+                        @HelperAdminControl.inputText("txtAddress", "E-Posta Adresi", false, true, "")
+                        <div class="ButtonPanel">
+                            <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="Kaydet" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

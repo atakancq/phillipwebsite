@@ -1,0 +1,158 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+    int drpCity = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    if (IsPost)
+    {
+        if (!Request.Form["btnSort"].IsEmpty())
+        {
+            string[] StrSortList = Request.Form["SortItems"].Split(',');
+            try
+            {
+                int i = 1;
+                foreach (var item in StrSortList)
+                {
+                    if (!item.IsEmpty())
+                    {
+                        int getItem = Convert.ToInt32(item);
+                        Branch itemPage = ConnXml.Branch.FirstOrDefault(x => x.BranchID == getItem);
+                        itemPage.Line = i;
+                        ConnXml.Entry(itemPage).State = System.Data.EntityState.Modified;
+                        ConnXml.SaveChanges();
+                        i++;
+                    }
+                }
+            }
+            catch { }
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            Response.Redirect("BranchPage");
+        }
+    }
+    if (!Request.Form["drpLang"].IsEmpty())
+    {
+        reqLangID = Request.Form["drpLang"].AsInt();
+    }
+    if (Request.Form["drpCity"] != null)
+    {
+        drpCity = Request.Form["drpCity"].AsInt();
+    }
+}
+@functions {
+    public string GetDetail(int getLangID, int drpCity)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        IQueryable<City> IqCity = ConnXml.City;
+        foreach (Branch itemPages in ConnXml.Branch.Where(x => x.Lang == getLangID && (drpCity != 0 ? x.CityID == drpCity : true)).OrderBy(x => x.Line))
+        {
+            str += "<tr thisVal=" + itemPages.BranchID + " " + (itemPages.Status == false ? "class='Yellow sssicon' title='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            str += "<td class=\"Min grippy\"></td>";
+            str += "<td class='Normal'>" + itemPages.Title + "</td>";
+            City itemRelease = IqCity.FirstOrDefault(x => x.CityID == itemPages.CityID);
+            if (itemRelease != null)
+            {
+                str += "<td class='Normal'>" + itemRelease.CityName + "</td>";
+            }
+            else
+            {
+                str += "<td class='Normal'> - </td>";
+            }
+            str += "<td class='Normal'> " + itemPages.Phone + "</td>";
+            str += "<td class='Normal'> " + itemPages.Fax + "</td>";
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditBranchPage?ID=" + itemPages.BranchID + "&Lang=" + getLangID + "'>Düzenle</a>";
+            str += "<a class='Red' onclick='return confirmDelete();' href='EditBranchPage?Delete=" + itemPages.BranchID + "&Lang=" + getLangID + "'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<script type="text/javascript">
+    <!--
+    function newPage(num, reqLangID) {
+        var url = new Array();
+        url[0] = "EditBranchPage?Lang=" + reqLangID;
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Ofis Listesi</div>
+<form method="post">
+    <input type="hidden" id="PageName" value="" />
+    <input type="hidden" id="PageNameQ" value="" />
+    <input type="hidden" id="SelectedItems" name="SelectedItems" class="SelectedItems" runat="server" />
+    <input type="hidden" id="PassiveItems" name="PassiveItems" class="PassiveItems" runat="server" />
+    <input type="hidden" id="SortItems" name="SortItems" class="SortItems" runat="server" />
+    <div class="Content">
+        <div class="ButtonPanel">
+            @{
+                List<SelectListItem> lstCity = new List<SelectListItem>();
+                lstCity.Add(new SelectListItem { Text = "Şehir Seçiniz", Value = "0" });
+                foreach (City item in ConnXml.City.OrderBy(x => x.CityName))
+                {
+                    lstCity.Add(new SelectListItem { Value = item.CityID.ToString(), Text = item.CityName, Selected = (drpCity == item.CityID ? true : false) });
+                }
+                IEnumerable<SelectListItem> DrpLstCity = lstCity;
+            }
+            @Html.ListBox("drpCity", DrpLstCity, new { @class = "inputdrp", @onchange = "submit();" })
+            @{
+                List<SelectListItem> lstLang = new List<SelectListItem>();
+                for (int i = 0; i < Shared.Lang.Length; i++)
+                {
+                    lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                }
+                lstLang.FirstOrDefault(x => x.Value == reqLangID.ToString()).Selected = true;
+                IEnumerable<SelectListItem> drplstLangs = lstLang;
+            }
+            @Html.ListBox("drpLang", drplstLangs, new { @class = "inputdrp", @onchange = "submit();" })
+            <input name="btnSort" type="submit" value="Sıralamayı Kaydet" id="btnSort" class="inputbutton Save">
+            <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0,@reqLangID)" value="Yeni Ofis Ekle" />
+        </div>
+        <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+            <thead>
+                <td class="Min"></td>
+                <td class="Normal">Ofis Adı</td>
+                <td class="Normal">Şehir</td>
+                <td class="Normal">Telefon</td>
+                <td class="Normal">Fax</td>
+                <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetDetail(reqLangID, drpCity);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Ofis Bulunamadı<br />
+                                    <br />
+                                    <a href="javascript:;" onclick="newPage(0,@reqLangID)">Yeni Ofis Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Min"></td>
+                <td class="Normal">Ofis Adı</td>
+                <td class="Normal">Şehir</td>
+                <td class="Normal">Telefon</td>
+                <td class="Normal">Fax</td>
+                <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

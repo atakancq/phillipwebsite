@@ -1,0 +1,90 @@
+﻿
+@functions{
+    string bankList(MvcXmlEntities ConnXml, int getLang, int getYear)
+    {
+        System.Text.StringBuilder sbAccordion = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbAccordionContentFirst = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbAccordionContentSecond = new System.Text.StringBuilder();
+        //
+        string strAccordion = @"<div>
+            <span class='target-fix' id='accordion{0}'></span>
+            <a href='#accordion{0}' class='baslik-link' id='open-accordion{0}' title='open'>
+                <div class='acc-inner'>
+                    <img class='history-text-before-img' src='/Content/images/history-solid.svg' />
+                    <div class='text-acc-header'><h5>{0}</h5></div>
+                    <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                </div>
+            </a>
+            <a href='#accordion' class='baslik-link' id='close-accordion{0}' title='close'>
+                <div class='acc-inner'>
+                    <img class='history-text-before-img' src='/Content/images/history-solid.svg' />
+                    <div class='text-acc-header'><h5>{0}</h5></div>
+                    <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                </div>
+            </a>
+            <div class='accordion-content'>
+                <div class='faaliyet-raporlari-mali-tablolar-wrapper'>
+                    <div class='faaliyet-raporlari-wrapper'>
+                        <h3>{3}</h3>
+                        {1}
+                    </div>
+                    <div class='mali-raporlari-wrapper'>
+                        <h3>{4}</h3>
+                        {2}
+                    </div>
+                </div>
+            </div>
+        </div>";
+        //
+        string strAccordionContent = @"<div class='faaliyet-raporlari'>
+            <span><a href='{1}' target='_blank'>{0}</a></span>
+            <a href='{1}' target='_blank'>
+                PDF
+                <img class='pdf-icon' src='/Content/images/pdf.svg' />
+            </a>
+        </div>";
+        var query = from ar in ConnXml.ActivityReport
+                    where ar.Year == getYear && ar.Lang == getLang && ar.ImageUrl != ""
+                    select new { ar.ImageUrl };
+        foreach (var item in query)
+        {
+            var name = Shared.GetTranslation(2).Replace("{0}", getYear.ToString());
+            sbAccordionContentFirst.AppendFormat(strAccordionContent, name, "/Files/ActivityReport/" + item.ImageUrl);
+        }
+        var qFinancialStatement = from fs in ConnXml.FinancialStatement
+                                  where fs.Year == getYear && fs.Lang == getLang && fs.ImageUrl != ""
+                                  orderby fs.Quarter
+                                  select new { fs.ImageUrl, fs.Quarter };
+        foreach (var item in qFinancialStatement)
+        {
+            var name = Shared.GetTranslation(6).Replace("{0}", item.Quarter.ToString());
+            sbAccordionContentSecond.AppendFormat(strAccordionContent, name, "/Files/FinancialStatement/" + item.ImageUrl);
+        }
+        var nameSecond = Shared.GetTranslation(4).Replace("{0}", getYear.ToString());
+        var nameThird = Shared.GetTranslation(5).Replace("{0}", getYear.ToString());
+        sbAccordion.AppendFormat(strAccordion, getYear, sbAccordionContentFirst.ToString(), sbAccordionContentSecond.ToString(), nameSecond, nameThird);
+        return sbAccordion.ToString();
+    }
+}
+@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        var getActivityReportYears = from ar in ConnXml.ActivityReport
+                                     where ar.Status
+                                     select new { ar.Year };
+        var getFinancialStatementYears = from ar in ConnXml.FinancialStatement
+                                         where ar.Status
+                                         select new { ar.Year };
+        var union = getActivityReportYears.Union(getFinancialStatementYears).OrderByDescending(x => x.Year);
+        <div class="accordion">
+            <span class="target-fix" id="accordion"></span>
+            @{
+                foreach (var item in union)
+                {
+                    @Html.Raw(bankList(ConnXml, getLang, item.Year))
+                }
+            }
+        </div>
+    }
+}

@@ -1,0 +1,161 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Setting Setting = ConnXml.Setting.FirstOrDefault();
+    var drpGaleryID = "0";
+    var txtPhotoGaleryFileDescription = "";
+    var fuImageUrl = "";
+    bool drpPageStatus = true;
+    if (Request.QueryString["GaleryID"].IsInt())
+    {
+        drpGaleryID = Request.QueryString["GaleryID"];
+    }
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        DocumentGaleryFile Pages = ConnXml.DocumentGaleryFile.FirstOrDefault(x => x.DocumentGaleryFileID == reqID);
+        string imgDir = "~/" + Setting.Documentdir + "/DocumentGalery/" + Pages.DocumentGaleryFileUrl;
+        if (System.IO.File.Exists(Server.MapPath(imgDir)) && !Pages.DocumentGaleryFileUrl.IsEmpty())
+        {
+            System.IO.File.Delete(Server.MapPath(imgDir));
+        }
+        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("DocumentGaleryPageFile?GaleryID=" + drpGaleryID);
+    }
+    if (Request.QueryString["ID"].IsInt())
+    {
+        int reqID = Request.QueryString["ID"].AsInt();
+        DocumentGaleryFile reqPage = ConnXml.DocumentGaleryFile.FirstOrDefault(x => x.DocumentGaleryFileID == reqID);
+        drpGaleryID = reqPage.DocumentGaleryID.ToString();
+        txtPhotoGaleryFileDescription = reqPage.DocumentGaleryFileDescription;
+        drpPageStatus = reqPage.Status;
+        if (!reqPage.DocumentGaleryFileUrl.IsEmpty())
+        {
+            string imgDir = "~/" + Setting.Documentdir + "/DocumentGalery/" + reqPage.DocumentGaleryFileUrl;
+            if (System.IO.File.Exists(Server.MapPath(imgDir)))
+            {
+                fuImageUrl = "<div class=\"Input\"><span>(<a href='" + imgDir.Replace("~/", "../") + "' target='_blank'>Mevcut resim</a>)</span></div>";
+            }
+        }
+    }
+    if (IsPost)
+    {
+        // AntiForgery.Validate();
+        DocumentGaleryFile DocumentGaleryFile = new DocumentGaleryFile();
+        if (Request.QueryString["ID"].IsInt())
+        {
+            int reqID = Request.QueryString["ID"].AsInt();
+            DocumentGaleryFile = ConnXml.DocumentGaleryFile.FirstOrDefault(x => x.DocumentGaleryFileID == reqID);
+        }
+        else
+        {
+            DocumentGaleryFile.DocumentGaleryFileUrl = "";
+        }
+        DocumentGaleryFile.DocumentGaleryID = Request.Form["drpGaleryID"].AsInt();
+        DocumentGaleryFile.DocumentGaleryFileDescription = Request.Form["txtPhotoGaleryFileDescription"];
+        if (Request.Files.Count > 0)
+        {
+            var uploadedFile = Request.Files["fuImageUrl"];
+            if (uploadedFile.ContentLength > 0)
+            {
+                if (!DocumentGaleryFile.DocumentGaleryFileUrl.IsEmpty())
+                {
+                    string imgDir = "~/" + Setting.Documentdir + "/DocumentGalery/" + DocumentGaleryFile.DocumentGaleryFileUrl;
+                    System.IO.File.Delete(Server.MapPath(imgDir));
+                }
+                string getExtentions = Path.GetExtension(uploadedFile.FileName);
+                string newFileName = System.Guid.NewGuid().ToString() + getExtentions;
+                var fileSavePath = Server.MapPath("~/" + Setting.Documentdir + "/DocumentGalery/" + newFileName);
+                uploadedFile.SaveAs(fileSavePath);
+                DocumentGaleryFile.DocumentGaleryFileUrl = newFileName;
+            }
+        }
+        DocumentGaleryFile.Line = 0;
+        DocumentGaleryFile.Status = (Request.Form["drpPageStatus"] == "1" ? true : false);
+        int ConnStatus = 0;
+        if (Request.QueryString["ID"].IsInt())
+        {
+            ConnXml.Entry(DocumentGaleryFile).State = System.Data.EntityState.Modified;
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            ConnXml.DocumentGaleryFile.Add(DocumentGaleryFile);
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("DocumentGaleryPageFile?GaleryID=" + Request.Form["drpGaleryID"].AsInt());
+    }
+}
+@functions { 
+    List<SelectListItem> GetSubPage(int i, List<DocumentGalery> PhotoGalery, int getPageID)
+    {
+        string left = new string('-', i * 3);
+        List<SelectListItem> lst = new List<SelectListItem>();
+        foreach (DocumentGalery itemPages in PhotoGalery.Where(x => x.DocumentGaleryParentID == getPageID && x.Lang == 0))
+        {
+            lst.Add(new SelectListItem { Value = itemPages.DocumentGaleryID.ToString(), Text = left + " " + itemPages.Name });
+            lst.AddRange(GetSubPage(i + 1, PhotoGalery, itemPages.DocumentGaleryID));
+        }
+        return lst;
+    }
+}
+<div class="Title">Yeni Döküman Ekle</div>
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @{
+                    List<SelectListItem> lstModule = new List<SelectListItem>();
+                    lstModule.AddRange(GetSubPage(0, ConnXml.DocumentGalery.ToList(), 0));
+                    lstModule.FirstOrDefault(x => x.Value == drpGaleryID).Selected = true;
+                    IEnumerable<SelectListItem> drpParentItems = lstModule;
+                }
+                @HelperAdminControl.DropDownList("drpGaleryID", "Galeri Kategorisi", drpParentItems)
+                @HelperAdminControl.inputText("txtPhotoGaleryFileDescription", "Açıklama", false, true, txtPhotoGaleryFileDescription)
+                @HelperAdminControl.fileUpload("fuImageUrl", "Resim")
+                @Html.Raw(fuImageUrl)
+                <div class="Title">Durum</div>
+                <div class="Input">
+                    @{
+                        string StatusFalse = "";
+                        string StatusTrue = "";
+                        if (!drpPageStatus)
+                        {
+                            StatusFalse = "checked='checked'";
+                        }
+                        else
+                        {
+                            StatusTrue = "checked='checked'";
+                        }
+                    }
+                    <input type="radio" id="drpPageStatus0" name="drpPageStatus" value="0" @StatusFalse><label for="drpPageStatus0">Pasif</label>
+                    <input type="radio" id="drpPageStatus1" name="drpPageStatus" value="1"  @StatusTrue><label for="drpPageStatus1">Aktif</label>
+                </div>
+                <div class="ButtonPanel">
+                    <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="Kaydet" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

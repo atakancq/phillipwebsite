@@ -1,0 +1,143 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+    if (IsPost)
+    {
+        // Response.Write(Request.Form["btnDelete"]);
+        // Response.Write(Request.Form["btnSort"]);
+        if (!Request.Form["btnSort"].IsEmpty())
+        {
+            string[] StrSortList = Request.Form["SortItems"].Split(',');
+            try
+            {
+                int i = 1;
+                foreach (var item in StrSortList)
+                {
+                    if (!item.IsEmpty())
+                    {
+                        int getItem = Convert.ToInt32(item);
+                        MainPageQuickMenu itemPage = ConnXml.MainPageQuickMenu.FirstOrDefault(x => x.MainPageQuickMenuID == getItem);
+                        itemPage.Line = i;
+                        ConnXml.Entry(itemPage).State = System.Data.EntityState.Modified;
+                        ConnXml.SaveChanges();
+                        i++;
+                    }
+                }
+            }
+            catch { }
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            Response.Redirect("MainPageQuickMenuPage");
+        }
+        else if (!Request.Form["drpLang"].IsEmpty())
+        {
+            reqLangID = Request.Form["drpLang"].AsInt();
+        }
+    }
+}
+@functions
+{
+    public string GetDetail(int getLang)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (MainPageQuickMenu itemPages in ConnXml.MainPageQuickMenu.Where(x => x.Lang == getLang).OrderBy(x => x.Line))
+        {
+            str += "<tr thisVal=" + itemPages.MainPageQuickMenuID + " " + (itemPages.Status == false ? "class='Yellow sssicon' title='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            str += "<td class=\"Min grippy\"></td>";
+            if (!itemPages.ImageUrl.IsEmpty())
+            {
+                string imgDir = "~/" + Setting.Documentdir + "/MainPageQuickMenu/" + itemPages.ImageUrl;
+                if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                {
+                    str += "<td class='Min'><img src=\"" + imgDir.Replace("~/", "../") + "\" width=\"100\" /></td>";
+                }
+                else
+                {
+                    str += "<td class='Min'>Resim Bulunamadı</td>";
+                }
+            }
+            else
+            {
+                str += "<td class='Normal'>Resim Bulunamadı</td>";
+            }
+            str += "<td class='Normal'>" + itemPages.Title + "</td>";
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditMainPageQuickMenuPage?ID=" + itemPages.MainPageQuickMenuID + "'>Düzenle</a>";
+            //str += "<a class='Green' href='EditMainPageQuickMenuPage?Reference=" + itemPages.MainPageQuickMenuID + "'>Referans Al</a>";
+            str += "<a class='Red' onclick='return confirmDelete();' href='EditMainPageQuickMenuPage?Delete=" + itemPages.MainPageQuickMenuID + "'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<script type="text/javascript">
+    <!--    
+    function newPage(num,reqLangID) {
+        var url = new Array();
+        url[0] = "EditMainPageQuickMenuPage?Lang=" + reqLangID;  
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Anasayfa Hızlı Menü Listesi</div>
+<form method="post">
+    <input type="hidden" id="PageName" value="" />
+    <input type="hidden" id="PageNameQ" value="" />
+    <input type="hidden" id="SelectedItems" name="SelectedItems" class="SelectedItems" runat="server" />
+    <input type="hidden" id="PassiveItems" name="PassiveItems" class="PassiveItems" runat="server" />
+    <input type="hidden" id="SortItems" name="SortItems" class="SortItems" runat="server" />
+    <div class="Content">
+        <div class="ButtonPanel">
+            @{
+                List<SelectListItem> lstLang = new List<SelectListItem>();
+                for (int i = 0; i < Shared.Lang.Length; i++)
+                {
+                    lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                }
+                lstLang.FirstOrDefault(x => x.Value == reqLangID.ToString()).Selected = true;
+                IEnumerable<SelectListItem> drplstLangs = lstLang;
+            }
+            @Html.ListBox("drpLang", drplstLangs, new { @class = "inputdrp", @onchange = "submit();" })
+             <input name="btnSort" type="submit" value="Sıralamayı Kaydet" id="btnSort" class="inputbutton Save">
+            <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0,@reqLangID)" value="Yeni Hızlı Menü Ekle" />
+        </div>
+        <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+            <thead>
+                <td class="Min"></td>
+                <td class="Min">Resim</td>
+                <td class="Normal">Başlık</td>
+                <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetDetail(reqLangID);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Hızlı Menü Bulunamadı<br />
+                                    <br />
+                                    <a href='javascript:;' onclick="newPage(0,@reqLangID)">Yeni Hızlı Menü Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Min"></td>
+                <td class="Min">Resim</td>
+                <td class="Normal">Başlık</td>
+                <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

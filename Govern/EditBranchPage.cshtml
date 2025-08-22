@@ -1,0 +1,194 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    Login AdminLogin = new Login();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Setting Setting = ConnXml.Setting.FirstOrDefault();
+    #region Değişkenler
+    var txtTitle = "";
+    var txtAddress = "";
+    var drpCity = 0;
+    var txtPhone = "";
+    var txtFax = "";
+    var txtCoordinate = "";
+    var txtMapSource = "";
+    int txtLine = 0;
+    var drpLang = reqLangID.ToString();
+    bool drpPageStatus = true;
+    var btnName = "Kaydet";
+    var txtPageTitle = "Yeni Ofis Ekle";
+    #endregion
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        Branch Pages = ConnXml.Branch.FirstOrDefault(x => x.BranchID == reqID);
+        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("BranchPage?Lang=" + reqLangID);
+    }
+    if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+    {
+        int reqID = Request.QueryString["ID"].AsInt();
+        int historyID = (Request.QueryString["HistoryID"].AsInt());
+        Branch reqPage = new Branch();
+        if (reqID > 0)
+        {
+            reqPage = ConnXml.Branch.FirstOrDefault(x => x.BranchID == reqID);
+        }
+        else if (historyID > 0)
+        {
+            reqPage = ConnXml.BranchHistory.FirstOrDefault(x => x.BranchHistoryID == historyID).Cast<Branch>();
+            btnName = "Geçmişe Dön";
+            txtPageTitle = reqPage.Title + " adlı menü'nün " + reqPage.ModifiedDate + " tarihinde kaydedilen versiyonu. (Geçmişe dönmeden düzenleme yapamazsınız)";
+        }
+        txtTitle = reqPage.Title;
+        txtAddress = reqPage.Address;
+        txtPhone = reqPage.Phone;
+        txtFax = reqPage.Fax;
+        txtCoordinate = reqPage.Coordinate;
+        txtMapSource = reqPage.MapSource;
+        drpPageStatus = reqPage.Status;
+        drpCity = reqPage.CityID;
+        drpLang = reqPage.Lang.ToString();
+    }
+    if (IsPost)
+    {
+        if (!AdminLogin.IsLogin())
+        {
+            Response.Redirect(Shared.PageBasePath() + "Govern/Login");
+        }
+        // AntiForgery.Validate();
+        Branch itemPages = new Branch();
+        BranchHistory backup = new BranchHistory();
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            int reqID = Request.QueryString["ID"].AsInt();
+            int historyID = (Request.QueryString["HistoryID"].AsInt());
+            if (reqID > 0)
+            {
+                itemPages = ConnXml.Branch.FirstOrDefault(x => x.BranchID == reqID);
+                backup = itemPages.Cast<BranchHistory>();
+            }
+            else if (historyID > 0)
+            {
+                itemPages = ConnXml.BranchHistory.FirstOrDefault(x => x.BranchHistoryID == historyID).Cast<Branch>();
+                backup = itemPages.Cast<BranchHistory>();
+            }
+            itemPages.ModifiedDate = DateTime.Now;
+            itemPages.ModifiedId = AdminLogin.LoginUserID();
+            backup.ModifiedId = AdminLogin.LoginUserID();
+        }
+        else
+        {
+            itemPages.CreatedDate = DateTime.Now;
+            itemPages.ModifiedDate = DateTime.Now;
+            itemPages.CreatedId = AdminLogin.LoginUserID();
+        }
+        itemPages.Title = Request.Form["txtTitle"];
+        itemPages.Address = Request.Form["txtAddress"];
+        itemPages.Phone = Request.Form["txtPhone"];
+        itemPages.Fax = Request.Form["txtFax"];
+        itemPages.Coordinate = Request.Form["txtCoordinate"];
+        itemPages.MapSource = Request.Form["txtMapSource"];
+        itemPages.CityID = Request.Form["drpCity"].AsInt();
+        itemPages.Lang = Request.Form["drpLang"].AsInt();
+        itemPages.Line = 0;
+        itemPages.Status = (Request.Form["drpPageStatus"] == "1" ? true : false);
+        int ConnStatus = 0;
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            ConnXml.Entry(itemPages).State = System.Data.EntityState.Modified;
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            ConnXml.Branch.Add(itemPages);
+            ConnStatus = ConnXml.SaveChanges();
+            backup = itemPages.Cast<BranchHistory>();
+        }
+        if (ConnStatus > 0)
+        {
+            backup.HistoryCreateDate = DateTime.Now;
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            ConnXml.BranchHistory.Add(backup);
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("BranchPage?Lang=" + reqLangID);
+    }
+}
+<div class="Title">@Html.Raw(txtPageTitle)</div>
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @{
+                    List<SelectListItem> lstCity = new List<SelectListItem>();
+                    lstCity.Add(new SelectListItem { Value = "0", Text = "Şehir Seçiniz" });
+                    lstCity.AddRange(ConnXml.City.ToList().Select(x => new SelectListItem { Value = x.CityID.ToString(), Text = x.CityName, Selected = (x.CityID == drpCity ? true : false) }));
+                    IEnumerable<SelectListItem> drpCityItem = lstCity;
+                    if (drpCityItem.Any(x => x.Value == drpCity.ToString()))
+                    {
+                        drpCityItem.FirstOrDefault(x => x.Value == drpCity.ToString()).Selected = true;
+                    }
+                }
+                @HelperAdminControl.DropDownList("drpCity", "Şehir", drpCityItem)
+                @HelperAdminControl.inputText("txtTitle", "Ofis Adı", false, true, txtTitle)
+                @HelperAdminControl.inputText("txtAddress", "Adres", true, true, txtAddress)
+                @HelperAdminControl.inputText("txtPhone", "Telefon", false, false, txtPhone)
+                @HelperAdminControl.inputText("txtFax", "Fax", false, false, txtFax)
+                @HelperAdminControl.inputText("txtCoordinate", "Koordinat (Virgül ile ayırınız)", false, false, txtCoordinate)
+                @HelperAdminControl.inputText("txtMapSource", "Iframe Url Giriniz", false, false, txtMapSource)
+                @{
+                    List<SelectListItem> lstLang = new List<SelectListItem>();
+                    for (int i = 0; i < Shared.Lang.Length; i++)
+                    {
+                        lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                    }
+                    lstLang.FirstOrDefault(x => x.Value == drpLang).Selected = true;
+                    IEnumerable<SelectListItem> drplstLangs = lstLang;
+                }
+                @HelperAdminControl.DropDownList("drpLang", "Dil", drplstLangs)
+                <div class="Title">Durum</div>
+                <div class="Input">
+                    @{
+                        string StatusFalse = "";
+                        string StatusTrue = "";
+                        if (!drpPageStatus)
+                        {
+                            StatusFalse = "checked='checked'";
+                        }
+                        else
+                        {
+                            StatusTrue = "checked='checked'";
+                        }
+                    }
+                    <input type="radio" id="drpPageStatus0" name="drpPageStatus" value="0" @StatusFalse><label for="drpPageStatus0">Pasif</label>
+                    <input type="radio" id="drpPageStatus1" name="drpPageStatus" value="1" @StatusTrue><label for="drpPageStatus1">Aktif</label>
+                </div>
+                <div class="ButtonPanel">
+                    <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="@Html.Raw(btnName)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

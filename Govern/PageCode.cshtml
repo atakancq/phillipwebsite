@@ -1,0 +1,84 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();   
+}
+<div class="Title">Sayfa Kodları</div>
+<br />
+<div class="Content">
+    <table class="GridWiew" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <td>Kod</td>
+                <td>Alabileceği Değerler</td>
+                <td>Örnek Kullanım</td>
+                <td>Açıklama</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>img</td>
+                <td>Resim Yolu</td>
+                <td>[img]sample.jpg[/img]</td>
+                <td>Dosya yöneticisinden yüklenen resimleri sayfada eklediğiniz yerde gösterir.</td>
+            </tr>
+             @*
+                 <tr>
+                    <td>imgc</td>
+                    <td>Resim Yolu</td>
+                    <td>[imgc]sample.jpg[/imgc]</td>
+                    <td>Dosya yöneticisinden yüklenen resimleri sayfada eklediğiniz yerde ortalayarak gösterir.</td>
+                </tr>
+                <tr>
+                    <td>imgl</td>
+                    <td>Resim Yolu</td>
+                    <td>[imgl]sample.jpg[/imgl]</td>
+                    <td>Dosya yöneticisinden yüklenen resimleri sayfada eklediğiniz yerde sola dayalı olarak gösterir.</td>
+                </tr>
+                <tr>
+                    <td>imgr</td>
+                    <td>Resim Yolu</td>
+                    <td>[imgr]sample.jpg[/imgr]</td>
+                    <td>Dosya yöneticisinden yüklenen resimleri sayfada eklediğiniz yerde sağa dayalı olarak gösterir.</td>
+                </tr>
+            *@
+            @*
+                <tr>
+                    <td>flash</td>
+                    <td>Flash Yolu,Genişlik (Sayı), Yükseklik (Sayı)</td>
+                    <td>[flash]sample.swf:100:100[/flash]</td>
+                    <td>Dosya yöneticisinden yüklenen flashları sayfada eklediğiniz yerde gösterir. </td>
+                </tr>
+            *@
+            <tr>
+                <td>video</td>
+                <td>Video Yolu, Link adı</td>
+                <td>[video]sample.flv:Videoyu görüntülemek için tıklayın[/video]</td>
+                <td>Dosya yöneticisinden yüklenen videoyu sayfada eklediğiniz yerde link olarak gösterir. </td>
+            </tr>
+            <tr>
+                <td>inlinevideo</td>
+                <td>Video Yolu</td>
+                <td>[inlinevideo]sample.flv[/inlinevideo]</td>
+                <td>Dosya yöneticisinden yüklenen videoyu sayfada eklediğiniz yerde gösterir. </td>
+            </tr>
+            <tr>
+                <td>document</td>
+                <td>Döküman Yolu, Link adı</td>
+                <td>[document]sample.doc:Dökümanı görüntülemek için tıklayın[/document]</td>
+                <td>Dosya yöneticisinden yüklenen dökümanı sayfada eklediğiniz yerde gösterir. </td>
+            </tr>
+            <tr>
+                <td>link</td>
+                <td>Sayfa ID değeri (Sayı), Link adı </td>
+                <td>[link]12:İletişim bilgilerimiz için tıklayın[/link]</td>
+                <td>ID değerini belirttiğiniz sayfaya link verir.</td>
+            </tr>
+            <tr>
+                <td>GetContent</td>
+                <td>Sayfa ID değeri (Sayı) </td>
+                <td>[GetContent]12[/GetContent]</td>
+                <td>ID değerini belirttiğiniz sayfanın açıklama kısmını getirir.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

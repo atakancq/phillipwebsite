@@ -1,0 +1,160 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    Login AdminLogin = new Login();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Setting Setting = ConnXml.Setting.FirstOrDefault();
+    #region Değişkenler
+    var txtNameSurname = "";
+    var txtLastProcessDate = "";
+    var drpPageStatus = "";
+    var drpMemberType = 0;
+    var drpUnit = "";
+    var btnName = "Kaydet";
+    var txtPageTitle = "Yeni Hesap Ekle";
+    #endregion
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        ExpiredAccount Pages = ConnXml.ExpiredAccount.FirstOrDefault(x => x.ExpiredAccountID == reqID);
+        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("ExpiredAccountPage?Lang=" + reqLangID);
+    }
+    if (Request.QueryString["ID"].IsInt() || Request.QueryString["Reference"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+    {
+        int reqID = (Request.QueryString["ID"].AsInt() != 0 ? Request.QueryString["ID"].AsInt() : Request.QueryString["Reference"].AsInt());
+        int historyID = (Request.QueryString["HistoryID"].AsInt());
+        ExpiredAccount reqPage = new ExpiredAccount();
+        if (reqID > 0)
+        {
+            reqPage = ConnXml.ExpiredAccount.FirstOrDefault(x => x.ExpiredAccountID == reqID);
+        }
+        else if (historyID > 0)
+        {
+            reqPage = ConnXml.ExpiredAccountHistory.FirstOrDefault(x => x.ExpiredAccountHistoryID == historyID).Cast<ExpiredAccount>();
+            btnName = "Geçmişe Dön";
+            txtPageTitle = reqPage.Title + " adlı menü'nün " + reqPage.ModifiedDate + " tarihinde kaydedilen versiyonu. (Geçmişe dönmeden düzenleme yapamazsınız)";
+        }
+        txtNameSurname = reqPage.NameSurname;
+        txtLastProcessDate = reqPage.LastProcessDate.ToString("dd/MM/yyyy").Replace(".", "/");
+        drpPageStatus = reqPage.Status.ToString();
+        drpMemberType = reqPage.MemberType;
+    }
+    if (IsPost)
+    {
+        if (!AdminLogin.IsLogin())
+        {
+            Response.Redirect(Shared.PageBasePath() + "Govern/Login");
+        }
+        // AntiForgery.Validate();
+        ExpiredAccount ExpiredAccount = new ExpiredAccount();
+        ExpiredAccountHistory backup = new ExpiredAccountHistory();
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["Reference"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            int reqID = (Request.QueryString["ID"].AsInt() != 0 ? Request.QueryString["ID"].AsInt() : Request.QueryString["Reference"].AsInt());
+            int historyID = (Request.QueryString["HistoryID"].AsInt());
+            if (reqID > 0)
+            {
+                ExpiredAccount = ConnXml.ExpiredAccount.FirstOrDefault(x => x.ExpiredAccountID == reqID);
+                backup = ExpiredAccount.Cast<ExpiredAccountHistory>();
+            }
+            else if (historyID > 0)
+            {
+                ExpiredAccount = ConnXml.ExpiredAccountHistory.FirstOrDefault(x => x.ExpiredAccountHistoryID == historyID).Cast<ExpiredAccount>();
+                backup = ExpiredAccount.Cast<ExpiredAccountHistory>();
+            }
+            ExpiredAccount.ModifiedDate = DateTime.Now;
+            ExpiredAccount.ModifiedId = AdminLogin.LoginUserID();
+            backup.ModifiedId = AdminLogin.LoginUserID();
+        }
+        else
+        {
+            ExpiredAccount.CreatedDate = DateTime.Now;
+            ExpiredAccount.ModifiedDate = DateTime.Now;
+            ExpiredAccount.CreatedId = AdminLogin.LoginUserID();
+        }
+        ExpiredAccount.NameSurname = Request.Form["txtNameSurname"];
+        ExpiredAccount.MemberType = Request.Form["drpMemberType"].AsInt();
+        if (Request.Form["txtLastProcessDate"].ToString().IsEmpty())
+        {
+            ExpiredAccount.LastProcessDate = DateTime.Now;
+        }
+        else
+        {
+            string strDate = Request.Form["txtLastProcessDate"].ToString();
+            DateTime getDate = new DateTime(strDate.Substring(6, 4).AsInt(), strDate.Substring(3, 2).AsInt(), strDate.Substring(0, 2).AsInt());
+            ExpiredAccount.LastProcessDate = getDate;
+        }
+        ExpiredAccount.Status = Request.Form["drpPageStatus"] == "0" ? false : true;
+        int ConnStatus = 0;
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            ConnXml.Entry(ExpiredAccount).State = System.Data.EntityState.Modified;
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            ConnXml.ExpiredAccount.Add(ExpiredAccount);
+            ConnStatus = ConnXml.SaveChanges();
+            backup = ExpiredAccount.Cast<ExpiredAccountHistory>();
+        }
+        if (ConnStatus > 0)
+        {
+            backup.HistoryCreateDate = DateTime.Now;
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            ConnXml.ExpiredAccountHistory.Add(backup);
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("ExpiredAccountPage?Lang=" + reqLangID);
+    }
+}
+<div class="Title">@Html.Raw(txtPageTitle)</div>
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @{
+                    List<SelectListItem> lstForm = new List<SelectListItem>();
+                    lstForm.Add(new SelectListItem { Value = "0", Text = "Basit" });
+                    IEnumerable<SelectListItem> drpFormsItem = lstForm;
+                    if (drpFormsItem.Any(x => x.Value == drpMemberType.ToString()))
+                    {
+                        drpFormsItem.FirstOrDefault(x => x.Value == drpMemberType.ToString()).Selected = true;
+                    }
+                }
+                @HelperAdminControl.DropDownList("drpMemberType", "Hesap Tipi", drpFormsItem)
+                @HelperAdminControl.inputText("txtNameSurname", "Ad Soyad", false, true, txtNameSurname)
+                @HelperAdminControl.inputText("txtLastProcessDate", "Tarih", false, true, txtLastProcessDate, "Date")
+                <div class="NameSurname">Durum</div>
+                <div class="Input">
+                    <input type="radio" id="drpPageStatus0" name="drpPageStatus" value="0"><label for="drpPageStatus0">Pasif</label>
+                    <input type="radio" id="drpPageStatus1" name="drpPageStatus" value="1" checked="checked"><label for="drpPageStatus1">Aktif</label>
+                </div>
+                <div class="ButtonPanel">
+                    <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="@Html.Raw(btnName)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

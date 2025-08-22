@@ -1,0 +1,165 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    Login AdminLogin = new Login();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Setting Setting = ConnXml.Setting.FirstOrDefault();
+    #region Değişkenler
+    var txtQuestion = "";
+    var txtAnswer = "";
+    var drpLang = reqLangID.ToString();
+    var drpPageStatus = "";
+    var drpFAQCategoryID = 0;
+    var drpUnit = "";
+    var btnName = "Kaydet";
+    var txtPageTitle = "Yeni Soru Ekle";
+    #endregion
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        FAQ Pages = ConnXml.FAQ.FirstOrDefault(x => x.FAQID == reqID);
+        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("FAQPage?Lang=" + reqLangID);
+    }
+    if (Request.QueryString["ID"].IsInt() || Request.QueryString["Reference"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+    {
+        int reqID = (Request.QueryString["ID"].AsInt() != 0 ? Request.QueryString["ID"].AsInt() : Request.QueryString["Reference"].AsInt());
+        int historyID = (Request.QueryString["HistoryID"].AsInt());
+        FAQ reqPage = new FAQ();
+        if (reqID > 0)
+        {
+            reqPage = ConnXml.FAQ.FirstOrDefault(x => x.FAQID == reqID);
+        }
+        else if (historyID > 0)
+        {
+            reqPage = ConnXml.FAQHistory.FirstOrDefault(x => x.FAQHistoryID == historyID).Cast<FAQ>();
+            btnName = "Geçmişe Dön";
+            txtPageTitle = reqPage.Title + " adlı menü'nün " + reqPage.ModifiedDate + " tarihinde kaydedilen versiyonu. (Geçmişe dönmeden düzenleme yapamazsınız)";
+        }
+        txtQuestion = reqPage.Question;
+        txtAnswer = reqPage.Answer;
+        drpPageStatus = reqPage.Status.ToString();
+        drpLang = reqPage.Lang.ToString();
+        drpFAQCategoryID = reqPage.FAQCategoryID;
+    }
+    if (IsPost)
+    {
+        if (!AdminLogin.IsLogin())
+        {
+            Response.Redirect(Shared.PageBasePath() + "Govern/Login");
+        }
+        // AntiForgery.Validate();
+        FAQ FAQ = new FAQ();
+        FAQHistory backup = new FAQHistory();
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["Reference"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            int reqID = (Request.QueryString["ID"].AsInt() != 0 ? Request.QueryString["ID"].AsInt() : Request.QueryString["Reference"].AsInt());
+            int historyID = (Request.QueryString["HistoryID"].AsInt());
+            if (reqID > 0)
+            {
+                FAQ = ConnXml.FAQ.FirstOrDefault(x => x.FAQID == reqID);
+                backup = FAQ.Cast<FAQHistory>();
+            }
+            else if (historyID > 0)
+            {
+                FAQ = ConnXml.FAQHistory.FirstOrDefault(x => x.FAQHistoryID == historyID).Cast<FAQ>();
+                backup = FAQ.Cast<FAQHistory>();
+            }
+            FAQ.ModifiedDate = DateTime.Now;
+            FAQ.ModifiedId = AdminLogin.LoginUserID();
+            backup.ModifiedId = AdminLogin.LoginUserID();
+        }
+        else
+        {
+            FAQ.CreatedDate = DateTime.Now;
+            FAQ.ModifiedDate = DateTime.Now;
+            FAQ.CreatedId = AdminLogin.LoginUserID();
+        }
+        FAQ.Question = Request.Form["txtQuestion"];
+        FAQ.Answer = Request.Unvalidated().Form["txtAnswer"];
+        FAQ.FAQCategoryID = Request.Form["drpFAQCategoryID"].AsInt();
+        FAQ.Lang = Request.Form["drpLang"].AsInt();
+        FAQ.Status = Request.Form["drpPageStatus"] == "0" ? false : true;
+        int ConnStatus = 0;
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            ConnXml.Entry(FAQ).State = System.Data.EntityState.Modified;
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            ConnXml.FAQ.Add(FAQ);
+            ConnStatus = ConnXml.SaveChanges();
+            backup = FAQ.Cast<FAQHistory>();
+        }
+        if (ConnStatus > 0)
+        {
+            backup.HistoryCreateDate = DateTime.Now;
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            ConnXml.FAQHistory.Add(backup);
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("FAQPage?Lang=" + reqLangID);
+    }
+}
+<div class="Title">@Html.Raw(txtPageTitle)</div>
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @{
+                    List<SelectListItem> lstForm = new List<SelectListItem>();
+                    lstForm.Add(new SelectListItem { Value = "0", Text = "Soru Kategorisi Seçiniz" });
+                    lstForm.AddRange(ConnXml.FAQCategory.Where(x => x.Lang == reqLangID).ToList().Select(x => new SelectListItem { Value = x.FAQCategoryID.ToString(), Text = x.Title, Selected = (x.FAQCategoryID == drpFAQCategoryID ? true : false) }));
+                    IEnumerable<SelectListItem> drpFormsItem = lstForm;
+                    if (drpFormsItem.Any(x => x.Value == drpFAQCategoryID.ToString()))
+                    {
+                        drpFormsItem.FirstOrDefault(x => x.Value == drpFAQCategoryID.ToString()).Selected = true;
+                    }
+                }
+                @HelperAdminControl.DropDownList("drpFAQCategoryID", "Kategori", drpFormsItem)
+                @HelperAdminControl.inputText("txtQuestion", "Soru", false, true, txtQuestion)
+                @HelperAdminControl.inputEditor("txtAnswer", "Cevap", txtAnswer)
+                @{
+                    List<SelectListItem> lstLang = new List<SelectListItem>();
+                    for (int i = 0; i < Shared.Lang.Length; i++)
+                    {
+                        lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                    }
+                    lstLang.FirstOrDefault(x => x.Value == drpLang).Selected = true;
+                    IEnumerable<SelectListItem> drpLangItems = lstLang;
+                }
+                @HelperAdminControl.DropDownList("drpLang", "Dil", drpLangItems)
+                <div class="Question">Durum</div>
+                <div class="Input">
+                    <input type="radio" id="drpPageStatus0" name="drpPageStatus" value="0"><label for="drpPageStatus0">Pasif</label>
+                    <input type="radio" id="drpPageStatus1" name="drpPageStatus" value="1" checked="checked"><label for="drpPageStatus1">Aktif</label>
+                </div>
+                <div class="ButtonPanel">
+                    <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="@Html.Raw(btnName)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,117 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+}
+@functions {
+    public string GetDetail(int getLang)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (CompanyReportHistory itemPages in ConnXml.CompanyReportHistory.Where(x => x.Lang == getLang).OrderByDescending(x => x.HistoryCreateDate))
+        {
+            var userName = "";
+            if (itemPages.ModifiedId > 0)
+            {
+                var admin = ConnXml.Admin.FirstOrDefault(x => x.AdminID == itemPages.ModifiedId);
+                if (admin != null)
+                {
+                    userName = admin.UserName;
+                }
+            }
+            str += "<tr";
+            str += "<td class=\"Min grippy\"></td>";
+            if (!itemPages.ImageUrl.IsEmpty())
+            {
+                string imgDir = "~/" + Setting.Documentdir + "/CompanyReport/" + itemPages.ImageUrl;
+                string ext = itemPages.ImageUrl.Split('.').Last();
+                if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                {
+                    str += "<td class='Min'>";
+                    switch (ext.ToLower())
+                    {
+                        case "jpg":
+                        case "jpeg":
+                        case "png":
+                            str += "<img src=\"" + imgDir.Replace("~/", "../") + "\" width=\"100\" />";
+                            break;
+                        case "pdf":
+                            str += "<a href='" + imgDir.Replace("~/", "../") + "' target='_blank'><img src='images/pdf_icon.png'  /></a>";
+                            break;
+                        case "mp4":
+                            str += "<a href='" + imgDir.Replace("~/", "../") + "' target='_blank'><img src='images/video_icon.png' /></a>";
+                            break;
+                    }
+                    str += "</td>";
+                }
+                else
+                {
+                    str += "<td class='Min'>Resim Bulunamadı</td>";
+                }
+            }
+            else
+            {
+                str += "<td class='Min'>Resim Bulunamadı</td>";
+            }
+            str += "<td class='Normal'>" + itemPages.Title + "</td>";
+            str += "<td class='Normal'>" + itemPages.Date.ToString("dd/MM/yyyy") + "</td>";
+            str += "<td class='Normal'>" + userName + "</td>";
+            str += "<td class='Normal'>" + itemPages.HistoryCreateDate + "</td>";
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditCompanyReportPage?HistoryID=" + itemPages.CompanyReportHistoryID + "'>Geçmişi Görüntüle</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<div class="Title">Şirket Raporu Geçmiş Listesi</div>
+<form method="post">
+    <input type="hidden" id="PageName" value="" />
+    <input type="hidden" id="PageNameQ" value="" />
+    <input type="hidden" id="SelectedItems" name="SelectedItems" class="SelectedItems" runat="server" />
+    <input type="hidden" id="PassiveItems" name="PassiveItems" class="PassiveItems" runat="server" />
+    <input type="hidden" id="SortItems" name="SortItems" class="SortItems" runat="server" />
+    <div class="Content">
+        <table class="GridWiew" cellpadding="5" cellspacing="0">
+            <thead>
+            <td class="Min">Dosya</td>
+            <td class="Normal">Başlık</td>
+            <td class="Normal">Tarih</td>
+            <td class="Normal">Düzenleyen</td>
+            <td class="Normal">Geçmişin Oluşturulma Tarihi</td>
+            <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetDetail(reqLangID);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Şirket Raporu Bulunamadı<br />
+                                    <br />
+                                    <a href='javascript:;' onclick="newPage(0,@reqLangID)">Yeni Şirket Raporu Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+            <td class="Min">Dosya</td>
+            <td class="Normal">Başlık</td>
+            <td class="Normal">Tarih</td>
+            <td class="Normal">Düzenleyen</td>
+            <td class="Normal">Geçmişin Oluşturulma Tarihi</td>
+            <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

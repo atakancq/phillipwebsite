@@ -1,0 +1,347 @@
+﻿@{
+    int getlang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        int getFormID = 7;
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        int centerOfficeID = 0;
+        if (PageData[0] != null)
+        {
+            centerOfficeID = Convert.ToInt32(PageData[0]);
+        }
+        bool isConfirm = false;
+
+
+        if (IsPost)
+        {
+            @* Get from query string *@
+            var req_utm_source = Request.QueryString["utm_source"] ?? "";
+            var req_utm_medium = Request.QueryString["utm_medium"] ?? "";
+            var req_utm_campaign = Request.QueryString["utm_campaign"] ?? "";
+            var req_utm_id = Request.QueryString["utm_id"] ?? "";
+            var req_gclid = Request.QueryString["gclid"] ?? "";
+            @* Ensure UTM Params *@
+            string utmParams = "&utm_source=" + req_utm_source.Trim() + "&utm_medium=" + req_utm_medium.Trim() + "&utm_campaign=" + req_utm_campaign.Trim() + "&utm_id=" + req_utm_id.Trim() + "&gclid=" + req_gclid.Trim();
+            @* Set form variables *@
+    var txtNameSurname = Request.Form["contact_name"];
+    var txtPhone = Request.Form["txtPhone"];
+    var txtEmail = Request.Form["contact_email"];
+    var chckKvkk = Request.Form["terms"];
+    var chckElectronic = Request.Form["terms2"];
+
+    var GoogleCaptchaToken = Request.Form["GoogleCaptchaToken"];
+    var isEmail = Shared.EmailIsValid(txtEmail);
+    var isPhone = Shared.ValidPhone(txtPhone);
+    if (isEmail)
+    {
+        if (!string.IsNullOrEmpty(txtNameSurname) && !string.IsNullOrEmpty(txtEmail) && !string.IsNullOrEmpty(txtPhone))
+        {
+            AccountForm accountform = new AccountForm()
+            {
+                NameSurname = txtNameSurname,
+                Email = txtEmail,
+                Phone = txtPhone,
+                AcceptElectronicMessage = chckKvkk == "ok" ? true : false,
+                KVKK = chckElectronic == "ok" ? true : false,
+                LangID = Shared.GetLang(),
+                AddDate = DateTime.Now
+            };
+
+            ConnXml.AccountForm.Add(accountform);
+            int ConnStatus = ConnXml.SaveChanges();
+
+            var nameIsArabic = Shared.IsArabic(txtNameSurname);
+            var emailIsArabic = Shared.IsArabic(txtEmail);
+            var nameSurname = Shared.ValidNameSurname(txtNameSurname);
+
+            if (!nameIsArabic && !emailIsArabic && isPhone)
+            {
+                if (ConnStatus > 0)
+                {
+                    isConfirm = true;
+                    #region MailNames
+                    string[] MailNames = { "Ad Soyad", "Telefon", "E-Posta adresi", "KVKK", "Elektronik İleti Gönderimini ", "Gönderim Tarihi" };
+                    #endregion
+
+                    #region MailValues
+                    string[] MailValues = { txtNameSurname, txtPhone, txtEmail, chckKvkk, chckElectronic, DateTime.Now.ToString() };
+                    #endregion
+
+                    ServicePointManager.Expect100Continue = true;
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                    try
+                    {
+                        string html = string.Empty;
+                        string url = @"https://crmv3.phc.com.tr/api2/get_data?adsoyad=" + HttpUtility.UrlEncode(txtNameSurname) + "&epostaadresi=" + HttpUtility.UrlEncode(txtEmail) + "&telefon=" + HttpUtility.UrlEncode(txtPhone) + "&kaynak=Direct&alt_kaynak=%2Fhesap-ac%2F&leadtype=1&leaddagitim=hisse" + utmParams; ;
+
+                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                        request.AutomaticDecompression = DecompressionMethods.GZip;
+
+                        using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                        {
+                            using (Stream stream = response.GetResponseStream())
+                            {
+                                using (StreamReader reader = new StreamReader(stream))
+                                {
+                                    html = reader.ReadToEnd();
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+
+
+                    }
+
+
+                    if (ConnXml.FormMailRelation.Any(x => x.FormID == getFormID))
+                    {
+                        FormMailRelation FormMailRelation = ConnXml.FormMailRelation.FirstOrDefault(x => x.FormID == getFormID);
+
+                        foreach (MailAccount itemAccount in ConnXml.MailAccount.Where(x => x.MailGroupID == FormMailRelation.MailGroupID))
+                        {
+
+                            WebMail.Send(to: itemAccount.Address, subject: "Hesap Aç", isBodyHtml: true, body: Setting.Pagetitle + " web sitesinden hesap aç gönderildi.<br /><br />" + Shared.ToFormBody(MailNames, MailValues));
+
+
+                        }
+                    }
+
+                    var redirectUrl = "/hesap_ac_onay.html?phone=" + accountform.Phone + "&email=" + accountform.Email;
+                    Response.Redirect(redirectUrl);
+
+                }
+            }
+            else
+            { 
+                var redirectUrl = "/hesap-ac?phoneValid=" + Convert.ToInt32(isPhone) + "&emailValid=" + Convert.ToInt32(isEmail) + "&email= " + txtEmail + "&nameSurname=" + txtNameSurname + "&phone=" + txtPhone + ""; 
+                Response.Redirect(redirectUrl);
+            }
+        }
+    }
+    else
+    {
+        var phoneValid = Shared.ValidPhone(txtPhone);
+        var emailValid = Shared.EmailIsValid(txtEmail);
+
+        var redirectUrl = "/hesap-ac?phoneValid=" + Convert.ToInt32(isPhone) + "&emailValid=" + Convert.ToInt32(isEmail) + "&email= " + txtEmail + "&nameSurname=" + txtNameSurname + "&phone=" + txtPhone + "";
+        Response.Redirect(redirectUrl);
+    }
+}
+
+
+
+
+        <div class="mainForm">
+            <div class="viopleftSide col-md-6 col-sm-6 col-xs-12">
+                <div class="viopformTitle3">
+                    Tek Platform, Tüm Dünya
+                </div>
+                <div class="viopformTitle3">
+                    <div class="viop_row">
+                        <img src="../../content/images/iconlar/dolar_icon.png" />
+                        <div>ABD Hisselerinde İşlem Başına<br /> Sadece <span class="warn">0,99$ Sabit Fiyat.</span></div>
+                    </div>
+                    <div class="viop_row">
+                        <img src="../../content/images/iconlar/tl_icon.png" />
+                        <div>BIST-VIOP İşlemlerinizde <br /> Uygun Komisyon Oranları </div>
+                    </div>
+                    <div class="viop_row">
+                        <img src="../../content/images/iconlar/call_icon.png" />
+                        <div>5/24 Temsilci Desteği</div>
+                    </div>
+                    <div class="viop_row">
+                        <img src="../../content/images/iconlar/chart_icon.png" />
+                        <div>Günlük Piyasa Rapor ve Analizleri</div>
+                    </div>
+                </div>
+            </div>
+            <div class="vioprightSide col-md-6 col-sm-6 col-xs-12">
+                <div class="quickForm">
+                    <div class="qTitle">
+                        <p>PhillipCapital'de</p>
+                        Şimdi Hesap Açın!
+                        <p style="color: darkred;font-size: 15px; display:none;" id="errorMessage">
+                            <strong>Lütfen İşaretli Alanları Gözden Geçirin</strong>
+                        </p>
+                    </div>
+                    <div class="qBody">
+                        <form class="hid" method="post" id="accountform">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="BbD6AoVYEJY0d45ffzE4IBtjdTu06DVmQ6QTvl7Ho9uSdpZBpVcP57EKRkTFj5Gy">
+                            <div class="top">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="contact_name" required="" id="contact_name" placeholder="@Shared.GetTranslation(17)">
+                                    </div>
+                                </div>
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <input type="email" class="form-control" name="contact_email" required="" id="contact_email" placeholder="@Shared.GetTranslation(8)">
+                                    </div>
+                                </div>
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="txtPhone" required="" id="txtPhone" placeholder="@Shared.GetTranslation(16)">
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 mt">
+                                    <div class="checkArea mt">
+                                        <input onchange="this.setCustomValidity(validity.valueMissing ? 'Formu Göndermek için lütfen kabul ediniz' : '');" id="field_terms" type="checkbox" required="" name="field_terms"> <label for="field_terms">
+                                            PhillipCapital<a href="/internet-sitesi-aydinlatma-metni" target="_blank"> web sitesi üyeliği aydınlatma bildirimi</a> ’ni
+                                            okuduğumu, anladığımı ve kabul ettiğimi beyan ederim.
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12">
+                                    <div class="checkArea">
+                                        <input id="field_terms2" type="checkbox" name="field_terms2"> <label for="field_terms2">
+                                            PhillipCapital ve bağlı ortaklıkları tarafından tanıtım ve pazarlama
+                                            amacıyla <a href="/ticari-elektronik-ileti-gonderimine-iliskin-onay-metni" target="_blank">ticari elektronik ileti</a> gönderilmesini
+                                            onaylıyorum.
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bottom">
+                                <script>
+                                    new Cleave('#txtPhone', {
+                                        delimiters: [' (', ') ', ' ', ''],
+                                        blocks: [1, 3, 3, 4],
+                                        numericOnly: true,
+                                        prefix: '0',
+                                        noImmediatePrefix: false
+                                    });
+                                </script>
+                                @{
+                                    if (isConfirm)
+                                    {
+                                        <script>
+                                            @*gtag('event', 'conversion', { 'send_to': 'AW-10936174659/gpRHCIzcrccDEMOQ494o' });
+                                            </script>
+                                            <script>
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: 'Talebiniz alınmıştır. Kısa sürede sizinle iletişime geçilecektir.',
+                                                    showConfirmButton: false,
+                                                    timer: 1500
+                                                });
+                                                setTimeout(function () {
+                                                    window.location.href = window.location.href;
+                                                }, 1600);*@
+
+                                        </script>
+                                    }
+                                    else
+                                    {
+                                        <input id="GoogleCaptchaToken" name="GoogleCaptchaToken" type="hidden" />
+                                        <button type="submit" id="submit"> @Shared.GetTranslation(155)</button>
+                                    }
+
+
+                                }
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <script type="text/javascript">
+                document.getElementById("field_terms").setCustomValidity("Formu Göndermek için lütfen kabul ediniz");
+                var form = document.getElementById("accountform");
+
+                form.addEventListener("submit", function (e) {
+                    var btn = document.getElementById("submit");
+                    btn.setAttribute("disabled", "disabled");
+                })
+                const params = new URLSearchParams(window.location.search);
+                const phoneValid = params.get("phoneValid");
+                const emailValid = params.get("emailValid");
+                const nameSurname = params.get("nameSurname");
+                const phone = params.get("phone");
+                const email = params.get("email");
+
+                const phoneElement = document.getElementById("txtPhone"); 
+                const emailElement = document.getElementById("contact_email"); 
+                const nameElement = document.getElementById("contact_name");
+
+                var isValid = false;
+
+                if (phoneValid === "0" && emailValid === "0") {
+                    phoneElement.style.border = "2px solid #ff0f0f";
+                    emailElement.style.border = "2px solid #ff0f0f";
+                    isValid = true;
+                } else if (phoneValid === "0") { 
+                    phoneElement.style.border = "2px solid #ff0f0f"; 
+                    isValid = true;
+                } else if (emailValid === "0") {
+                    emailElement.style.border = "2px solid #ff0f0f";
+                    isValid = true;
+                }
+                if (isValid) {
+                    phoneElement.value = phone;
+                    emailElement.value = email;
+                    nameElement.value = nameSurname;
+                    const message = document.getElementById("errorMessage");
+                    message.style.display = "block";
+                }
+
+            </script>
+        </div>
+        <div class="winner">
+            <div class="winnerRow">
+                <div class="heading">@Shared.GetTranslation(165)</div>
+                <div class="heading2">@Shared.GetTranslation(166)</div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/rakipsiz-komisyon.png" />
+                    <span>@Shared.GetTranslation(167)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/ucretsiz-anlikveri.png" />
+                    <span>@Shared.GetTranslation(168)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/5gun24.png" />
+                    <span>@Shared.GetTranslation(169)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/onlinehesapac.png" />
+                    <span>@Shared.GetTranslation(170)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/nakit-t2.png" />
+                    <span>@Shared.GetTranslation(171)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/bistveabd.png" />
+                    <span>@Shared.GetTranslation(172)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/halkaarz.png" />
+                    <span>@Shared.GetTranslation(173)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/portfoy.png" />
+                    <span>@Shared.GetTranslation(174)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/sigorta.png" />
+                    <span>@Shared.GetTranslation(176)</span>
+                </div>
+
+            </div>
+        </div>
+        <div class="safewithus">
+            <div class="safewithusRow">
+                <div class="side">
+                    <div class="sidetitle">
+                        "@Html.Raw(Shared.GetTranslation(177))"
+                    </div>
+                    <div class="sidetitle2">
+                        @Html.Raw(Shared.GetTranslation(178))
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

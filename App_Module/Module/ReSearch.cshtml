@@ -1,0 +1,213 @@
+﻿@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        System.Globalization.CultureInfo cultureinfo = new System.Globalization.CultureInfo(getLang.toLangCulture());
+        <div class="mainResearch">
+            <div class="boxResearch">
+                <div class="boxHeader">
+                    <div class="leftArea">@Shared.GetTranslation(143)</div>
+                    <div class="rightArea">
+                        <a href="Yurt-Ici-Gunluk-Bulten">@Shared.GetTranslation(152)</a>
+                    </div>
+                </div>
+                <div class="liste" id="style-1">
+                    @{
+                        foreach (var item in ConnXml.BIST100Bulletin.Where(x => x.Status).OrderByDescending(x => x.Date))
+                        {
+                            <div class="item">
+                                @*<div class="title">@item.Title</div>*@
+                                <div class="bottom">
+                                    <div class="date">@item.Date.ToString("dd.MM.yyyy")</div>
+                                    <div class="downBtn"><a target="_blank" href="/Files/BIST100Bulletin/@item.ImageUrl">@Shared.GetTranslation(46)</a></div>
+                                </div>
+                            </div>
+                            //var trt = item.Title;
+                            //if (trt.Length > 50)
+                            //{
+                            //    trt = trt.Substring(0, 50);
+                            //}
+                            @*<tr> <td> <span> </span> </td> <td> @trt </td><a class="button yapis hafra" target="_blank" href="/Files/BIST100Bulletin/@item.ImageUrl">@Shared.GetTranslation(46)</a> <td> <div class="pdf"></div> </td>  </tr>*@
+                        }
+                    }
+                </div>
+            </div>
+            <div class="boxResearch abroad">
+                <div class="boxHeader">
+                    <div class="leftArea">@Shared.GetTranslation(144)</div>
+                    <div class="rightArea">
+                        <a href="Yurt-Disi-Gunluk-Bulten">@Shared.GetTranslation(152)</a>
+                    </div>
+                </div>
+                <div class="liste" id="style-1">
+                    @{
+                        foreach (var item in ConnXml.ABDBulletin.Where(x => x.Status).OrderByDescending(x => x.Date))
+                        {
+                            <div class="item">
+                                @*<div class="title">@item.Title</div>*@
+                                <div class="bottom">
+                                    <div class="date">@item.Date.ToString("dd.MM.yyyy")</div>
+                                    <div class="downBtn"><a target="_blank" href="/Files/ABDBulletin/@item.ImageUrl">@Shared.GetTranslation(46)</a></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="boxResearch">
+                <div class="boxHeader">
+                    <div class="leftArea">@Shared.GetTranslation(148)</div>
+                    <div class="rightArea">
+                        <a href="Yurt-Ici-Sirket-Kartlari">@Shared.GetTranslation(152)</a>
+                    </div>
+                </div>
+                <div class="liste" id="style-1">
+                    @{
+                        foreach (var item in ConnXml.BIST100CompanyCard.OrderByDescending(x => x.Date))
+                        {
+                            <div class="item">
+                                @*<div class="title">@item.Title</div>*@
+                                <div class="bottom">
+                                    <div class="date">@item.Title - @item.Date.ToString("dd.MM.yyyy")</div>
+                                    <div class="downBtn"><a target="_blank" href="/Files/BIST100CompanyCard/@item.ImageUrl">@Shared.GetTranslation(46)</a></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="boxResearch abroad">
+                <div class="boxHeader">
+                    <div class="leftArea">@Shared.GetTranslation(149)</div>
+                    <div class="rightArea">
+                        <a href="Yurt-Disi-Sirket-Kartlari">@Shared.GetTranslation(152)</a>
+                    </div>
+                </div>
+                <div class="liste" id="style-1">
+                    @{
+                        foreach (var item in ConnXml.ABDCompanyCard.OrderByDescending(x => x.Date))
+                        {
+                            <div class="item">
+                                @*<div class="title">@item.Title</div>*@
+                                <div class="bottom">
+                                    <div class="date">@item.Title - @item.Date.ToString("dd.MM.yyyy")</div>
+                                    <div class="downBtn"><a target="_blank" href="/Files/ABDCompanyCard/@item.ImageUrl">@Shared.GetTranslation(46)</a></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="boxResearch">
+                <div class="boxHeader">
+                    <div class="leftArea">@Shared.GetTranslation(150)</div>
+                    <div class="rightArea">
+                        <a href="Yurt-Ici-Hisse-Analizleri">@Shared.GetTranslation(152)</a>
+                    </div>
+                </div>
+                <div class="liste" id="style-1">
+                    @{
+                        foreach (var item in ConnXml.BIST100StockAnalysis.OrderByDescending(x => x.Date))
+                        {
+                            <div class="item">
+                                @*<div class="title">@item.Title</div>*@
+                                <div class="bottom">
+                                    <div class="date">@item.Title - @item.Date.ToString("dd.MM.yyyy")</div>
+                                    <div class="downBtn"><a target="_blank" href="/Files/BIST100StockAnalysis/@item.ImageUrl">@Shared.GetTranslation(46)</a></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="boxResearch abroad">
+                <div class="boxHeader">
+                    <div class="leftArea">@Shared.GetTranslation(151)</div>
+                    <div class="rightArea">
+                        <a href="Yurt-Disi-Hisse-Analizleri">@Shared.GetTranslation(152)</a>
+                    </div>
+                </div>
+                <div class="liste" id="style-1">
+                    @{
+                        foreach (var item in ConnXml.ABDStockAnalysis.OrderByDescending(x => x.Date))
+                        {
+                            <div class="item">
+                                @*<div class="title">@item.Title</div>*@
+                                <div class="bottom">
+                                    <div class="date">@item.Title - @item.Date.ToString("dd.MM.yyyy")</div>
+                                    <div class="downBtn"><a target="_blank" href="/Files/ABDStockAnalysis/@item.ImageUrl">@Shared.GetTranslation(46)</a></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="boxResearch">
+                <div class="boxHeader">
+                    <div class="leftArea">@Shared.GetTranslation(145)</div>
+                    <div class="rightArea">
+                        <a href="Yurt-Ici-Hisse-Teknik-Analiz-Raporlari">@Shared.GetTranslation(152)</a>
+                    </div>
+                </div>
+                <div class="liste" id="style-1">
+                    @{
+                        foreach (var item in ConnXml.LocalTechnicalAnalysis.OrderByDescending(x => x.Date))
+                        {
+                            <div class="item">
+                                @*<div class="title"></div>*@
+                                <div class="bottom">
+                                    <div class="date"> @item.Title - @item.Date.ToString("dd.MM.yyyy")</div>
+                                    <div class="downBtn"><a target="_blank" href="/Files/LocalTechnicalAnalysis/@item.ImageUrl">@Shared.GetTranslation(46)</a></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="boxResearch abroad">
+                <div class="boxHeader">
+                    <div class="leftArea">@Shared.GetTranslation(146)</div>
+                    <div class="rightArea">
+                        <a href="Yurt-Disi-Hisse-Teknik-Analiz-Raporlari">@Shared.GetTranslation(152)</a>
+                    </div>
+                </div>
+                <div class="liste" id="style-1">
+                    @{
+                        foreach (var item in ConnXml.ForeignTechnicalAnalysis.OrderByDescending(x => x.Date))
+                        {
+                            <div class="item">
+                                @*<div class="title">@item.Title</div>*@
+                                <div class="bottom">
+                                    <div class="date">@item.Title - @item.Date.ToString("dd.MM.yyyy")</div>
+                                    <div class="downBtn"><a target="_blank" href="/Files/ForeignTechnicalAnalysis/@item.ImageUrl">@Shared.GetTranslation(46)</a></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="boxResearch abroad">
+                <div class="boxHeader">
+                    <div style="font-size:13px;" class="leftArea">@Shared.GetTranslation(147)</div>
+                    <div class="rightArea">
+                        <a href="Yurt-Disi-Vadeli-Piyasa-Teknik-Analiz-Raporlari">@Shared.GetTranslation(152)</a>
+                    </div>
+                </div>
+                <div class="liste" id="style-1">
+                    @{
+                        foreach (var item in ConnXml.ABDViopAnalysis.OrderByDescending(x => x.Date))
+                        {
+                            <div class="item">
+                                @*<div class="title">@item.Title</div>*@
+                                <div class="bottom">
+                                    <div class="date">@item.Title - @item.Date.ToString("dd.MM.yyyy")</div>
+                                    <div class="downBtn"><a target="_blank" href="/Files/ABDViopAnalysis/@item.ImageUrl">@Shared.GetTranslation(46)</a></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}

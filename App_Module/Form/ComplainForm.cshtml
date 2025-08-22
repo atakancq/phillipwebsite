@@ -1,0 +1,165 @@
+﻿@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        int getFormID = 5;
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        int centerOfficeID = 0;
+        if (PageData[0] != null)
+        {
+            centerOfficeID = Convert.ToInt32(PageData[0]);
+        }
+        List<SelectListItem> lstPersonType = new List<SelectListItem>();
+        lstPersonType.Add(new SelectListItem { Value = Shared.GetTranslation(30), Text = Shared.GetTranslation(30) });
+        lstPersonType.Add(new SelectListItem { Value = Shared.GetTranslation(31), Text = Shared.GetTranslation(31) });
+        if (IsPost)
+        {
+            var txtNameSurname = Request.Form["txtNameSurname"];
+            var txtPhone = Request.Form["txtPhone"];
+            var txtEmail = Request.Form["txtEmail"];
+            var txtAccountNumber = Request.Form["txtAccountNumber"];
+            var txtSubject = Request.Form["txtSubject"];
+            var drpPersonType = Request.Form["drpPersonType"];
+            var txtAddress = Request.Form["txtAddress"];
+            var txtMessage = Request.Form["txtMessage"];
+            var chckKvkk = Request.Form["chckKvkk"];
+            var chckElectronic = Request.Form["chckElectronic"];
+            var req_utm_source = Request.QueryString["utm_source"] ?? "";
+            var req_utm_medium = Request.QueryString["utm_medium"] ?? "";
+            var req_utm_campaign = Request.QueryString["utm_campaign"] ?? "";
+            var req_utm_id = Request.QueryString["utm_id"] ?? "";
+            var req_gclid = Request.QueryString["gclid"] ?? "";
+            string utmParams = "&utm_source=" + req_utm_source.Trim() + "&utm_medium=" + req_utm_medium.Trim() + "&utm_campaign=" + req_utm_campaign.Trim() + "&utm_id=" + req_utm_id.Trim() + "&gclid=" + req_gclid.Trim();
+            var GoogleCaptchaToken = Request.Form["GoogleCaptchaToken"];
+            if (true)
+            {
+                ComplainForm passwordRequestForm = new ComplainForm()
+                {
+                    NameSurname = txtNameSurname,
+                    Email = txtEmail,
+                    Phone = txtPhone,
+                    Subject = txtSubject,
+                    IpAddress = Shared.GetIpAddress(),
+                    AcceptElectronicMessage = chckElectronic == "ok" ? true : false,
+                    KVKK = chckKvkk == "ok" ? true : false,
+                    LangID = Shared.GetLang(),
+                    AddDate = DateTime.Now
+                };
+                ConnXml.ComplainForm.Add(passwordRequestForm);
+                int ConnStatus = ConnXml.SaveChanges();
+                if (ConnStatus > 0)
+                {
+                    #region MailNames
+                    string[] MailNames = {
+                        "Ad Soyad",
+                        "Telefon",
+                        "E-Posta adresi",
+                        "Adres",
+                        "İlişki",
+                        "Hesap Numarası",
+                        "Konu",
+                        "Mesaj",
+                        "KVKK",
+                        "Elektronik İleti Gönderimini ",
+                        "Gönderim Tarihi"
+                    };
+                    #endregion
+                    #region MailValues
+                    string[] MailValues = {
+                        txtNameSurname,
+                        txtPhone,
+                        txtEmail,
+                        txtAddress,
+                        drpPersonType,
+                        txtAccountNumber,
+                        txtSubject,
+                        txtMessage,
+                        chckKvkk,
+                        chckElectronic,
+                        DateTime.Now.ToString()
+                    };
+                    #endregion
+                    ServicePointManager.Expect100Continue = true;
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                    string html = string.Empty;
+                    string url = @"https://crmv3.phc.com.tr/Complainbox/get_data?" + "&contact_name=" + HttpUtility.UrlEncode(txtNameSurname) + "&contact_email=" + HttpUtility.UrlEncode(txtEmail) + "&phone_number=" + HttpUtility.UrlEncode(txtPhone) + "&account_number=" + HttpUtility.UrlEncode(txtAccountNumber) + "&address=" + HttpUtility.UrlEncode(txtAddress) + "&complaint_subject=" + HttpUtility.UrlEncode(txtSubject) + "&form_content=" + HttpUtility.UrlEncode(txtMessage) + utmParams; ;
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                    request.AutomaticDecompression = DecompressionMethods.GZip;
+                    using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                    {
+                        using (Stream stream = response.GetResponseStream())
+                        {
+                            using (StreamReader reader = new StreamReader(stream))
+                            {
+                                html = reader.ReadToEnd();
+                            }
+                        }
+                    }
+                    if (ConnXml.FormMailRelation.Any(x => x.FormID == getFormID))
+                    {
+                        FormMailRelation FormMailRelation = ConnXml.FormMailRelation.FirstOrDefault(x => x.FormID == getFormID);
+                        foreach (MailAccount itemAccount in ConnXml.MailAccount.Where(x => x.MailGroupID == FormMailRelation.MailGroupID))
+                        {
+                            var content = Setting.Pagetitle + " web sitesinden şikayet formu gönderildi.<br /><br />" + Shared.ToFormBody(MailNames, MailValues);
+                            Shared.SendMail(itemAccount.Address, "PhillipCapital - Şikayet", content);
+
+                            //WebMail.Send(to: itemAccount.Address, subject: "Şikayet Formu", isBodyHtml: true, body: );
+                        }
+                    }
+                }
+                @Html.Raw(Shared.GetTranslation(182))
+            }
+            else
+            {
+            }
+        }
+        else
+        {
+            <div class="iletisim-ve-ofislerimiz-bizeulasin complain">
+                <div class="bize-ulasin-inner">
+                    <p>
+                        @Shared.GetTranslation(25)
+                    </p>
+                    <form method="post">
+                        <div class="row">
+                            @HelperClientControl.inputText("txtNameSurname", Shared.GetTranslation(17), false, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtEmail", Shared.GetTranslation(8), false, true, "Email", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtPhone", Shared.GetTranslation(16), false, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtAccountNumber", Shared.GetTranslation(9), false, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtAddress", Shared.GetTranslation(26), false, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtSubject", Shared.GetTranslation(27), false, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.DropDownList("drpPersonType", Shared.GetTranslation(29), lstPersonType, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtMessage", Shared.GetTranslation(28), true, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.CheckBox("chckKvkk", "<strong>KVKK </strong>Şartlarını Kabul Ediyorum.", true, GetSeoUrl.getPagesUrl(49))
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.CheckBox("chckElectronic", "Elektronik İleti Gönderimini Kabul Ediyorum.", true, GetSeoUrl.getPagesUrl(50))
+                        </div>
+                        <div class="form-sifre-talep-alt">
+                            <input id="GoogleCaptchaToken" name="GoogleCaptchaToken" type="hidden" />
+                            <div class="google-recaptcha">
+                                <input type="submit" id="submit" value="@Shared.GetTranslation(22)" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+}

@@ -1,0 +1,136 @@
+﻿@{
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        if (IsPost)
+        {
+            Setting Setting = ConnXml.Setting.FirstOrDefault();
+            int reqID = int.Parse(Request.Form["ID"].ToString());
+            string reqType = Request.Form["Type"].ToString();
+            try
+            {
+                if (reqType == "ActivityReportImageUrl")
+                {
+                    ActivityReport reqPage = ConnXml.ActivityReport.FirstOrDefault(x => x.ActivityReportID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/ActivityReport/" + reqPage.ImageUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "BankImageUrl")
+                {
+                    Bank reqPage = ConnXml.Bank.FirstOrDefault(x => x.BankID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/Bank/" + reqPage.ImageUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "BannerImageUrl")
+                {
+                    Banner reqPage = ConnXml.Banner.FirstOrDefault(x => x.BannerID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/Banner/" + reqPage.ImageUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "BoardOfDirectorsImageUrl")
+                {
+                    BoardOfDirectors reqPage = ConnXml.BoardOfDirectors.FirstOrDefault(x => x.BoardOfDirectorsID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/BoardOfDirectors/" + reqPage.ImageUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "DocumentGaleryFile")
+                {
+                    DocumentGaleryFile reqPage = ConnXml.DocumentGaleryFile.FirstOrDefault(x => x.DocumentGaleryFileID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/DocumentGalery/" + reqPage.DocumentGaleryFileUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "FinancialStatementImageUrl")
+                {
+                    FinancialStatement reqPage = ConnXml.FinancialStatement.FirstOrDefault(x => x.FinancialStatementID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/FinancialStatement/" + reqPage.ImageUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "PagesImageUrl")
+                {
+                    Pages reqPage = ConnXml.Pages.FirstOrDefault(x => x.PageID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/Pages/" + reqPage.ImageUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "PhotoGaleryImageUrl")
+                {
+                    PhotoGaleryFile reqPage = ConnXml.PhotoGaleryFile.FirstOrDefault(x => x.PhotoGaleryFileID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/PhotoGalery/" + reqPage.PhotoGaleryFileUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "OfficialAnnouncementImageUrl")
+                {
+                    OfficialAnnouncement reqPage = ConnXml.OfficialAnnouncement.FirstOrDefault(x => x.OfficialAnnouncementID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/OfficialAnnouncement/" + reqPage.ImageUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "ABDBulletinImageUrl")
+                {
+                    ABDBulletin reqPage = ConnXml.ABDBulletin.FirstOrDefault(x => x.ABDBulletinID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/ABDBulletin/" + reqPage.ImageUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "BIST100BulletinImageUrl")
+                {
+                    BIST100Bulletin reqPage = ConnXml.BIST100Bulletin.FirstOrDefault(x => x.BIST100BulletinID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/BIST100Bulletin/" + reqPage.ImageUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "VideoGaleryFileImageUrl")
+                {
+                    VideoGaleryFile reqPage = ConnXml.VideoGaleryFile.FirstOrDefault(x => x.VideoGaleryFileID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/VideoGalery/" + reqPage.VideoGaleryFileUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                else if (reqType == "VideoGaleryFileImageUrl")
+                {
+                    VideoGaleryFile reqPage = ConnXml.VideoGaleryFile.FirstOrDefault(x => x.VideoGaleryFileID == reqID);
+                    string imgDir = "~/" + Setting.Documentdir + "/VideoGalery/" + reqPage.VideoGaleryFileUrl;
+                    if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                    {
+                        System.IO.File.Delete(Server.MapPath(imgDir));
+                    }
+                }
+                Response.Write("true");
+            }
+            catch (Exception ex)
+            {
+                Response.Write(ex.Message);
+            }
+        }
+    }
+}

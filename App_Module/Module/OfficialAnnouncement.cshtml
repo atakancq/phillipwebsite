@@ -1,0 +1,92 @@
+﻿@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        System.Text.StringBuilder sbProspectus = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbProspectus2 = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbProspectus3 = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbProspectus4 = new System.Text.StringBuilder();
+        //
+        string str = @"<div class='faaliyet-raporlari'>
+            <a target='_blank' href='{2}'> <span>{0}</span></a>
+            <a target='_blank' href='{2}'>
+                PDF
+                <img class='pdf-icon' src='/Content/images/pdf.svg'>
+            </a>
+        </div>";
+        foreach (var item in ConnXml.OfficialAnnouncement.Where(x => x.Status && x.Lang == getLang && x.OfficialAnnouncementCategoryID == 1).OrderByDescending(x => x.Date))
+        {
+            if (!string.IsNullOrEmpty(item.ImageUrl))
+            {
+                sbProspectus.AppendFormat(str, item.Title, item.Date.ToString("dd/MM/yyyy"), "/Files/OfficialAnnouncement/" + item.ImageUrl);
+            }
+        }
+        foreach (var item in ConnXml.OfficialAnnouncement.Where(x => x.Status && x.Lang == getLang && x.OfficialAnnouncementCategoryID == 2).OrderByDescending(x => x.Date))
+        {
+            if (!string.IsNullOrEmpty(item.ImageUrl))
+            {
+                sbProspectus2.AppendFormat(str, item.Title, item.Date.ToString("dd/MM/yyyy"), "/Files/OfficialAnnouncement/" + item.ImageUrl);
+            }
+        }
+        foreach (var item in ConnXml.OfficialAnnouncement.Where(x => x.Status && x.Lang == getLang && x.OfficialAnnouncementCategoryID == 3).OrderByDescending(x => x.Date))
+        {
+            if (!string.IsNullOrEmpty(item.ImageUrl))
+            {
+                sbProspectus3.AppendFormat(str, item.Title, item.Date.ToString("dd/MM/yyyy"), "/Files/OfficialAnnouncement/" + item.ImageUrl);
+            }
+        }
+        foreach (var item in ConnXml.OfficialAnnouncement.Where(x => x.Status && x.Lang == getLang && x.OfficialAnnouncementCategoryID == 4).OrderByDescending(x => x.Date))
+        {
+            if (!string.IsNullOrEmpty(item.ImageUrl))
+            {
+                sbProspectus4.AppendFormat(str, item.Title, item.Date.ToString("dd/MM/yyyy"), "/Files/OfficialAnnouncement/" + item.ImageUrl);
+            }
+        }
+        <br />
+        <div class="accordion">
+            <div class="tabs">
+                <a class="tab active">@Shared.GetTranslation(161)</a>
+                <a class="tab">@Shared.GetTranslation(162)</a>
+                <a class="tab">@Shared.GetTranslation(163)</a>
+                <a class="tab">@Shared.GetTranslation(164)</a>
+            </div>
+            <div class="accordion-content active">
+                <div class="faaliyet-raporlari-mali-tablolar-wrapper">
+                    <div class="faaliyet-raporlari-wrapper">
+                        @Html.Raw(sbProspectus.ToString())
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <div class="faaliyet-raporlari-mali-tablolar-wrapper">
+                    <div class="faaliyet-raporlari-wrapper">
+                        @Html.Raw(sbProspectus2.ToString())
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <div class="faaliyet-raporlari-mali-tablolar-wrapper">
+                    <div class="faaliyet-raporlari-wrapper">
+                        @Html.Raw(sbProspectus3.ToString())
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-content">
+                <div class="faaliyet-raporlari-mali-tablolar-wrapper">
+                    <div class="faaliyet-raporlari-wrapper">
+                        @Html.Raw(sbProspectus4.ToString())
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            changetabsAccordion(".tab", ".accordion");
+        </script>
+        <style>
+            .accordion-content.active { padding-top: 10px; padding-bottom: 25px; height: auto; display: block; }
+            .accordion-content { display: none; }
+            .faaliyet-raporlari-mali-tablolar-wrapper { width: 100%; display: block; }
+            .faaliyet-raporlari { max-width: unset; }
+        </style>
+    }
+}

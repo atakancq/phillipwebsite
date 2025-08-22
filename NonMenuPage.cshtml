@@ -1,0 +1,233 @@
+﻿@functions
+{
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    string WriteSubPageMenu(int MenuID, int PageID)
+    {
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        System.Text.StringBuilder SbMenu = new System.Text.StringBuilder();
+        int getLang = Shared.GetLang();
+        var menuList = ConnXml.Pages.Where(x => (x.Status) && (x.Lang == getLang) && (x.ParentID == MenuID)).Select(x => new
+        {
+            x.PageID,
+            x.Line,
+            x.Target,
+            x.DisplayName,
+            x.RawUrl
+        }).OrderBy(x => x.Line);
+        foreach (var Menu in menuList)
+        {
+            bool subPageCntrl = ConnXml.Pages.Any(x => (x.Status) && x.ParentID == Menu.PageID);
+            string SubPagesUrl = Menu.RawUrl;
+            SbMenu.Append(" <li itemid='" + Menu.PageID + "' class='left-menu-item " + (Menu.PageID == PageID ? "active" : "") + "'><a target=" + Menu.Target + " href='" + SubPagesUrl + "'>" + Menu.DisplayName + "</a>");
+            SbMenu.Append("</li>");
+            if (subPageCntrl)
+            {
+                SbMenu.Append("<ul  " + (Menu.PageID != PageID ? "style='display:none;'" : "") + ">");
+                SbMenu.Append(WriteSubPageMenu(Menu.PageID, PageID));
+                SbMenu.Append("</ul>");
+            }
+        }
+        return SbMenu.ToString();
+    }
+    string faqList(MvcXmlEntities ConnXml, int getFAQCategory)
+    {
+        System.Text.StringBuilder sbAccordion = new System.Text.StringBuilder();
+        string strAccordion = @" <div>
+            <span class='target-fix' id='accordion{0}'></span>
+            <!-- Link to open accordion, hidden when open -->
+            <a href='#accordion{0}' class='baslik-link' id='open-accordion{0}' title='open' data-id='area{0}' >
+                <div class='acc-inner'>
+                    <img class='history-text-before-img' src='/Content/images/help.svg' />
+                    <div class='text-acc-header'><h5>{1}</h5></div>
+                    <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                </div>
+            </a>
+            <a href='#accordion' class='baslik-link' id='close-accordion{0}' title='close' >
+                <div class='acc-inner'>
+                    <img class='history-text-before-img' src='/Content/images/help.svg' />
+                    <div class='text-acc-header'><h5>{1}</h5></div>
+                    <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                </div>
+            </a>
+            <div class='accordion-content' id='area{0}'>
+                <p>{2}</p>
+            </div>
+        </div>";
+        foreach (var item in ConnXml.FAQ.Where(x => x.Status && x.FAQCategoryID == getFAQCategory))
+        {
+            sbAccordion.AppendFormat(strAccordion, "FAQ" + item.FAQID, item.Question, item.Answer);
+        }
+        return sbAccordion.ToString();
+    }
+}
+@{
+    Layout = "Master/_Default.cshtml";
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        int getLang = Shared.GetLang();
+        if ((UrlData[0].IsInt()) && (ConnXml.Pages.AsEnumerable().Any(x => x.PageID == UrlData[0].AsInt())))
+        {
+            int getPageID = UrlData[0].AsInt();
+            System.Globalization.CultureInfo cultureinfo = new System.Globalization.CultureInfo(getLang.toLangCulture());
+            Pages itemPage = ConnXml.Pages.FirstOrDefault(x => x.PageID == getPageID);
+            Page.Title = itemPage.Title + " | " + Setting.Pagetitle;
+            if (itemPage.Status == false)
+            {
+                Response.Redirect(Shared.PageBasePath());
+            }
+            if (itemPage.ExtarnalLink.AsInt() > 0)
+            {
+                int getValue = itemPage.ExtarnalLink.ToString().AsInt();
+                Pages itemPageReDirect = ConnXml.Pages.FirstOrDefault(x => x.PageID == getValue);
+                if (itemPageReDirect != null)
+                {
+                    Response.Redirect(Shared.PageBasePath() + itemPageReDirect.RawUrl);
+                }
+            }
+            else if (!string.IsNullOrEmpty(itemPage.ExternalUrl))
+            {
+                Response.Redirect(itemPage.ExternalUrl);
+            }
+            string getFileName = "Content/images/hizmetlerimiz.png";
+            if (!string.IsNullOrEmpty(itemPage.ImageUrl))
+            {
+                getFileName = "Files/Pages/" + itemPage.ImageUrl;
+            }
+            string strTopName = "";
+            if (ConnXml.Pages.Any(x => x.PageID == itemPage.ParentID))
+            {
+                strTopName = ConnXml.Pages.FirstOrDefault(x => x.PageID == itemPage.ParentID).DisplayName;
+            }
+            string strRenderHtml = "";
+            if (itemPage.ModuleID > 0)
+            {
+                Module getModule = ConnXml.Module.FirstOrDefault(x => x.ModuleID == itemPage.ModuleID);
+                object[] data = new object[] { itemPage.ControlParameter, this };
+                strRenderHtml = RenderPage("~/App_Module/Module/" + getModule.ModulePath, data).ToHtmlString();
+            }
+            @section head {
+                @{
+                    <meta property="og:title" content="@itemPage.Title" />
+                    if (!string.IsNullOrEmpty(itemPage.Keywords))
+                    {
+                        <meta name="keywords" content="@itemPage.Keywords">
+                    }
+                    if (!string.IsNullOrEmpty(itemPage.Description))
+                    {
+                        <meta name="description" content="@itemPage.Description">
+                        <meta property="og:description" content="@itemPage.Description" />
+                    }
+                    <meta property="og:site_name" content="@Shared.PageBasePath()@Request.RawUrl.Substring(1)" />
+                }
+            }
+            <div class="page">
+                <div class="single-banner">
+                    <div class="single-banner-inner">
+                        <img src="@getFileName" />
+                    </div>
+                </div>
+                @*
+                    <div class="title-area">
+                        <h1>
+                            @{
+                                string pTitle = string.Empty;
+                                if (strTopName.Contains(" "))
+                                {
+                                    var splitTitle = strTopName.Split(' ');
+                                    pTitle = "<span class='orange'>" + splitTitle[0] + "</span>";
+                                    for (int i = 1; i < splitTitle.Length; i++)
+                                    {
+                                        pTitle += " " + splitTitle[i];
+                                    }
+                                }
+                            }
+                            @Html.Raw(pTitle)
+                        </h1>
+                        <div class="left-menu-dropdown">
+                            <svg id="Group_5735" data-name="Group 5735" xmlns="http://www.w3.org/2000/svg" width="27.795" height="27.795" viewBox="0 0 27.795 27.795">
+                                <path id="Path_48035" data-name="Path 48035" d="M13.9,0A13.9,13.9,0,1,0,27.8,13.9,13.913,13.913,0,0,0,13.9,0Zm4.293,14.717L12.4,20.507a1.158,1.158,0,1,1-1.638-1.638L15.735,13.9,10.763,8.926A1.158,1.158,0,0,1,12.4,7.288l5.791,5.791A1.157,1.157,0,0,1,18.191,14.717Z" fill="#F47F01" />
+                            </svg>
+                        </div>
+                    </div>
+                *@
+                <div class="sub-page">
+                    <div class="page-container fullWidth">
+                        <div class="page-inner-wrapper">
+                            <div class="page-inner">
+                                <link href="/Content/css/all.min.css" rel="stylesheet" />
+                                <link href="/Content/css/owl.carousel.css" rel="stylesheet" />
+                                <link href="/Content/css/owl.theme.css" rel="stylesheet" />
+                                <link href="/Content/css/material-icons.css" rel="stylesheet" />
+                                <link href="/Content/css/style.css" rel="stylesheet" />
+                                <link href="/Content/css/responsive.css" rel="stylesheet" />
+                                <script type="text/javascript">
+                                    $(document).ready(function () {
+                                        // Set Event
+                                        $(".accordion div a").click(function () {
+                                            // Open?
+                                            if ($(this).attr("id").indexOf("open") > -1) {
+                                                var top = $(this).parent();
+                                                setTimeout(function () {
+                                                    // Scroll to the top of the element
+                                                    $('html, body').animate({
+                                                        scrollTop: top.offset().top
+                                                    }, 500);
+                                                }, 120);
+                                            }
+                                        });
+                                    });
+                                </script>
+                                <h2>@itemPage.DisplayName</h2>
+                                @if (!string.IsNullOrEmpty(itemPage.SubTitle))
+                                {
+                                    <h4>@itemPage.SubTitle</h4>
+                                }
+                                @{
+                                    if (!itemPage.ShortContent.IsEmpty())
+                                    {
+                                        <div>@Html.Raw(itemPage.ShortContent)</div>
+                                    }
+                                }
+                                @Html.Raw(itemPage.Body)
+                                @{
+                                    @Html.Raw(strRenderHtml)
+                                    if (itemPage.FormID > 0)
+                                    {
+                                        Form getModule = ConnXml.Form.FirstOrDefault(x => x.FormID == itemPage.FormID);
+                                        object[] data = new object[] { getModule.FormID };
+                                        @RenderPage("~/App_Module/Form/" + getModule.Module, data)
+                                    }
+                                }
+                                @{
+                                    if (itemPage.PhotoGaleries != "0")
+                                    {
+                                        object[] data = new object[] { itemPage.PhotoGaleries };
+                                        @RenderPage("~/App_Module/Module/PhotoGallery.cshtml", data)
+                                    }
+                                }
+                                @{
+                                    if (itemPage.FAQCatergoryID > 0)
+                                    {
+                                        <div class="sikca-sorulan-sorular-arama-wrapper-grid">
+                                            <div>
+                                                <img src="~/Content/images/magnifiying-glass.svg" class="search-icon" />
+                                            </div>
+                                            <div>
+                                                <input id="txtFAQSearchIcon" type="text" placeholder="@Shared.GetTranslation(141)" class="input-icon" />
+                                            </div>
+                                        </div>
+                                        <div class="accordion" allFAQ>
+                                            <span class="target-fix" id="accordion"></span>
+                                            @Html.Raw(faqList(ConnXml, itemPage.FAQCatergoryID))
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}

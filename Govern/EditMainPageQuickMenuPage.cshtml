@@ -1,0 +1,232 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    Login AdminLogin = new Login();
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Setting Setting = ConnXml.Setting.FirstOrDefault();
+    #region Değişkenler
+    var txtTitle = "";
+    var fuImageUrl = "";
+    var drpPageID = "0";
+    var txtUrl = "";
+    var drpPageTarget = "_self";
+    var drpLang = "0";
+    bool drpPageStatus = true;
+    var btnName = "Kaydet";
+    var txtPageTitle = "Yeni Hızlı Menü Ekle";
+    #endregion
+    if (Request.QueryString["Lang"] != null)
+    {
+        drpLang = Request.QueryString["Lang"];
+    }
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        MainPageQuickMenu Pages = ConnXml.MainPageQuickMenu.FirstOrDefault(x => x.MainPageQuickMenuID == reqID);
+        string imgDir = "~/" + Setting.Documentdir + "/MainPageQuickMenu/" + Pages.ImageUrl;
+        if (System.IO.File.Exists(Server.MapPath(imgDir)) && !Pages.ImageUrl.IsEmpty())
+        {
+            System.IO.File.Delete(Server.MapPath(imgDir));
+        }
+        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("MainPageQuickMenuPage");
+    }
+    if (Request.QueryString["ID"].IsInt() || Request.QueryString["Reference"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+    {
+        int reqID = (Request.QueryString["ID"].AsInt() != 0 ? Request.QueryString["ID"].AsInt() : Request.QueryString["Reference"].AsInt());
+        int historyID = (Request.QueryString["HistoryID"].AsInt());
+        MainPageQuickMenu reqPage = new MainPageQuickMenu();
+        if (reqID > 0)
+        {
+            reqPage = ConnXml.MainPageQuickMenu.FirstOrDefault(x => x.MainPageQuickMenuID == reqID);
+        }
+        else if (historyID > 0)
+        {
+            reqPage = ConnXml.MainPageQuickMenuHistory.FirstOrDefault(x => x.MainPageQuickMenuHistoryID == historyID).Cast<MainPageQuickMenu>();
+            btnName = "Geçmişe Dön";
+            txtPageTitle =reqPage.Title + " adlı menü'nün "+reqPage.ModifiedDate+ " tarihinde kaydedilen versiyonu. (Geçmişe dönmeden düzenleme yapamazsınız)";
+        }
+        txtTitle = reqPage.Title;
+        if (!reqPage.ImageUrl.IsEmpty())
+        {
+            string imgDir = "~/" + Setting.Documentdir + "/MainPageQuickMenu/" + reqPage.ImageUrl;
+            if (System.IO.File.Exists(Server.MapPath(imgDir)))
+            {
+                fuImageUrl = "<div class=\"Input\"><span>(<a href='" + imgDir.Replace("~/", "../") + "' target='_blank'>Mevcut resim</a> - <a class='DeleteFile' rel='" + reqPage.MainPageQuickMenuID + "'  type='MainPageQuickMenuImageUrl' href='javascript:void(0)' target='_blank'>Resmi veya Video Sil</a>)</span></div>";
+            }
+        }
+        txtUrl = reqPage.Url;
+        drpPageID = reqPage.PageID.ToString();
+        drpPageTarget = reqPage.Target;
+        drpLang = reqPage.Lang.ToString();
+        drpPageStatus = reqPage.Status;
+    }
+    if (IsPost)
+    {
+        if (!AdminLogin.IsLogin())
+        {
+            Response.Redirect(Shared.PageBasePath() + "Govern/Login");
+        }
+        // AntiForgery.Validate();
+        MainPageQuickMenu itemPages = new MainPageQuickMenu();
+        MainPageQuickMenuHistory backup = new MainPageQuickMenuHistory();
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["Reference"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            int reqID = (Request.QueryString["ID"].AsInt() != 0 ? Request.QueryString["ID"].AsInt() : Request.QueryString["Reference"].AsInt());
+            int historyID = (Request.QueryString["HistoryID"].AsInt());
+            if (reqID > 0)
+            {
+                itemPages = ConnXml.MainPageQuickMenu.FirstOrDefault(x => x.MainPageQuickMenuID == reqID);
+                backup = itemPages.Cast<MainPageQuickMenuHistory>();
+            }
+            else if (historyID > 0)
+            {
+                itemPages = ConnXml.MainPageQuickMenuHistory.FirstOrDefault(x => x.MainPageQuickMenuHistoryID == historyID).Cast<MainPageQuickMenu>();
+                backup = itemPages.Cast<MainPageQuickMenuHistory>();
+            }
+            itemPages.ModifiedDate = DateTime.Now;
+            itemPages.ModifiedId = AdminLogin.LoginUserID();
+            backup.ModifiedId = AdminLogin.LoginUserID();
+        }
+        else
+        {
+            itemPages.CreatedDate = DateTime.Now;
+            itemPages.ModifiedDate = DateTime.Now;
+            itemPages.CreatedId = AdminLogin.LoginUserID();
+            itemPages.ImageUrl = "";
+        }
+        itemPages.Title = Request.Form["txtTitle"];
+        if (Request.Files.Count > 0)
+        {
+            var uploadedFile = Request.Files["fuImageUrl"];
+            if (uploadedFile.ContentLength > 0)
+            {
+                if (!itemPages.ImageUrl.IsEmpty())
+                {
+                    string imgDir = "~/" + Setting.Documentdir + "/MainPageQuickMenu/" + itemPages.ImageUrl;
+                    System.IO.File.Delete(Server.MapPath(imgDir));
+                }
+                string getExtentions = Path.GetExtension(uploadedFile.FileName);
+                string newFileName = System.Guid.NewGuid().ToString() + getExtentions;
+                var fileSavePath = Server.MapPath("~/" + Setting.Documentdir + "/MainPageQuickMenu/" + newFileName);
+                uploadedFile.SaveAs(fileSavePath);
+                itemPages.ImageUrl = newFileName;
+            }
+        }
+        itemPages.PageID = Request.Form["drpPageID"].AsInt();
+        itemPages.Url = Request.Form["txtUrl"];
+        itemPages.Target = Request.Form["drpPageTarget"];
+        itemPages.Lang = Request.Form["drpLang"].AsInt();
+        itemPages.Line = 0;
+        itemPages.Status = (Request.Form["drpPageStatus"] == "1" ? true : false);
+        int ConnStatus = 0;
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            ConnXml.Entry(itemPages).State = System.Data.EntityState.Modified;
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            ConnXml.MainPageQuickMenu.Add(itemPages);
+            ConnStatus = ConnXml.SaveChanges();
+            backup = itemPages.Cast<MainPageQuickMenuHistory>();
+        }
+        if (ConnStatus > 0)
+        {
+            backup.HistoryCreateDate = DateTime.Now;
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            ConnXml.MainPageQuickMenuHistory.Add(backup);
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("MainPageQuickMenuPage");
+    }
+}
+@functions
+{
+    public List<SelectListItem> GetSubPage(int i, List<Pages> Pages, int getPageID)
+    {
+        string left = new string('-', i * 3);
+        List<SelectListItem> lst = new List<SelectListItem>();
+        foreach (Pages itemPages in Pages.Where(x => x.ParentID == getPageID && x.Lang == 0))
+        {
+            lst.Add(new SelectListItem { Value = itemPages.PageID.ToString(), Text = left + " " + itemPages.DisplayName });
+            lst.AddRange(GetSubPage(i + 1, Pages, itemPages.PageID));
+        }
+        return lst;
+    }
+}
+<div class="Title">@Html.Raw(txtPageTitle)</div>
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @HelperAdminControl.inputText("txtTitle", "Başlık", false, true, txtTitle)
+                @HelperAdminControl.fileUpload("fuImageUrl", "Resim")
+                @Html.Raw(fuImageUrl)
+                @{
+                    List<SelectListItem> lst = new List<SelectListItem>();
+                    lst.Add(new SelectListItem { Value = "0", Text = "Url Seçiniz" });
+                    lst.AddRange(GetSubPage(0, ConnXml.Pages.ToList(), 0));
+                    lst.FirstOrDefault(x => x.Value == drpPageID).Selected = true;
+                    IEnumerable<SelectListItem> drpParentItems = lst;
+                }
+                @HelperAdminControl.DropDownList("drpPageID", "İç Sayfa Url ( Öncelikli olarak dikkate alınır )", drpParentItems)
+                @HelperAdminControl.inputText("txtUrl", "Dış Sayfa Url", false, false, txtUrl)
+                @{
+                    List<SelectListItem> lstPageTarget = new List<SelectListItem>();
+                    lstPageTarget.Add(new SelectListItem { Value = "_self", Text = "Aynı pencerede - _self" });
+                    lstPageTarget.Add(new SelectListItem { Value = "_blank", Text = "Farklı pencerede - _blank" });
+                    lstPageTarget.FirstOrDefault(x => x.Value == drpPageTarget).Selected = true;
+                    IEnumerable<SelectListItem> drpPageTargets = lstPageTarget;
+                }
+                @HelperAdminControl.DropDownList("drpPageTarget", "Sayfa hedefi", drpPageTargets)
+                @{
+                    List<SelectListItem> lstLang = new List<SelectListItem>();
+                    for (int i = 0; i < Shared.Lang.Length; i++)
+                    {
+                        lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                    }
+                    lstLang.FirstOrDefault(x => x.Value == drpLang).Selected = true;
+                    IEnumerable<SelectListItem> drplstLangs = lstLang;
+                }
+                @HelperAdminControl.DropDownList("drpLang", "Dil", drplstLangs)
+                <div class="Title">Durum</div>
+                <div class="Input">
+                    @{
+                        string StatusFalse = "";
+                        string StatusTrue = "";
+                        if (!drpPageStatus)
+                        {
+                            StatusFalse = "checked='checked'";
+                        }
+                        else
+                        {
+                            StatusTrue = "checked='checked'";
+                        }
+                    }
+                    <input type="radio" id="drpPageStatus0" name="drpPageStatus" value="0" @StatusFalse><label for="drpPageStatus0">Pasif</label>
+                    <input type="radio" id="drpPageStatus1" name="drpPageStatus" value="1" @StatusTrue><label for="drpPageStatus1">Aktif</label>
+                </div>
+                <div class="ButtonPanel">
+                    <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="@Html.Raw(btnName)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

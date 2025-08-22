@@ -1,0 +1,113 @@
+﻿@functions{
+    string branchList(MvcXmlEntities ConnXml ,int getLang, int getCity, string getCityName, List<int> branchIDs)
+    {
+        System.Text.StringBuilder sbAccordion = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbOffice = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbPhone = new System.Text.StringBuilder();
+        System.Text.StringBuilder sbFax = new System.Text.StringBuilder();
+        //
+        string strAccordion = @"    <div>
+            <span class='target-fix' id='accordion{0}'></span>
+            <!-- Link to open accordion, hidden when open -->
+            <a href='#accordion{0}' class='baslik-link' id='open-accordion{0}' title='open' data-id='area{0}' >
+                <div class='acc-inner'>
+                    <img class='history-text-before-img' src='/Content/images/location-pin.svg' />
+                    <div class='text-acc-header'><h5>{1}</h5></div>
+                    <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                </div>
+            </a>
+            <a href='#accordion' class='baslik-link' id='close-accordion{0}' title='close' >
+                <div class='acc-inner'>
+                    <img class='history-text-before-img' src='/Content/images/location-pin.svg' />
+                    <div class='text-acc-header'><h5>{1}</h5></div>
+                    <img class='text-after-img' src='/Content/images/down-chevron.svg' />
+                </div>
+            </a>
+            <div class='accordion-content' id='area{0}'>
+                <div class='ofislerimiz-inner'>
+                    <h3>{1}</h3>
+                    {2}
+                </div>
+            </div>
+        </div>";
+        //
+        string strOffice = @" <div class='sehir-ofisleri'>
+            <div class='map' data-coordinate='{5}' id='map{6}'><iframe src='{7}' width='100%' height='100%' style='border:0;' allowfullscreen='' loading='lazy' referrerpolicy='no-referrer-when-downgrade'></iframe></div>
+            <div class='ofis'>
+                <h3 class='siyah-header'>{1}</h3>
+                <p>
+                    {2}
+                    {3}
+                    {4}
+                </p>
+                <p><a href='mailto:info@phillipcapital.com.tr'>info@phillipcapital.com.tr</a></p>
+            </div>
+        </div>";
+        //
+        string telTitle = Shared.GetTranslation(12);
+        string faxTitle = Shared.GetTranslation(13);
+        string strParam = "<br />{0}: {1}";
+        var query = from ar in ConnXml.Branch
+                    where ar.CityID == getCity && ar.Lang == getLang && branchIDs.Contains(ar.BranchID) && ar.Status
+                    orderby ar.Line
+                    select new
+                    {
+                        ar.BranchID,
+                        ar.Title,
+                        ar.Address,
+                        ar.Coordinate,
+                        ar.Phone,
+                        ar.Fax,
+                        ar.MapSource
+                    };
+        var cityDisplay =  Shared.GetTranslation(query.Count() == 1 ? 153 : 11).Replace("{0}", getCityName);
+        foreach (var item in query)
+        {
+            string strPhone = "";
+            string strFax = "";
+            if (!string.IsNullOrEmpty(item.Phone)) sbPhone.AppendFormat(strParam, telTitle, item.Phone);
+            if (!string.IsNullOrEmpty(item.Fax)) sbFax.AppendFormat(strParam, faxTitle, item.Fax);
+            sbOffice.AppendFormat(strOffice, getCity, item.Title, item.Address, sbPhone.ToString(), sbFax.ToString(), item.Coordinate, item.BranchID, item.MapSource);
+            sbPhone.Clear();
+            sbFax.Clear();
+        }
+        sbAccordion.AppendFormat(strAccordion, getCity, cityDisplay, sbOffice.ToString());
+        return sbAccordion.ToString();
+    }
+}
+@{
+    int getLang = Shared.GetLang();
+    string search = Request.QueryString["search"];
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        var getCityIds = from ar in ConnXml.Branch
+                         where  ar.Status && (!string.IsNullOrEmpty(search) ? ar.Title.ToLower().Contains(search) || ar.Address.ToLower().Contains(search) || ar.Phone.ToLower().Contains(search) || ar.Fax.ToLower().Contains(search) : true)
+                         select new
+                         {
+                             ar.CityID,
+                             ar.BranchID
+                         };
+        <div class="ofislerimiz-arama-wrapper-grid">
+            <div>
+                <img src="/Content/images/magnifiying-glass.svg" class="search-icon">
+            </div>
+            <div>
+                <form method="GET" action="/ofislerimiz" id="officeForm">
+                    <input type="text" name="search" placeholder="@Shared.GetTranslation(23)" required="required" class="input-icon">
+                </form>
+            </div>
+        </div>
+        <div class="accordion">
+            <span class="target-fix" id="accordion"></span>
+            @{
+                List<int> branchIds = new List<int>();
+                branchIds.AddRange(getCityIds.Select(x => x.BranchID));
+                foreach (var item in ConnXml.City.Where(x => getCityIds.Any(ur => ur.CityID == x.CityID)))
+                {
+
+                    @Html.Raw(branchList(ConnXml, getLang, item.CityID, item.CityName, branchIds))
+                }
+            }
+        </div>
+    }
+}

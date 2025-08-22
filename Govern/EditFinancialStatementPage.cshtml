@@ -1,0 +1,214 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    Login AdminLogin = new Login();
+    int reqLangID = 0;
+    if (Request.QueryString["Lang"] != null)
+    {
+        reqLangID = Request.QueryString["Lang"].AsInt();
+    }
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Setting Setting = ConnXml.Setting.FirstOrDefault();
+    #region Değişkenler
+    var drpYear = DateTime.Now.Year.ToString();
+    var drpQuarter = "1";
+    var drpLang = reqLangID.ToString();
+    bool drpPageStatus = true;
+    var fuImageUrl = "";
+    var btnName = "Kaydet";
+    var txtPageTitle = "Yeni Mali Tablo Ekle";
+    #endregion
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        FinancialStatement Pages = ConnXml.FinancialStatement.FirstOrDefault(x => x.FinancialStatementID == reqID);
+        string imgDir = "~/" + Setting.Documentdir + "/FinancialStatement/" + Pages.ImageUrl;
+        if (System.IO.File.Exists(Server.MapPath(imgDir)) && !Pages.ImageUrl.IsEmpty())
+        {
+            System.IO.File.Delete(Server.MapPath(imgDir));
+        }
+        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("FinancialStatementPage?Lang=" + reqLangID);
+    }
+    if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+    {
+        int reqID = Request.QueryString["ID"].AsInt();
+        int historyID = (Request.QueryString["HistoryID"].AsInt());
+        FinancialStatement reqPage = new FinancialStatement();
+        if (reqID > 0)
+        {
+            reqPage = ConnXml.FinancialStatement.FirstOrDefault(x => x.FinancialStatementID == reqID);
+        }
+        else if (historyID > 0)
+        {
+            reqPage = ConnXml.FinancialStatementHistory.FirstOrDefault(x => x.FinancialStatementHistoryID == historyID).Cast<FinancialStatement>();
+            btnName = "Geçmişe Dön";
+            txtPageTitle = reqPage.Title + " adlı menü'nün " + reqPage.ModifiedDate + " tarihinde kaydedilen versiyonu. (Geçmişe dönmeden düzenleme yapamazsınız)";
+        }
+        drpYear = reqPage.Year.ToString();
+        drpQuarter = reqPage.Quarter.ToString();
+        drpPageStatus = reqPage.Status;
+        drpLang = reqPage.Lang.ToString();
+        if (!reqPage.ImageUrl.IsEmpty())
+        {
+            string imgDir = "~/" + Setting.Documentdir + "/FinancialStatement/" + reqPage.ImageUrl;
+            if (System.IO.File.Exists(Server.MapPath(imgDir)))
+            {
+                fuImageUrl = "<div class=\"Input\"><span>(<a href='" + imgDir.Replace("~/", "../") + "' target='_blank'>Mevcut dosya</a> - <a class='DeleteFile' rel='" + reqPage.FinancialStatementID + "'  type='FinancialStatementImageUrl' href='javascript:void(0)' target='_blank'>Dosyayı sil</a>)</span></div>";
+            }
+        }
+    }
+    if (IsPost)
+    {
+        if (!AdminLogin.IsLogin())
+        {
+            Response.Redirect(Shared.PageBasePath() + "Govern/Login");
+        }
+        // AntiForgery.Validate();
+        FinancialStatement itemPages = new FinancialStatement();
+        FinancialStatementHistory backup = new FinancialStatementHistory();
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            int reqID = Request.QueryString["ID"].AsInt();
+            int historyID = (Request.QueryString["HistoryID"].AsInt());
+            if (reqID > 0)
+            {
+                itemPages = ConnXml.FinancialStatement.FirstOrDefault(x => x.FinancialStatementID == reqID);
+                backup = itemPages.Cast<FinancialStatementHistory>();
+            }
+            else if (historyID > 0)
+            {
+                itemPages = ConnXml.FinancialStatementHistory.FirstOrDefault(x => x.FinancialStatementHistoryID == historyID).Cast<FinancialStatement>();
+                backup = itemPages.Cast<FinancialStatementHistory>();
+            }
+            itemPages.ModifiedDate = DateTime.Now;
+            itemPages.ModifiedId = AdminLogin.LoginUserID();
+            backup.ModifiedId = AdminLogin.LoginUserID();
+        }
+        else
+        {
+            itemPages.CreatedDate = DateTime.Now;
+            itemPages.ModifiedDate = DateTime.Now;
+            itemPages.CreatedId = AdminLogin.LoginUserID();
+            itemPages.ImageUrl = "";
+        }
+        itemPages.Year = Request.Form["drpYear"].AsInt();
+        itemPages.Quarter = Request.Form["drpQuarter"].AsInt();
+        itemPages.Lang = Request.Form["drpLang"].AsInt();
+        itemPages.Status = (Request.Form["drpPageStatus"] == "1" ? true : false);
+        if (Request.Files.Count > 0)
+        {
+            var uploadedFile = Request.Files["fuImageUrl"];
+            if (uploadedFile.ContentLength > 0)
+            {
+                if (!itemPages.ImageUrl.IsEmpty())
+                {
+                    string imgDir = "~/" + Setting.Documentdir + "/FinancialStatement/" + itemPages.ImageUrl;
+                    System.IO.File.Delete(Server.MapPath(imgDir));
+                }
+                string getExtentions = Path.GetExtension(uploadedFile.FileName);
+                string newFileName = System.Guid.NewGuid().ToString() + getExtentions;
+                var fileSavePath = Server.MapPath("~/" + Setting.Documentdir + "/FinancialStatement/" + newFileName);
+                uploadedFile.SaveAs(fileSavePath);
+                itemPages.ImageUrl = newFileName;
+            }
+        }
+        int ConnStatus = 0;
+        if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
+        {
+            ConnXml.Entry(itemPages).State = System.Data.EntityState.Modified;
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            ConnXml.FinancialStatement.Add(itemPages);
+            ConnStatus = ConnXml.SaveChanges();
+            backup = itemPages.Cast<FinancialStatementHistory>();
+        }
+        if (ConnStatus > 0)
+        {
+            backup.HistoryCreateDate = DateTime.Now;
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            ConnXml.FinancialStatementHistory.Add(backup);
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("FinancialStatementPage?Lang=" + reqLangID);
+    }
+}
+<div class="Title">@Html.Raw(txtPageTitle)</div>
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @{
+                    List<SelectListItem> lstYear = new List<SelectListItem>();
+                    for (int i = 2010; i <= 2030; i++)
+                    {
+                        lstYear.Add(new SelectListItem { Value = i.ToString(), Text = i.ToString() });
+                    }
+                    lstYear.FirstOrDefault(x => x.Value == drpYear).Selected = true;
+                    IEnumerable<SelectListItem> drpLstYear = lstYear;
+                }
+                @HelperAdminControl.DropDownList("drpYear", "Yıl", drpLstYear)
+                @{
+                    List<SelectListItem> lstQuarter = new List<SelectListItem>();
+                    for (int i = 1; i <= 4; i++)
+                    {
+                        lstQuarter.Add(new SelectListItem { Value = i.ToString(), Text = i + ". Çeyrek" });
+                    }
+                    lstQuarter.FirstOrDefault(x => x.Value == drpQuarter).Selected = true;
+                    IEnumerable<SelectListItem> drpLstQuarter = lstQuarter;
+                }
+                @HelperAdminControl.DropDownList("drpQuarter", "Dönem", drpLstQuarter)
+                @HelperAdminControl.fileUpload("fuImageUrl", "Dosya")
+                @Html.Raw(fuImageUrl)
+                @{
+                    List<SelectListItem> lstLang = new List<SelectListItem>();
+                    for (int i = 0; i < Shared.Lang.Length; i++)
+                    {
+                        lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                    }
+                    lstLang.FirstOrDefault(x => x.Value == drpLang).Selected = true;
+                    IEnumerable<SelectListItem> drplstLangs = lstLang;
+                }
+                @HelperAdminControl.DropDownList("drpLang", "Dil", drplstLangs)
+                <div class="Title">Durum</div>
+                <div class="Input">
+                    @{
+                        string StatusFalse = "";
+                        string StatusTrue = "";
+                        if (!drpPageStatus)
+                        {
+                            StatusFalse = "checked='checked'";
+                        }
+                        else
+                        {
+                            StatusTrue = "checked='checked'";
+                        }
+                    }
+                    <input type="radio" id="drpPageStatus0" name="drpPageStatus" value="0" @StatusFalse><label for="drpPageStatus0">Pasif</label>
+                    <input type="radio" id="drpPageStatus1" name="drpPageStatus" value="1" @StatusTrue><label for="drpPageStatus1">Aktif</label>
+                </div>
+                <div class="ButtonPanel">
+                    <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="@Html.Raw(btnName)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

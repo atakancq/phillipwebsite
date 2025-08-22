@@ -1,0 +1,187 @@
+﻿
+<section id="banner" class="tv-banner-area">
+    <div class="tv-title">
+        <p>
+            <strong style="font-size:35px;">
+                TradingView'da PhillipCapital Müşterilerine<br>
+                İşlem Yapma İmkanı
+                <br />
+            </strong>
+        </p>
+        <p>
+            <a href="/hesap-ac" style="text-decoration:none; background-color: #f47f01; font-size: 16px; padding: 9px; width: 166px; border: 1px; color: white; border-radius: 10px; ">Hesap Aç</a>
+        </p>
+
+    </div>
+</section>
+
+
+ 
+    <meta charset="UTF-8">
+    <title>TradingView ile PhillipCapital Entegrasyon Rehberi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 30px;
+        }
+
+        h1, h2, h3 {
+            color: #004080;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            width: 100%;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-top: 5px solid #004080;
+        }
+
+            .card h2 {
+                font-size: 1.2em;
+                margin-bottom: 10px;
+                color: #004080;
+            }
+
+            .card p, .card ul, .card ol {
+                font-size: 1em;
+                line-height: 1.6;
+            }
+
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+    </style>
+ 
+
+    <h1>TradingView ile PhillipCapital Entegrasyon Rehberi</h1>
+    <h3>Adım Adım Kurulum ve Alarm Sistemi Kullanım Kılavuzu</h3>
+    <p><strong>Hazırlayan:</strong> PhillipCapital Türkiye | 2025</p>
+
+    <div class="container">
+
+        <div class="card">
+            <div class="card-content">
+                <h2>1. PhillipCapital Hesabı Açın</h2>
+                <p><a href="https://www.phillipcapital.com.tr/hesap-ac" target="_blank">Hesap Açma Linki</a></p>
+                <p>Yatırım hesabınızı web sitemizden veya Phillip Mobile G+ uygulamasından açabilirsiniz.</p>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: flex-start; margin-top: 20px; flex-wrap: wrap;">
+                <img src="https://placehold.co/250x500" alt="Görsel 1" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 2" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 3" style="border-radius: 6px;">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <h2>2. TradingView Hesabı Açın ve Uygun Paketi Satın Alın</h2>
+                <p><a href="https://tr.tradingview.com/pricing/" target="_blank">TradingView Paketleri</a></p>
+                <p>“Expert” paketi önerilir. Paket seçiminden önce doğrulama yapılması tavsiye edilir.</p>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: flex-start; margin-top: 20px; flex-wrap: wrap;">
+                <img src="https://placehold.co/250x500" alt="Görsel 1" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 2" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 3" style="border-radius: 6px;">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <h2>3. Phillip Mobile G+ Uygulamasını İndirin</h2>
+                <p>Google Play veya App Store üzerinden uygulamayı indirin. Sonrasında:</p>
+                <ul>
+                    <li>“Ayarlar” menüsüne girin.</li>
+                    <li>“TradingView Sihirbazı”na dokunun.</li>
+                    <li>JSON kodunuzu oluşturun.</li>
+                </ul>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: flex-start; margin-top: 20px; flex-wrap: wrap;">
+                <img src="https://placehold.co/250x500" alt="Görsel 1" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 2" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 3" style="border-radius: 6px;">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <h2>4. JSON Kodu Nedir ve Neden Önemlidir?</h2>
+                <p>TradingView ve Phillip Mobile G+ arasında senkronizasyonu sağlar. Alarm mesajı alanına yapıştırılır.</p>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: flex-start; margin-top: 20px; flex-wrap: wrap;">
+                <img src="https://placehold.co/250x500" alt="Görsel 1" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 2" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 3" style="border-radius: 6px;">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <h2>5. JSON Kodu Oluşturulurken Dikkat Edilmesi Gerekenler</h2>
+                <ul>
+                    <li><strong>Kod Başlığı:</strong> Açıklayıcı bir isim verin. (Örn: <em>AL_GARAN_142₺_Kapanis</em>)</li>
+                    <li><strong>İlgili Hisse:</strong> Hisse adı doğru girilmeli.</li>
+                    <li><strong>İşlem Tipi:</strong> Al/Sat bilgisi.</li>
+                    <li><strong>Fiyat:</strong> Belirli bir fiyat ya da kapanış fiyatı seçilebilir.</li>
+                </ul>
+                <p><strong>Örnek JSON:</strong> <code>{"buyOrSell":"A","orderType":"LMT","seance":"GUN","symbol":"GARAN","quantity":"10","price":"{{close}}"}</code></p>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: flex-start; margin-top: 20px; flex-wrap: wrap;">
+                <img src="https://placehold.co/250x500" alt="Görsel 1" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 2" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 3" style="border-radius: 6px;">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <h2>6. TradingView Girişi ve PhillipCapital ile Bağlantı Kurulumu</h2>
+                <ol>
+                    <li>TradingView hesabınıza giriş yapın.</li>
+                    <li><a href="https://tr.tradingview.com/brokers/" target="_blank">“Aracı Kurum”</a> sekmesinden PhillipCapital Türkiye’yi seçin.</li>
+                    <li>“Daha Fazla Öğren” → “İşlem” → “Bağlan” adımlarını izleyin.</li>
+                    <li>Giriş bilgilerinizi girerek bağlantıyı tamamlayın.</li>
+                </ol>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: flex-start; margin-top: 20px; flex-wrap: wrap;">
+                <img src="https://placehold.co/250x500" alt="Görsel 1" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 2" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 3" style="border-radius: 6px;">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <h2>7. Alarm Oluşturma</h2>
+                <ul>
+                    <li>Alarm simgesine tıklayın, “+” butonuyla yeni alarm oluşturun.</li>
+                    <li><strong>Hisse Seçimi:</strong> Uygulamadaki ile aynı olmalı.</li>
+                    <li><strong>Koşul:</strong> Stratejinize veya hazır şablonlara göre belirleyin.</li>
+                    <li><strong>Tetikleme:</strong> Örn: “Fiyat 100 TL’yi geçerse” gibi.</li>
+                    <li><strong>Mesaj:</strong> JSON kodunu eksiksiz girin.</li>
+                    <li><strong>Webhook URL:</strong> API linkini girin.</li>
+                </ul>
+                <p>Son olarak “Oluştur” butonuna tıklayın.</p>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: flex-start; margin-top: 20px; flex-wrap: wrap;">
+                <img src="https://placehold.co/250x500" alt="Görsel 1" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 2" style="border-radius: 6px;">
+                <img src="https://placehold.co/250x500" alt="Görsel 3" style="border-radius: 6px;">
+            </div>
+        </div>
+
+    </div>
+

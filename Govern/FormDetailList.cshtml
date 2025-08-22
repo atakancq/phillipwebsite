@@ -1,0 +1,190 @@
+﻿@functions
+{
+    string getCityName(IQueryable<City> cityList, int getCityID)
+    {
+        var item = cityList.FirstOrDefault(x => x.CityID == getCityID);
+        if (item != null)
+        {
+            return item.CityName;
+        }
+        else
+        {
+            return "Şehir Bulunamadı";
+        }
+    }
+    string getDistrictName(IQueryable<District> districtList, int getDistrictID)
+    {
+        var item = districtList.FirstOrDefault(x => x.DistrictID == getDistrictID);
+        if (item != null)
+        {
+            return item.DistrictName;
+        }
+        else
+        {
+            return "İlçe Bulunamadı";
+        }
+    }
+}
+@{
+    string getList = "";
+    if (Request.QueryString["ID"] != null)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        int reqFormID = Request.QueryString["ID"].AsInt();
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        Form Form = ConnXml.Form.FirstOrDefault(x => x.FormID == reqFormID);
+        int ItemID = Request.QueryString["ItemID"].AsInt();
+        IQueryable<City> IqCityList = ConnXml.City;
+        IQueryable<District> IqDistrictList = ConnXml.District;
+        switch (Form.ClassName)
+        {
+            case "ContactForm":
+                ContactForm getDetail = ConnXml.ContactForm.FirstOrDefault(x => x.ContactFormID == ItemID);
+                getList += "<tr><td>Kayıt ID</td><td width='50' align='center'> : </td><td>" + getDetail.ContactFormID + "</td></tr>";
+                getList += "<tr><td>Ad Soyad</td><td width='50' align='center'> : </td><td>" + getDetail.NameSurname + "</td></tr>";
+                getList += "<tr><td>Email</td><td width='50' align='center'> : </td><td>" + getDetail.Email + "</td></tr>";
+                getList += "<tr><td>Telefon</td><td width='50' align='center'> : </td><td>" + getDetail.Phone + "</td></tr>";
+                getList += "<tr><td>Mesaj</td><td width='50' align='center'> : </td><td>" + getDetail.Message + "</td></tr>";
+                /*
+                if (!getDetail.FileUrl.IsEmpty())
+                {
+                    getList += "<tr><td>Ek Dosya</td><td width='50' align='center'> : </td><td><a target='_blank' href='../" + getDetail.FileUrl + "'>Dosya</a></td></tr>";
+                }
+                */
+            break;
+            case "PasswordRequestForm":
+                PasswordRequestForm getPasswordRequestForm = ConnXml.PasswordRequestForm.FirstOrDefault(x => x.PasswordRequestFormID == ItemID);
+                getList += "<tr><td>Kayıt ID</td><td width='50' align='center'> : </td><td>" + getPasswordRequestForm.PasswordRequestFormID + "</td></tr>";
+                getList += "<tr><td>Email</td><td width='50' align='center'> : </td><td>" + getPasswordRequestForm.Email + "</td></tr>";
+                getList += "<tr><td>Hesap Numarası</td><td width='50' align='center'> : </td><td>" + getPasswordRequestForm.AccountNumber + "</td></tr>";
+                getList += "<tr><td>KVKK</td><td width='50' align='center'> : </td><td>" + (getPasswordRequestForm.KVKK ? "var" : "yok") + "</td></tr>";
+                getList += "<tr><td>Elektorinik İzin</td><td width='50' align='center'> : </td><td>" + (getPasswordRequestForm.AcceptElectronicMessage ? "var" : "yok") + "</td></tr>";
+                getList += "<tr><td>Tarih</td><td width='50' align='center'> : </td><td>" + getPasswordRequestForm.AddDate + "</td></tr>";
+                getList += "<tr><td>Dil</td><td width='50' align='center'> : </td><td>" + getPasswordRequestForm.LangID.toLang() + "</td></tr>";
+                getList += "<tr><td>İp Adresi</td><td width='50' align='center'> : </td><td>" + getPasswordRequestForm.IpAddress + "</td></tr>";
+            break;
+            case "AccountForm":
+                AccountForm getaccountform = ConnXml.AccountForm.FirstOrDefault(x => x.AccountFormID == ItemID);
+                getList += "<tr><td>Kayıt ID</td><td width='50' align='center'> : </td><td>" + getaccountform.AccountFormID + "</td></tr>";
+                getList += "<tr><td>Ad Soyad</td><td width='50' align='center'> : </td><td>" + getaccountform.NameSurname + "</td></tr>";
+                getList += "<tr><td>Email</td><td width='50' align='center'> : </td><td>" + getaccountform.Email + "</td></tr>";
+                getList += "<tr><td>Telefon</td><td width='50' align='center'> : </td><td>" + getaccountform.Phone + "</td></tr>";
+            break;
+            case "SeminarForm":
+                SeminarForm seminarForm = ConnXml.SeminarForm.FirstOrDefault(x => x.SeminarFormID == ItemID);
+                getList += "<tr><td>Kayıt ID</td><td width='50' align='center'> : </td><td>" + seminarForm.SeminarFormID + "</td></tr>";
+                getList += "<tr><td>Ad Soyad</td><td width='50' align='center'> : </td><td>" + seminarForm.NameSurname + "</td></tr>";
+                getList += "<tr><td>Email</td><td width='50' align='center'> : </td><td>" + seminarForm.Email + "</td></tr>";
+                getList += "<tr><td>Telefon</td><td width='50' align='center'> : </td><td>" + seminarForm.Phone + "</td></tr>";
+            break;
+            case "AskYourStockForm":
+                AskYourStockForm askForm = ConnXml.AskYourStockForm.FirstOrDefault(x => x.AskYourStockFormID == ItemID);
+                getList += "<tr><td>Kayıt ID</td><td width='50' align='center'> : </td><td>" + askForm.AskYourStockFormID + "</td></tr>";
+                getList += "<tr><td>Ad Soyad</td><td width='50' align='center'> : </td><td>" + askForm.NameSurname + "</td></tr>";
+                getList += "<tr><td>Hesap No</td><td width='50' align='center'> : </td><td>" + askForm.AccountNo + "</td></tr>";
+                getList += "<tr><td>Hisse</td><td width='50' align='center'> : </td><td>" + askForm.StockCode + "</td></tr>";
+                getList += "<tr><td>Email</td><td width='50' align='center'> : </td><td>" + askForm.Email + "</td></tr>";
+                getList += "<tr><td>Telefon</td><td width='50' align='center'> : </td><td>" + askForm.Phone + "</td></tr>";
+            break;
+            case "ComplainForm":
+                ComplainForm getcomplainform = ConnXml.ComplainForm.FirstOrDefault(x => x.ComplainFormID == ItemID);
+                getList += "<tr><td>Kayıt ID</td><td width='50' align='center'> : </td><td>" + getcomplainform.ComplainFormID + "</td></tr>";
+                getList += "<tr><td>Ad Soyad</td><td width='50' align='center'> : </td><td>" + getcomplainform.NameSurname + "</td></tr>";
+                getList += "<tr><td>Email</td><td width='50' align='center'> : </td><td>" + getcomplainform.Email + "</td></tr>";
+                getList += "<tr><td>Telefon</td><td width='50' align='center'> : </td><td>" + getcomplainform.Phone + "</td></tr>";
+                getList += "<tr><td>Adres</td><td width='50' align='center'> : </td><td>" + getcomplainform.Address + "</td></tr>";
+                getList += "<tr><td>İlişki</td><td width='50' align='center'> : </td><td>" + getcomplainform.PersonType + "</td></tr>";
+                getList += "<tr><td>Hesap no</td><td width='50' align='center'> : </td><td>" + getcomplainform.AccountNumber + "</td></tr>";
+                getList += "<tr><td>Konu</td><td width='50' align='center'> : </td><td>" + getcomplainform.Subject + "</td></tr>";
+                getList += "<tr><td>Mesaj</td><td width='50' align='center'> : </td><td>" + getcomplainform.Message + "</td></tr>";
+                getList += "<tr><td>KVKK</td><td width='50' align='center'> : </td><td>" + getcomplainform.KVKK + "</td></tr>";
+                getList += "<tr><td>Elektronik İleti Gönderimini</td><td width='50' align='center'> : </td><td>" + getcomplainform.AcceptElectronicMessage + "</td></tr>";
+                getList += "<tr><td>Gönderim Tarihi</td><td width='50' align='center'> : </td><td>" + getcomplainform.AddDate + "</td></tr>";
+            break;
+            case "JobApplicationForm":
+                JobApplicationForm getJobForm = ConnXml.JobApplicationForm.FirstOrDefault(x => x.JobApplicationFormID == ItemID);
+                getList += "<tr><td>Kayıt ID</td><td width='50' align='center'> : </td><td>" + getJobForm.JobApplicationFormID + "</td></tr>";
+                getList += "<tr><td>Başvuru Tipi</td><td width='50' align='center'> : </td><td>" + getJobForm.ApplicationType + "</td></tr>";
+                getList += "<tr><td>Ad Soyad</td><td width='50' align='center'> : </td><td>" + getJobForm.NameSurname + "</td></tr>";
+                getList += "<tr><td>Cinsiyet</td><td width='50' align='center'> : </td><td>" + getJobForm.Gender + "</td></tr>";
+                getList += "<tr><td>Doğum Tarihi</td><td width='50' align='center'> : </td><td>" + getJobForm.BirthDate + "</td></tr>";
+                getList += "<tr><td>E-posta</td><td width='50' align='center'> : </td><td>" + getJobForm.Email + "</td></tr>";
+                getList += "<tr><td>Telefon</td><td width='50' align='center'> : </td><td>" + getJobForm.Phone + "</td></tr>";
+                getList += "<tr><td>Spk Lisans Durumunuz</td><td width='50' align='center'> : </td><td>" + getJobForm.SPKLicenseLevel + "</td></tr>";
+                getList += "<tr><td>İl</td><td width='50' align='center'> : </td><td>" + getCityName(IqCityList,getJobForm.CityID )+ "</td></tr>";
+                getList += "<tr><td>İlçe</td><td width='50' align='center'> : </td><td>" + getDistrictName(IqDistrictList,getJobForm.DistrictID) + "</td></tr>";
+                getList += "<tr><td>Üniversite</td><td width='50' align='center'> : </td><td>" + getJobForm.UniversityName + "</td></tr>";
+                getList += "<tr><td>Fakülte / Bölüm</td><td width='50' align='center'> : </td><td>" + getJobForm.FacultyName + "</td></tr>";
+                getList += "<tr><td>Lise</td><td width='50' align='center'> : </td><td>" + getJobForm.HighSchoolName + "</td></tr>";
+                getList += "<tr><td colspan='2'><b>Son Çalıştığınız Yer<b></td></tr>";
+                getList += "<tr><td>İşyeri Adı</td><td width='50' align='center'> : </td><td>" + getJobForm.LastCompanyName + "</td></tr>";
+                getList += "<tr><td>Göreviniz</td><td width='50' align='center'> : </td><td>" + getJobForm.LastWorkMission + "</td></tr>";
+                getList += "<tr><td>Ünvanınız</td><td width='50' align='center'> : </td><td>" + getJobForm.LastWorkDegree + "</td></tr>";
+                getList += "<tr><td>İşe Başlama Tarihi</td><td width='50' align='center'> : </td><td>" + getJobForm.LastWorkStartDate + "</td></tr>";
+                getList += "<tr><td>İşten Ayrılma Tarihi</td><td width='50' align='center'> : </td><td>" + getJobForm.LastWorkStopDate + "</td></tr>";
+                getList += "<tr><td>Halen Çalışıyorum</td><td width='50' align='center'> : </td><td>" + getJobForm.LastWorkStill + "</td></tr>";
+                getList += "<tr><td colspan='2'><b>Sondan Bir Önceki Çalıştığınız Yer<b></td></tr>";
+                getList += "<tr><td>İşyeri Adı</td><td width='50' align='center'> : </td><td>" + getJobForm.PreviousCompanyName + "</td></tr>";
+                getList += "<tr><td>Göreviniz</td><td width='50' align='center'> : </td><td>" + getJobForm.PreviousWorkMission + "</td></tr>";
+                getList += "<tr><td>Ünvanınız</td><td width='50' align='center'> : </td><td>" + getJobForm.PreviousWorkDegree + "</td></tr>";
+                getList += "<tr><td>İşe Başlama Tarihi</td><td width='50' align='center'> : </td><td>" + getJobForm.PreviousWorkStartDate + "</td></tr>";
+                getList += "<tr><td>İşten Ayrılma Tarihi</td><td width='50' align='center'> : </td><td>" + getJobForm.PreviousWorkStopDate + "</td></tr>";
+                getList += "<tr><td>Çalışabileceğiniz Şehirler 1</td><td width='50' align='center'> : </td><td>" + getCityName(IqCityList, getJobForm.PreferCityID1) + "</td></tr>";
+                getList += "<tr><td>Çalışabileceğiniz Şehirler 2</td><td width='50' align='center'> : </td><td>" + getCityName(IqCityList, getJobForm.PreferCityID2) + "</td></tr>";
+                getList += "<tr><td>Çalışabileceğiniz Şehirler 3</td><td width='50' align='center'> : </td><td>" + getCityName(IqCityList, getJobForm.PreferCityID3) + "</td></tr>";
+                getList += "<tr><td>Özgeçmiş</td><td width='50' align='center'> : </td><td>" + getJobForm.Resume + "</td></tr>";
+                getList += "<tr><td>KVKK</td><td width='50' align='center'> : </td><td>" + (getJobForm.KVKK ? "var" : "yok") + "</td></tr>";
+                getList += "<tr><td>Elektorinik İzin</td><td width='50' align='center'> : </td><td>" + (getJobForm.AcceptElectronicMessage ? "var" : "yok") + "</td></tr>";
+                getList += "<tr><td>CV</td><td width='50' align='center'> : </td>";
+                string imgDir = "~/" + Setting.Documentdir + "/JobApplicationForm/" + getJobForm.FileUrl;
+                if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                {
+                    getList += "<td><a href='" + imgDir.Replace("~/", "../") + "' target='_blank'>Dosya</a></td>";
+                }
+                else
+                {
+                    getList += "<td>Dosyası bulunamadı veya yüklenmedi</td>";
+                }
+                getList += "</tr>";
+                getList += "<tr><td>Dil</td><td width='50' align='center'> : </td><td>" + getJobForm.LangID.toLang() + "</td></tr>";
+                getList += "<tr><td>Tarih</td><td width='50' align='center'> : </td><td>" + getJobForm.AddDate + "</td></tr>";
+            break;
+            default:
+                break;
+        }
+        //try
+        //{
+        //    var sConnection = ((System.Data.SqlClient.SqlConnection)ConnXml.Database.Connection);
+        //    System.Data.SqlClient.SqlDataAdapter adp = new System.Data.SqlClient.SqlDataAdapter(string.Format("Select * from {0} where {1}", Form.ClassName, Form.ClassName + "ID=" + ItemID), sConnection);
+        //    System.Data.DataTable dt = new System.Data.DataTable();
+        //    adp.Fill(dt);
+        //    foreach (System.Data.DataRow dr in dt.Rows)
+        //    {
+        //        for (int i = 0; i < ListFormColumnName.Length; i++)
+        //        {
+        //            getList += "<tr><td>" + ListFormColumnName[i] + "</td><td width='50' align='center'> : </td><td>" + dr[i].ToString() + "</td></tr>";
+        //        }
+        //    }
+        //}
+        //catch
+        //{
+        //}
+    }
+}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head runat="server">
+        <title></title>
+    </head>
+    <body>
+        <form id="form1" runat="server">
+            <div>
+                <table cellpadding="0" cellspacing="0">
+                    <tr>
+                        @Html.Raw(getList)
+                    </tr>
+                </table>
+            </div>
+        </form>
+    </body>
+</html>

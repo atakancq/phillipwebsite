@@ -1,0 +1,204 @@
+﻿@{
+    int getLang = Shared.GetLang();
+    bool formComplete = false;
+
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        int getFormID = 6;
+        if (IsPost)
+        {
+            if (Request.Form["subscribe"] != null)
+            {
+                var txtEmail = Request.Form["subscribe"].Trim();
+
+                if (Shared.EmailIsValid(txtEmail))
+                {
+                    NewsletterForm newsletterForm = new NewsletterForm()
+                    {
+                        Email = txtEmail,
+                        IpAddress = Shared.GetIpAddress(),
+                        LangID = Shared.GetLang(),
+                        AddDate = DateTime.Now
+                    };
+
+                    ConnXml.NewsletterForm.Add(newsletterForm);
+                    int ConnStatus = ConnXml.SaveChanges();
+
+                    if (ConnStatus > 0)
+                    {
+                        #region MailNames
+                        string[] MailNames = {
+                                 "E-Posta adresi",
+                                 "Gönderim Tarihi"
+                             };
+                        #endregion
+
+                        #region MailValues
+                        string[] MailValues = {
+                           txtEmail,
+                           DateTime.Now.ToString()
+                           };
+                        #endregion
+
+                        if (ConnXml.FormMailRelation.Any(x => x.FormID == getFormID))
+                        {
+                            FormMailRelation FormMailRelation = ConnXml.FormMailRelation.FirstOrDefault(x => x.FormID == getFormID);
+
+                            foreach (MailAccount itemAccount in ConnXml.MailAccount.Where(x => x.MailGroupID == FormMailRelation.MailGroupID))
+                            {
+
+                                WebMail.Send(to: itemAccount.Address, subject: "E-Bülten Formu", isBodyHtml: true, body: Setting.Pagetitle + " web sitesinden e-bülten formu gönderildi.<br /><br />" + Shared.ToFormBody(MailNames, MailValues));
+
+
+                            }
+                        }
+
+                        formComplete = true;
+
+                    }
+
+                    //message = Shared.GetTranslation(15);
+                }
+
+
+            }
+
+        }
+        //
+        string strHeaderMenu = "<a href='/{0}' target='{1}'>{2}</a>";
+        System.Text.StringBuilder sbHeaderMenu = new System.Text.StringBuilder();
+        var getPageList = ConnXml.Pages.Where(x => (x.Status) && (x.ShowFooterMenu == true) && (x.Lang == getLang) && (x.ParentID == 0)).Select(x => new
+        {
+            x.DisplayName,
+            x.Line,
+            x.PageID
+        });
+        foreach (var itemPages in getPageList.OrderBy(x => x.Line))
+        {
+            var itemSubMenu = ConnXml.Pages.Where(x => (x.ParentID == itemPages.PageID) && (x.ShowFooterMenu == true) && (x.Status)).Select(x => new
+            {
+                x.PageID,
+                x.ParentID,
+                x.RawUrl,
+                x.Target,
+                x.DisplayName,
+                x.Line
+            });
+            if (itemSubMenu.Count() > 0)
+            {
+
+
+                sbHeaderMenu.AppendLine("<div class='link-block'>");
+                sbHeaderMenu.AppendLine("<div class='title'>" + itemPages.DisplayName + "</div>");
+                sbHeaderMenu.AppendLine("<div class='links'>");
+                foreach (var item in itemSubMenu)
+                {
+                    string url = "";
+                    if (item.RawUrl == "javascript:;")
+                    {
+                        if (item.DisplayName == "Günlük Bültenler")
+                        {
+                            url = "Yurt-Ici-Gunluk-Bulten";
+                        }
+                        else if (item.DisplayName == "Hisse Analizleri")
+                        {
+                            url = "Yurt-Disi-Hisse-Analizleri";
+                        }
+                    }
+                    else
+                    {
+                        url = item.RawUrl;
+                    }
+
+                    sbHeaderMenu.AppendFormat(strHeaderMenu, url, item.Target, item.DisplayName);
+                }
+                sbHeaderMenu.AppendLine("</div>");
+                sbHeaderMenu.AppendLine("</div>");
+            }
+        }
+        <div class="footer">
+            <div class="newsletter">
+                @* Newsletter Icon *@
+                <div class="newsletter-icon">
+                    <img src="/Content/images/envelope-orange.svg" />
+                </div>
+                @* Newsletter Info *@
+                <div class="newsletter-info">
+                    <div class="title">@Shared.GetTranslation(134)</div>
+                    <div class="desc">@Shared.GetTranslation(135)</div>
+                </div>
+                @* Newsletter Subscribe Button *@
+                <div class="subscribe">
+                    <form method="post">
+                        @HelperClientControl.inputTextWithoutLabelWrapper("subscribe", Shared.GetTranslation(94), false, true, "Email", "subscribe-inp")
+                        <button ontouchend="myscript" class="subscribe-btn" type="submit" id="btnSubscribe">@Shared.GetTranslation(95)</button>
+                    </form>
+                </div>
+                @{
+                    if (formComplete)
+                    {
+                        <script>
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Kaydınız Başarıyla Tamamlanmıştır.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            setTimeout(function () {
+                                window.location.href = window.location.href;
+                            }, 1600);
+                        </script>
+                    }
+                }
+            </div>
+            @* Footer *@
+            <div class="footer-wrapper">
+                @* Footer Nav *@
+                <div class="footer-nav">
+                    @* Footer Logo *@
+                    <div class="footer-logo"></div>
+                    @* Social Links *@
+                    <div class="social-links">
+                        <a class="social facebook" href="https://www.facebook.com/PhillipCapitalTR" target="_blank"></a>
+                        <a class="social twitter" href="https://twitter.com/Phillip_Capital" target="_blank"></a>
+                        <a class="social instagram" href="https://www.instagram.com/phillipcapitalturkiye" target="_blank"></a>
+                        <a class="social youtube" href="https://www.youtube.com/c/PhillipCapitalT%C3%BCrkiye" target="_blank"></a>
+                        <a class="social linkedin" href="https://tr.linkedin.com/company/phillipcapital-t-rkiye" target="_blank"></a>
+                        <a class="social whatsapp" href="https://whatsapp.com/channel/0029VbBMhe13LdQPI3gZhH2F" target="_blank"></a>
+                        @*<a class="social whatsapp" href="" target="_blank"></a>*@
+                    </div>
+                </div>
+                @* Site Map *@
+                <div class="site-map">
+                    <div class="left">
+                        @* Quick Buttons *@
+                        <div class="quick-buttons">
+                            <a class="btn white" href="https://www.phillipportfoy.com.tr/" target="_blank">PhillipPortf&#246;y</a>
+                            <a class="btn white" href="https://www.phillipsigorta.com.tr/" target="_blank">PhillipSigorta</a>
+                            @*<a class="btn white" href="@GetSeoUrl.getPagesUrl(38)">PhillipPro POEMS</a>*@
+                            <a class="btn white" href="@GetSeoUrl.getPagesUrl(37)">Phillip Mobile G</a>
+                            @*<a class="btn white" href="@GetSeoUrl.getPagesUrl(38)">Order@Home</a>*@
+                            <a class="btn white" href="@GetSeoUrl.getPagesUrl(40)">@Shared.GetTranslation(136)</a>
+                        </div>
+                        <div class="quick-links">
+                            @Html.Raw(sbHeaderMenu.ToString())
+                        </div>
+                    </div>
+                    <div class="right">
+                        <div class="box">
+                            <div class="title">@Shared.GetTranslation(7)</div>
+                            <div class="desc">
+                                <div class="address">@Shared.GetTranslation(100)</div>
+                                <div class="email">@Shared.GetTranslation(101)</div>
+                                <div class="phone">@Shared.GetTranslation(102)</div>
+                                <div class="footer-logo2"></div>
+                                <div class="copyright">T&#252;m Hakları Saklıdır &copy; 2023</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

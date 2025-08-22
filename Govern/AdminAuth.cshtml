@@ -1,0 +1,120 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    int getAdminID = 0;
+    if (Request.QueryString["ID"] != null)
+    {
+        getAdminID = Request.QueryString["ID"].AsInt();
+    }
+    if (IsPost)
+    {
+        if (!Request.Form["btnSave"].IsEmpty())
+        {
+            ConnXml.AdminAuthorization.Where(x => x.AdminID == getAdminID).ToList().ForEach(s => ConnXml.AdminAuthorization.Remove(s));
+            AdminAuthorization AdminMainPage = new AdminAuthorization();
+            AdminMainPage.AdminMenuID = 1;
+            AdminMainPage.AdminID = getAdminID;
+            AdminMainPage.Allow = true;
+            ConnXml.AdminAuthorization.Add(AdminMainPage);
+            ConnXml.SaveChanges();
+            string[] strDeleteList = Request.Form["SelectedItems"].Split(',');
+            for (int i = 0; i < strDeleteList.Length; i++)
+            {
+                if (strDeleteList[i].IsInt())
+                {
+                    int getPageID = strDeleteList[i].AsInt();
+                    AdminAuthorization AdminAuthorization = new AdminAuthorization();
+                    AdminAuthorization.AdminMenuID = getPageID;
+                    AdminAuthorization.AdminID = getAdminID;
+                    if (ConnXml.AdminAuthorization.Any(x=>x.AdminMenuID == getPageID && x.AdminID == getAdminID))
+                    {
+                        AdminAuthorization = ConnXml.AdminAuthorization.FirstOrDefault(x => x.AdminMenuID == getPageID);
+                        ConnXml.Entry(AdminAuthorization).State = System.Data.EntityState.Modified;
+                        ConnXml.SaveChanges();
+                        continue;
+                    }
+                    AdminAuthorization.Allow = true;
+                    ConnXml.AdminAuthorization.Add(AdminAuthorization);
+                    ConnXml.SaveChanges();
+                }
+            }
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            Response.Redirect("Admin");
+        }
+    }
+}
+@functions {
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    public string GetSubPage(int getAdminID)
+    {
+        System.Text.StringBuilder sbStr = new System.Text.StringBuilder();
+        foreach (AdminMenu itemMenu in ConnXml.AdminMenu.Where(x => x.ParentID == 0).OrderBy(x => x.Line))
+        {
+            string strDisabled = "";
+            string strChecked = "";
+            if (itemMenu.AllowAuth)
+            {
+                strDisabled = "disabled='disabled'";
+                strChecked = "checked='checked'";
+            }
+            if (ConnXml.AdminAuthorization.Any(x => x.AdminMenuID == itemMenu.AdminMenuID && x.AdminID == getAdminID))
+            {
+                strChecked = "checked='checked'";
+            }
+            sbStr.AppendLine("<tr>");
+            sbStr.AppendLine("<td><input type='checkbox' value=\"" + itemMenu.AdminMenuID + "\" name='chck" + itemMenu.AdminMenuID + "' id='chck" + itemMenu.AdminMenuID + "' " + Html.Raw(strChecked) + " " + Html.Raw(strDisabled) + " /><label for='chck" + itemMenu.AdminMenuID + "'>" + itemMenu.Title + "</label></td>");
+            sbStr.AppendLine("</tr>");
+            foreach (var itemSubMenu in ConnXml.AdminMenu.Where(x => x.ParentID == itemMenu.AdminMenuID).OrderBy(x => x.Line))
+            {
+                strChecked = "";
+                if (ConnXml.AdminAuthorization.Any(x => x.AdminMenuID == itemSubMenu.AdminMenuID && x.AdminID == getAdminID))
+                {
+                    strChecked = "checked='checked'";
+                }
+                sbStr.AppendLine("<tr>");
+                sbStr.AppendLine("<td style='padding-left:20px;'><input type='checkbox' value=\"" + itemSubMenu.AdminMenuID + "\" id='chck" + itemSubMenu.AdminMenuID + "' name='chck" + itemSubMenu.AdminMenuID + "' " + Html.Raw(strChecked) + " /><label for='chck" + itemSubMenu.AdminMenuID + "'>" + itemSubMenu.Title + "</label></td>");
+                sbStr.AppendLine("</tr>");
+            }
+        }
+        return sbStr.ToString();
+    }
+}
+<div class="Title">Sayfalar</div>
+<form method="post">
+    <input type="hidden" id="SelectedItems" name="SelectedItems" class="SelectedItems" />
+    <input type="hidden" id="PassiveItems" name="PassiveItems" class="PassiveItems" />
+    <div class="Content">
+        <div class="ButtonPanel">
+            <input type="submit" name="btnSave" value="Bilgileri Güncelle" id="btnSave" class="inputbutton Edit">
+        </div>
+        <div class="SearchPanel">
+            <input type="text" id="Search" value="Herhangi bir özelliği yazarak arama yapabilirsiniz" />
+        </div>
+        <div class="InTxt">
+            <table class="GridWiew PageList" cellpadding="5" cellspacing="0">
+                <thead>
+                    <tr>
+                        <td>
+                            <input type="checkbox" />
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                   @{
+                       string str = GetSubPage(getAdminID);
+                       if (!str.IsEmpty())
+                       {
+                           @Html.Raw(str);
+                       }
+                   }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>
+                            &nbsp;
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</form>

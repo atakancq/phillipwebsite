@@ -1,0 +1,324 @@
+﻿@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        ConnXml.Configuration.ProxyCreationEnabled = false;
+        ConnXml.Configuration.AutoDetectChangesEnabled = false;
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        string strResult = "";
+        //
+        List<SelectListItem> lstApplicationType = new List<SelectListItem>();
+        lstApplicationType.Add(new SelectListItem { Value = "Genel", Text = Shared.GetTranslation(50) });
+        lstApplicationType.Add(new SelectListItem { Value = "Phillip Capital", Text = "Phillip Capital" });
+        lstApplicationType.Add(new SelectListItem { Value = "Phillip Portfolio", Text = "Phillip Portfolio" });
+        //
+        List<SelectListItem> lstGender = new List<SelectListItem>();
+        lstGender.Add(new SelectListItem { Value = "Kadın", Text = Shared.GetTranslation(52) });
+        lstGender.Add(new SelectListItem { Value = "Erkek", Text = Shared.GetTranslation(53) });
+        //
+        List<SelectListItem> lstSPKLevel = new List<SelectListItem>();
+        lstSPKLevel.Add(new SelectListItem { Value = "Yok", Text = Shared.GetTranslation(83) });
+        lstSPKLevel.Add(new SelectListItem { Value = "Sınav Aşaması", Text = Shared.GetTranslation(55) });
+        lstSPKLevel.Add(new SelectListItem { Value = "Düzey 1", Text = Shared.GetTranslation(54) + " 1" });
+        lstSPKLevel.Add(new SelectListItem { Value = "Düzey 2", Text = Shared.GetTranslation(54) + " 2" });
+        lstSPKLevel.Add(new SelectListItem { Value = "Düzey 3", Text = Shared.GetTranslation(54) + " 3" });
+        lstSPKLevel.Add(new SelectListItem { Value = "Türev", Text = Shared.GetTranslation(56) });
+        //
+        List<SelectListItem> lstCity = new List<SelectListItem>();
+        lstCity.Add(new SelectListItem { Text = Shared.GetTranslation(77), Value = "" });
+        lstCity.AddRange(ConnXml.City.OrderBy(x=> x.CityName).ToList().Select(x => new SelectListItem { Value = x.CityID.ToString(), Text = x.CityName }));
+        //
+        List<SelectListItem> lstDistrict = new List<SelectListItem>();
+        lstDistrict.Add(new SelectListItem { Text = Shared.GetTranslation(76), Value = "" });
+        //
+        if (IsPost)
+        {
+            var drpApplicationType = Request.Form["drpApplicationType"];
+            var txtNameSurname = Request.Form["txtNameSurname"];
+            var drpGender = Request.Form["drpGender"];
+            var txtEmail = Request.Form["txtEmail"];
+            var txtPhone = Request.Form["txtPhone"];
+            var txtBirthDate = Request.Form["txtBirthDate"];
+            var drpCityID = Request.Form["drpCityID"];
+            var drpDistrictID = Request.Form["drpDistrictID"];
+            var drpSPKLicenseLevel = Request.Form["drpSPKLicenseLevel"];
+            var txtUniversityName = Request.Form["txtUniversityName"];
+            var txtFacultyName = Request.Form["txtFacultyName"];
+            var txtHighSchoolName = Request.Form["txtHighSchoolName"];
+            var txtLastCompanyName = Request.Form["txtLastCompanyName"];
+            var txtLastWorkMission = Request.Form["txtLastWorkMission"];
+            var txtLastWorkDegree = Request.Form["txtLastWorkDegree"];
+            var txtLastWorkStartDate = Request.Form["txtLastWorkStartDate"];
+            var txtLastWorkStopDate = Request.Form["txtLastWorkStopDate"];
+            bool chckWorkStill = Request.Form["chckWorkStill"] == "1" ? true : false;
+            var txtPreviousCompanyName = Request.Form["txtPreviousCompanyName"];
+            var txtPreviousWorkMission = Request.Form["txtPreviousWorkMission"];
+            var txtPreviousWorkDegree = Request.Form["txtPreviousWorkDegree"];
+            var txtPreviousWorkStartDate = Request.Form["txtPreviousWorkStartDate"];
+            var txtPreviousWorkStopDate = Request.Form["txtPreviousWorkStopDate"];
+            var drpPreferCityID1 = Request.Form["drpPreferCityID1"].AsInt();
+            var drpPreferCityID2 = Request.Form["drpPreferCityID2"].AsInt();
+            var drpPreferCityID3 = Request.Form["drpPreferCityID3"].AsInt();
+            var txtResume = Request.Form["txtResume"];
+            var chckKvkk = Request.Form["chckKvkk"];
+            var chckElectronic = Request.Form["chckElectronic"];
+            string newFileName = "";
+            var fileSavePath = "";
+            if (Request.Files.Count > 0)
+            {
+                var uploadedFile = Request.Files["fuFileUrl"];
+                if (uploadedFile.ContentLength > 0)
+                {
+                    string getExtentions = Path.GetExtension(uploadedFile.FileName).ToLower();
+                    System.Collections.ArrayList alExtentions = new System.Collections.ArrayList();
+                    alExtentions.Add(".pdf");
+                    alExtentions.Add(".doc");
+                    alExtentions.Add(".docx");
+                    alExtentions.Add(".jpg");
+                    alExtentions.Add(".jpeg");
+                    alExtentions.Add(".xls");
+                    alExtentions.Add(".xlsx");
+                    if (alExtentions.Contains(getExtentions))
+                    {
+                        newFileName = System.Guid.NewGuid().ToString() + getExtentions;
+                        fileSavePath = Server.MapPath("~/Files/JobApplicationForm/" + newFileName);
+                        // strFileUrl = "files/ContactForm/" + newFileName;
+                        uploadedFile.SaveAs(fileSavePath);
+                    }
+                }
+            }
+            Nullable<System.DateTime> LastWorkStartDate = null;
+            Nullable<System.DateTime> LastWorkStopDate = null;
+            Nullable<System.DateTime> PreviousWorkStartDate = null;
+            Nullable<System.DateTime> PreviousWorkStopDate = null;
+            if (!string.IsNullOrEmpty(txtLastWorkStartDate))
+            {
+                LastWorkStartDate = txtLastWorkStartDate.AsDateTime();
+            }
+            if (!string.IsNullOrEmpty(txtLastWorkStopDate))
+            {
+                LastWorkStopDate = txtLastWorkStopDate.AsDateTime();
+            }
+            if (!string.IsNullOrEmpty(txtPreviousWorkStartDate))
+            {
+                PreviousWorkStartDate = txtPreviousWorkStartDate.AsDateTime();
+            }
+            if (!string.IsNullOrEmpty(txtPreviousWorkStopDate))
+            {
+                PreviousWorkStopDate = txtPreviousWorkStopDate.AsDateTime();
+            }
+            //
+            JobApplicationForm InsertForm = new JobApplicationForm();
+            InsertForm.ApplicationType = drpApplicationType;
+            InsertForm.NameSurname = txtNameSurname;
+            InsertForm.Gender = drpGender;
+            InsertForm.Email = txtEmail;
+            InsertForm.Phone = txtPhone;
+            InsertForm.BirthDate = Convert.ToDateTime(txtBirthDate);
+            InsertForm.CityID = drpCityID.AsInt();
+            InsertForm.DistrictID = drpDistrictID.AsInt();
+            InsertForm.SPKLicenseLevel = drpSPKLicenseLevel;
+            InsertForm.UniversityName = txtUniversityName;
+            InsertForm.FacultyName = txtFacultyName;
+            InsertForm.HighSchoolName = txtHighSchoolName;
+            InsertForm.LastCompanyName = txtLastCompanyName;
+            InsertForm.LastWorkMission = txtLastWorkMission;
+            InsertForm.LastWorkDegree = txtLastWorkDegree;
+            InsertForm.LastWorkStartDate = LastWorkStartDate;
+            InsertForm.LastWorkStopDate = LastWorkStopDate;
+            InsertForm.LastWorkStill = chckWorkStill;
+            InsertForm.PreviousCompanyName = txtPreviousCompanyName;
+            InsertForm.PreviousWorkMission = txtPreviousWorkMission;
+            InsertForm.PreviousWorkDegree = txtPreviousWorkDegree;
+            InsertForm.PreviousWorkStartDate = PreviousWorkStartDate;
+            InsertForm.PreviousWorkStopDate = PreviousWorkStopDate;
+            InsertForm.PreferCityID1 = drpPreferCityID1;
+            InsertForm.PreferCityID2 = drpPreferCityID2;
+            InsertForm.PreferCityID3 = drpPreferCityID3;
+            InsertForm.Resume = txtResume;
+            InsertForm.KVKK = chckKvkk == "ok" ? true : false;
+            InsertForm.AcceptElectronicMessage = chckElectronic == "ok" ? true : false;
+            InsertForm.FileUrl = newFileName;
+            InsertForm.AddDate = DateTime.Now;
+            ConnXml.JobApplicationForm.Add(InsertForm);
+            //
+            int ConnStatus = ConnXml.SaveChanges();
+            if (ConnStatus > 0)
+            {
+                strResult = @"<div class='col-lg-12 form-success'>
+                    <div class='row'>
+                        <p>" + Shared.GetTranslation(29) + @"</p>
+                    </div>
+                </div>";
+                #region MailNames
+                string[] MailNames = {
+                    "Ad Soyad",
+                    "Eposta",
+                    "Telefon",
+                    "Özgeçmiş",
+                    "Açıklama"
+                };
+                #endregion
+                #region MailValues
+                string[] MailValues = {
+                    txtNameSurname,
+                    txtEmail,
+                    txtPhone,
+                    fileSavePath.Replace("~/",Shared.PageBasePath()),
+                    txtResume
+                };
+                #endregion
+                var filesList = new string[] { fileSavePath };
+                try
+                {
+                    FormMailRelation FormMailRelation = ConnXml.FormMailRelation.FirstOrDefault(x => x.FormID == 3);
+                    foreach (MailAccount itemAccount in ConnXml.MailAccount.Where(x => x.MailGroupID == FormMailRelation.MailGroupID))
+                    {
+                        if (fileSavePath != "")
+                        {
+                            var content = Setting.Pagetitle + " web sitesinden kariyer formu gönderildi.<br /><br />" + Shared.ToFormBody(MailNames, MailValues);
+                            Shared.SendMail(itemAccount.Address, "Kariyer - PhillipCapital", content);
+                            //WebMail.SendMail(to: itemAccount.Address, subject: Setting.Pagetitle + " İş Başvuru Formu " + DateTime.Now, isBodyHtml: true, body: Setting.Pagetitle + " web sitesinden İş Başvuru formu gönderildi.<br /><br />" + Shared.ToFormBody(MailNames, MailValues), filesToAttach: filesList);
+                        }
+                        else
+                        {
+                            //WebMail.Send(to: itemAccount.Address, subject: Setting.Pagetitle + " İş Başvuru Formu " + DateTime.Now, isBodyHtml: true, body: Setting.Pagetitle + " web sitesinden İş Başvuru formu gönderildi.<br /><br />" + Shared.ToFormBody(MailNames, MailValues));
+
+                            var content = Setting.Pagetitle + " web sitesinden iletişim formu gönderildi.<br /><br />" + Shared.ToFormBody(MailNames, MailValues);
+                            Shared.SendMail(itemAccount.Address, "Kariyer - PhillipCapital", content);
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+            @Html.Raw(Shared.GetTranslation(182))
+        }
+        else
+        {
+            <div class="iletisim-ve-ofislerimiz-bizeulasin complain">
+                <div class="bize-ulasin-inner">
+                    <p>
+                        @Shared.GetTranslation(142)
+                    </p>
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="row">
+                            @HelperClientControl.DropDownList("drpApplicationType", Shared.GetTranslation(85), lstApplicationType, "", "input-giris")
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtNameSurname", Shared.GetTranslation(81), false, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.DropDownList("drpGender", Shared.GetTranslation(79), lstGender, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtBirthDate", Shared.GetTranslation(80), false, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtEmail", Shared.GetTranslation(82), false, true, "Email", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtPhone", Shared.GetTranslation(16), false, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.DropDownList("drpSPKLicenseLevel", Shared.GetTranslation(59), lstSPKLevel, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.DropDownList("drpCityID", Shared.GetTranslation(57), lstCity, "", "input-giris",true)
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.DropDownList("drpDistrictID", Shared.GetTranslation(58), lstDistrict, "", "input-giris", true)
+                        </div>
+                        <div class="row short">
+                            <h5>@Shared.GetTranslation(74)</h5>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtUniversityName", Shared.GetTranslation(60), false, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtFacultyName", Shared.GetTranslation(61), false, true, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtHighSchoolName", Shared.GetTranslation(62), false, true, "", "input-giris")
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="row short">
+                            <h5>@Shared.GetTranslation(73)</h5>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtLastCompanyName", Shared.GetTranslation(63), false, false, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtLastWorkMission", Shared.GetTranslation(64), false, false, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtLastWorkDegree", Shared.GetTranslation(65), false, false, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtLastWorkStartDate", Shared.GetTranslation(66), false, false, "", "input-giris date")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtLastWorkStopDate", Shared.GetTranslation(67), false, false, "", "input-giris date")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.CheckBox("chckWorkStill", Shared.GetTranslation(68), false, GetSeoUrl.getPagesUrl(49))
+                        </div>
+                        <div class="row short">
+                            <h5>@Shared.GetTranslation(75)</h5>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtPreviousCompanyName", Shared.GetTranslation(63), false, false, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtPreviousWorkMission", Shared.GetTranslation(64), false, false, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtPreviousWorkDegree", Shared.GetTranslation(65), false, false, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtPreviousWorkStartDate", Shared.GetTranslation(66), false, false, "", "input-giris date")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtPreviousWorkStopDate", Shared.GetTranslation(67), false, false, "", "input-giris date")
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="row">
+                            @HelperClientControl.DropDownList("drpPreferCityID1", Shared.GetTranslation(69) + " 1", lstCity, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.DropDownList("drpPreferCityID2", Shared.GetTranslation(69) + " 2", lstCity, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.DropDownList("drpPreferCityID3", Shared.GetTranslation(69) + " 3", lstCity, "", "input-giris")
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="row">
+                            @HelperClientControl.inputText("txtResume", Shared.GetTranslation(70), true, false, "", "input-giris")
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.FileUpload("fuFileUrl", Shared.GetTranslation(78), "input-giris")
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="row">
+                            @HelperClientControl.CheckBox("chckKvkk", "<strong>KVKK </strong> Şartlarını Kabul Ediyorum.", true, GetSeoUrl.getPagesUrl(49))
+                        </div>
+                        <div class="row">
+                            @HelperClientControl.CheckBox("chckElectronic", "Elektronik İleti Gönderimini Kabul Ediyorum.", true, GetSeoUrl.getPagesUrl(50))
+                        </div>
+                        <div class="form-sifre-talep-alt">
+                            @*burası captcha*@
+                            <div class="google-recaptcha">
+                                <input type="submit" id="submit" value="@Shared.GetTranslation(22)" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+}

@@ -1,0 +1,45 @@
+﻿@{
+    int getLang = Shared.GetLang();
+    System.Text.StringBuilder sbMemberYonetim = new System.Text.StringBuilder();
+    System.Text.StringBuilder sbMemberUst = new System.Text.StringBuilder();
+    string strUye = @" <div class='uye'>
+        <img class='photo' src='{0}'>
+        <div class='linkedin'>
+            {3}
+        </div>
+        <h5>
+            <span>{1}</span>
+            <br>{2}
+        </h5>
+    </div>";
+    //
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        foreach (var item in ConnXml.BoardOfDirectors.Where(x => x.Status && x.Lang == getLang).OrderBy(x => x.Line))
+        {
+            var lnk= !string.IsNullOrEmpty(item.Linkedin) ? string.Format("<a target='_blank' href='{0}'><i class='fab fa-linkedin-in'></i></a>", item.Linkedin) : "";
+            if (item.DirectorType == 0 || item.DirectorType == 2)
+            {
+                sbMemberYonetim.AppendFormat(strUye, "/Files/BoardOfDirectors/" + item.ImageUrl, item.NameSurname,item.Degree, lnk);
+            }
+            if (item.DirectorType == 1 || item.DirectorType == 2)
+            {
+                sbMemberUst.AppendFormat(strUye, "/Files/BoardOfDirectors/" + item.ImageUrl, item.NameSurname, item.Degree, lnk);
+            }
+        }
+        <div class="ortaklik-yapisi-yonetim-kurulu">
+            <div class="yonetim-kurulu">
+                <div class="baslik">
+                    <h3>@Shared.GetTranslation(34)</h3>
+                </div>
+                @Html.Raw(sbMemberYonetim)
+            </div>
+            <div class="ust-yonetim">
+                <div class="baslik">
+                    <h3>@Shared.GetTranslation(35)</h3>
+                </div>
+                @Html.Raw(sbMemberUst)
+            </div>
+        </div>
+    }
+}

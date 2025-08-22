@@ -1,0 +1,98 @@
+﻿@{
+    if (Request.QueryString["ID"] != null)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        int reqFormID = Request.QueryString["ID"].AsInt();
+        int reqMounth = 0;
+        int reqYear = 0;
+        int reqDay = 0;
+        string sqlCondition = "";
+        if (Request.QueryString["drpDay"].IsInt())
+        {
+            reqDay = Request.QueryString["drpDay"].AsInt();
+            if (reqDay > 0)
+            {
+                sqlCondition = " Day(AddDate)=" + reqDay;
+            }
+        }
+        if (Request.QueryString["drpMounth"].IsInt())
+        {
+            reqMounth = Request.QueryString["drpMounth"].AsInt();
+            if (reqMounth > 0)
+            {
+                if (!string.IsNullOrEmpty(sqlCondition))
+                {
+                    sqlCondition += " and";
+                }
+                sqlCondition += " Month(AddDate)=" + reqMounth;
+            }
+        }
+        if (Request.QueryString["drpYear"].IsInt())
+        {
+            reqYear = Request.QueryString["drpYear"].AsInt();
+            if (reqYear>0)
+            {
+                if (!string.IsNullOrEmpty(sqlCondition))
+                {
+                    sqlCondition += " and";
+                }
+                sqlCondition += " Year(AddDate)=" + reqYear;
+            }
+        }
+        /*Day(AddDate)*/
+        Form Form = ConnXml.Form.FirstOrDefault(x => x.FormID == reqFormID);
+        string[] strHeaderList = new string[] { };
+        string Header = "";
+        string Csv = "";
+        string[] strListIndex = Form.ListIndex.Split(';');
+        switch (Form.ClassName)
+        {
+            case "ContactForm":
+                string[] MailNamesContactForm = {
+                        "Kayıt ID",
+                        "Ad Soyad",
+                        "E-Posta",
+                        "Telefon",
+                        "Konu",
+                        "Mesaj",
+                        "Tarih"
+                    };
+                strHeaderList = MailNamesContactForm;
+            break;
+            default:
+                break;
+        }
+        var sConnection = ((System.Data.SqlClient.SqlConnection)ConnXml.Database.Connection);
+        System.Data.SqlClient.SqlDataAdapter adp = new System.Data.SqlClient.SqlDataAdapter(string.Format("Select * from {0} {1} ", Form.ClassName,(!string.IsNullOrEmpty(sqlCondition)?" where "+sqlCondition:"")), sConnection);
+        System.Data.DataTable dt = new System.Data.DataTable();
+        adp.Fill(dt);
+        for (int i = 0; i < strHeaderList.Length; i++)
+        {
+            Header += strHeaderList[i].ToString() + ";";
+        }
+        Header += "\r\n";
+        foreach (System.Data.DataRow dr in dt.Rows)
+        {
+            for (int i = 0; i < dr.ItemArray.Count(); i++)
+            {
+                if (strListIndex.Contains(i.ToString()))
+                {
+                    Csv += dr[i].ToString().Replace("<br />", "\r\n").Replace("<br>", "\r\n").Replace("\r", "").Replace("\n", "").Replace("<hr>", "") + ";";
+                    // getList += "<tr><td>" + strHeaderList[i] + "</td><td width='50' align='center'> : </td><td>" + dr[i].ToString() + "</td></tr>";
+                }
+            }
+            Csv += "\r\n";
+        }
+        Response.Clear();
+        Response.ClearHeaders();
+        Response.ClearContent();
+        Response.ContentEncoding = System.Text.Encoding.GetEncoding("windows-1254");
+        Response.Charset = "windows-1254";
+        Response.Buffer = true;
+        Page.EnableViewState = false;
+        Response.ContentType = "application/vnd.xls";
+        Response.AddHeader("content-disposition", "attachment;filename=" + Form.FormName.ConvertToUrl() + "_" + DateTime.Now + ".csv");
+        Response.Write(Header + Csv);
+        Response.End();
+    }
+}

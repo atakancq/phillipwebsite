@@ -1,0 +1,105 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();   
+}
+@functions {
+    public string GetDetail(int reqPhotoGaleryFile)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (DocumentGaleryFile itemPages in ConnXml.DocumentGaleryFile.Where(x => x.DocumentGaleryID == reqPhotoGaleryFile))
+        {
+            str += "<tr thisVal=" + itemPages.DocumentGaleryID + " " + (itemPages.Status == false ? "class='Yellow sssicon' title='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            str += "<td class=\"Min grippy\"></td>";
+            if (!itemPages.DocumentGaleryFileUrl.IsEmpty())
+            {
+                string imgDir = "~/" + Setting.Documentdir + "/DocumentGalery/" + itemPages.DocumentGaleryFileUrl;
+                if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                {
+                    str += "<td class='Normal'>" + Path.GetExtension(itemPages.DocumentGaleryFileUrl) + "</td>";
+                }
+                else
+                {
+                    str += "<td class='Normal'>Dosya Bulunamadı</td>";
+                }
+            }
+            else
+            {
+                str += "<td class='Normal'>Dosya Bulunamadı</td>";
+            }
+            str += "<td class='Normal'>" + itemPages.DocumentGaleryFileDescription + "</td>";
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditDocumentGaleryFile?ID=" + itemPages.DocumentGaleryFileID + "'>Düzenle</a>";
+            str += "<a class='Red' href='EditDocumentGaleryFile?Delete=" + itemPages.DocumentGaleryFileID + "&GaleryID=" + itemPages.DocumentGaleryID + "'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }  
+}
+<script type="text/javascript">
+    <!-- 
+    function newPage(num) {
+        var url = new Array();
+        url[0] = "EditDocumentGaleryFile?GaleryID=@Request.QueryString["GaleryID"].AsInt()";
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Döküman Galerisi</div>
+<div class="Content">
+    <div class="ButtonPanel">
+        @{
+            List<SelectListItem> lstLang = new List<SelectListItem>();
+            for (int i = 0; i < Shared.Lang.Length; i++)
+            {
+                lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+            }
+            lstLang.FirstOrDefault(x => x.Value == "0").Selected = true;
+            IEnumerable<SelectListItem> drplstLangs = lstLang;
+        }
+        @Html.ListBox("drpLang",drplstLangs, new { @class = "inputdrp" })
+        <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0)" value="Yeni Döküman Ekle" />
+    </div>
+    <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+        <thead>
+            <td class="Min"></td>
+            <td class="Normal">Döküman Uzantısı</td>
+            <td class="Normal">Açıklama</td>
+            <td class="Big"></td>
+        </thead>
+        <tbody>
+            @{
+                int reqPhotoGalery = 0;
+                if (Request.QueryString["GaleryID"].IsInt())
+                {
+                    reqPhotoGalery = Request.QueryString["GaleryID"].AsInt();
+                    string str = GetDetail(reqPhotoGalery);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Döküman Bulunamadı<br />
+                                    <br />
+                                    <a href="EditDocumentGaleryFile?GaleryID=@reqPhotoGalery">Yeni Döküman Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+        <tfoot>
+            <td class="Min"></td>
+            <td class="Normal">Döküman Uzantısı</td>
+            <td class="Normal">Açıklama</td>
+            <td class="Big"></td>
+        </tfoot>
+    </table>
+</div>

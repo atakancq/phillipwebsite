@@ -1,0 +1,267 @@
+﻿@{
+    int getlang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        int getFormID = 7;
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        int centerOfficeID = 0;
+        if (PageData[0] != null)
+        {
+            centerOfficeID = Convert.ToInt32(PageData[0]);
+        }
+        bool isConfirm = false;
+        if (IsPost)
+        {
+            var req_utm_source = Request.QueryString["utm_source"] ?? "";
+            var req_utm_medium = Request.QueryString["utm_medium"] ?? "";
+            var req_utm_campaign = Request.QueryString["utm_campaign"] ?? "";
+            var req_utm_id = Request.QueryString["utm_id"] ?? "";
+            var req_gclid = Request.QueryString["gclid"] ?? "";
+            string utmParams = "&utm_source=" + req_utm_source.Trim() + "&utm_medium=" + req_utm_medium.Trim() + "&utm_campaign=" + req_utm_campaign.Trim() + "&utm_id=" + req_utm_id.Trim() + "&gclid=" + req_gclid.Trim();
+            var txtNameSurname = Request.Form["contact_name"];
+            var txtStockCode = Request.Form["txtStockCode"];
+            var txtAccountNo = Request.Form["txtAccountNo"];
+            var txtPhone = Request.Form["txtPhone"];
+            var txtEmail = Request.Form["contact_email"];
+            var chckKvkk = Request.Form["terms"];
+            var chckElectronic = Request.Form["terms2"];
+
+            if (Shared.EmailIsValid(txtEmail) && Shared.IsPhoneNumber(txtPhone))
+            {
+                AskYourStockForm AskYourStockForm = new AskYourStockForm()
+                {
+                    NameSurname = txtNameSurname,
+                    Email = txtEmail,
+                    Phone = txtPhone,
+                    StockCode = txtStockCode,
+                    AccountNo = txtAccountNo,
+                    UtmID = req_utm_id,
+                    UtmMedium = req_utm_medium,
+                    UtmSource = req_utm_source,
+                    UtmCampaign = req_utm_campaign,
+                    GclID = req_gclid,
+                    AcceptElectronicMessage = chckKvkk == "ok" ? true : false,
+                    KVKK = chckElectronic == "ok" ? true : false,
+                    LangID = Shared.GetLang(),
+                    AddDate = DateTime.Now
+                };
+
+                ConnXml.AskYourStockForm.Add(AskYourStockForm);
+                int ConnStatus = ConnXml.SaveChanges();
+
+                var nameIsArabic = Shared.IsArabic(txtNameSurname);
+                var emailIsArabic = Shared.IsArabic(txtEmail); 
+
+                if (!nameIsArabic && !emailIsArabic)
+                {
+                    if (ConnStatus > 0)
+                    {
+                        isConfirm = true;
+
+
+                        ServicePointManager.Expect100Continue = true;
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                        try
+                        {
+                            string html = string.Empty;
+                            string url = @"https://crmv3.phc.com.tr/api2/get_data?adsoyad=" + HttpUtility.UrlEncode(txtNameSurname) + "&epostaadresi=" + HttpUtility.UrlEncode(txtEmail) + "&telefon=" + HttpUtility.UrlEncode(txtPhone) + "&kaynak=hisse_sor&leadtype=1" + utmParams;
+                            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                            request.AutomaticDecompression = DecompressionMethods.GZip;
+
+                            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                            {
+                                using (Stream stream = response.GetResponseStream())
+                                {
+                                    using (StreamReader reader = new StreamReader(stream))
+                                    {
+                                        html = reader.ReadToEnd();
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+
+
+
+
+
+                    }
+                }
+
+            }
+
+
+        }
+
+
+
+
+    <div class="askStockForm">
+        <div class="askStockLeftSide col-md-6 col-sm-6 col-xs-12">
+            <div class="askFormTitle">Hisseni Sor, Phillip Cevaplasın</div>
+            <div class="askFormTitleDesc">Portföyünüzde yer alan ya da almayı düşündüğünüz hisse hakkında merak ettiklerinizi sorun. YouTube canlı yayınında PhillipCapital'in tecrübeli analistleri temel ve teknik açıdan değerlendirsin.</div>
+            <div class="countdown">
+                <div class="col"> <div class="no day">0</div> <div class="str">Gün</div></div>
+                <div class="col"> <div class="no hour">0</div> <div class="str">Saat</div></div>
+                <div class="col"> <div class="no min">0</div> <div class="str">Dakika</div></div>
+                <div class="col"> <div class="no sec">0</div> <div class="str">Saniye</div></div>
+            </div>
+            <div class="askFromIcons">
+
+                <div class="subscribe"><a target="_blank" href="https://www.youtube.com/PhillipCapitalTurkiye"><img src="~/content/images/subscribe.png" /></a></div>
+                <div class="text">
+                    <div class="title">CANLI YAYIN</div>
+                    <div class="time">20 EYLÜL / 14:30</div>
+                </div>
+            </div>
+            <div class="askFormBackground"></div>
+        </div>
+        <div class="askStockRightSide col-md-6 col-sm-6 col-xs-12">
+            <div class="quickForm">
+                <div class="qTitle">
+                    <p>PhillipCapital'e</p>
+                    Hisseni Sor !
+                </div>
+                <div class="qBody">
+                    <form class="hid" method="post">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="BbD6AoVYEJY0d45ffzE4IBtjdTu06DVmQ6QTvl7Ho9uSdpZBpVcP57EKRkTFj5Gy">
+                        <div class="top">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="contact_name" required="" id="contact_name" placeholder="@Shared.GetTranslation(17)">
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="txtAccountNo"  id="txtAccountNo" placeholder="Varsa PhillipCapital Hesap Numaranız">
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <input type="email" class="form-control" name="contact_email" required="" id="contact_email" placeholder="@Shared.GetTranslation(8)">
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="txtPhone" required="" id="txtPhone" placeholder="@Shared.GetTranslation(16)">
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" name="txtStockCode" required="" id="txtStockCode" placeholder="Sormak İstediğiniz Hisse Kodları*">
+                                </div>
+                            </div>
+                            <div class="col-sm-12 mt">
+                                <div class="checkArea mt">
+                                    <input onchange="this.setCustomValidity(validity.valueMissing ? 'Formu Göndermek için lütfen kabul ediniz' : '');" id="field_terms" type="checkbox" required="" name="field_terms"> <label for="field_terms">
+                                        PhillipCapital<a href="/internet-sitesi-aydinlatma-metni" target="_blank"> web sitesi üyeliği aydınlatma bildirimi</a> ’ni
+                                        okuduğumu, anladığımı ve kabul ettiğimi beyan ederim.
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="checkArea">
+                                    <input id="field_terms2" type="checkbox" name="field_terms2"> <label for="field_terms2">
+                                        PhillipCapital ve bağlı ortaklıkları tarafından tanıtım ve pazarlama
+                                        amacıyla <a href="/ticari-elektronik-ileti-gonderimine-iliskin-onay-metni" target="_blank">ticari elektronik ileti</a> gönderilmesini
+                                        onaylıyorum.
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bottom">
+                            @{
+                                if (isConfirm)
+                                {
+                                    @*<script>
+                                        gtag('event', 'conversion', { 'send_to': 'AW-10936174659/gpRHCIzcrccDEMOQ494o' });
+                                    </script>*@
+                                    <script>
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Talebiniz alınmıştır. Kısa sürede sizinle iletişime geçilecektir.',
+                                            showConfirmButton: false,
+                                            timer: 1500
+                                        });
+                                        setTimeout(function () {
+                                            window.location.href = window.location.href;
+                                        }, 1600);
+                                    </script>
+                                }
+                                else
+                                {
+                                    <input id="GoogleCaptchaToken" name="GoogleCaptchaToken" type="hidden" />
+
+                                    <button type="submit" id="submit"> @Shared.GetTranslation(155)</button>
+                                }
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            document.getElementById("field_terms").setCustomValidity("Formu Göndermek için lütfen kabul ediniz");
+        </script>
+    </div>
+
+        <div class="winner">
+            <div class="winnerRow">
+                <div class="heading">@Shared.GetTranslation(165)</div>
+                <div class="heading2">@Shared.GetTranslation(166)</div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/rakipsiz-komisyon.png" />
+                    <span>@Shared.GetTranslation(167)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/ucretsiz-anlikveri.png" />
+                    <span>@Shared.GetTranslation(168)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/5gun24.png" />
+                    <span>@Shared.GetTranslation(169)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/onlinehesapac.png" />
+                    <span>@Shared.GetTranslation(170)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/nakit-t2.png" />
+                    <span>@Shared.GetTranslation(171)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/bistveabd.png" />
+                    <span>@Shared.GetTranslation(172)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/halkaarz.png" />
+                    <span>@Shared.GetTranslation(173)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/portfoy.png" />
+                    <span>@Shared.GetTranslation(174)</span>
+                </div>
+                <div class="rowItem">
+                    <img src="../../content/images/iconlar/sigorta.png" />
+                    <span>@Shared.GetTranslation(176)</span>
+                </div>
+            </div>
+        </div>
+        <div class="safewithus">
+            <div class="safewithusRow">
+                <div class="side">
+                    <div class="sidetitle">
+                        "@Html.Raw(Shared.GetTranslation(177))"
+                    </div>
+                    <div class="sidetitle2">
+                        @Html.Raw(Shared.GetTranslation(178))
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

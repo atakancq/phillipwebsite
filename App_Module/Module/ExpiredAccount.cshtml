@@ -1,0 +1,80 @@
+﻿@functions{
+    string userList(MvcXmlEntities ConnXml, int getYear)
+    {
+        System.Text.StringBuilder sbAccordion = new System.Text.StringBuilder();
+        string str = @" <tr>
+            <td >{0}</td>
+            <td >{1}</td>
+            <td >{2}</td>
+            <td >{3}</td>
+        </tr>";
+        foreach (var item in ConnXml.ExpiredAccount.Where(x => x.Status && x.LastProcessDate.Year == getYear))
+        {
+            sbAccordion.AppendFormat(str, Shared.GetTranslation(40), item.NameSurname, item.LastProcessDate.ToString("dd/MM/yyyy"), item.LastProcessDate.AddYears(10).ToString("dd/MM/yyyy"));
+        }
+        return sbAccordion.ToString();
+    }
+}
+@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        System.Text.StringBuilder sbProspectus = new System.Text.StringBuilder();
+        var getYears = from ar in ConnXml.ExpiredAccount
+                       where ar.Status && ar.LastProcessDate.Year >= (DateTime.Now.Year - 10)
+                       select new { ar.LastProcessDate.Year };
+        <br />
+        <div class="accordion">
+            <span class="target-fix" id="accordion"></span>
+            @{
+                foreach (var itemYear in getYears.Distinct().OrderByDescending(x => x.Year))
+                {
+                    <div>
+                        <span class="target-fix" id="@Html.Raw("accordion"+itemYear.Year)"></span>
+                        <a href="@Html.Raw("#accordion"+itemYear.Year)" class="baslik-link" id="@Html.Raw("open-accordion"+itemYear.Year)" title="open">
+                            <div class="acc-inner">
+                                <img class="history-text-before-img" src="/Content/images/ucretsiz-anlik-data.svg">
+                                <div class="text-acc-header"><h5>@(itemYear.Year + 10) Yılı İçerisinde Zaman Aşımına Uğrayacak Olan Hesaplar Listesi</h5></div>
+                                <img class="text-after-img" src="/Content/images/down-chevron.svg">
+                            </div>
+                        </a>
+                        <a href="#accordion" class="baslik-link" id="@Html.Raw("close-accordion"+itemYear.Year)" title="close">
+                            <div class="acc-inner">
+                                <img class="history-text-before-img" src="/Content/images/ucretsiz-anlik-data.svg">
+                                <div class="text-acc-header"><h5>@(itemYear.Year + 10) Yılı İçerisinde Zaman Aşımına Uğrayacak Olan Hesaplar Listesi</h5></div>
+                                <img class="text-after-img" src="/Content/images/down-chevron.svg">
+                            </div>
+                        </a>
+                        <div class="accordion-content">
+                            <div class="ortaklik-yapisi-yonetim-kurulu">
+                                <table class="ortaklik-yapisi">
+                                    <thead>
+                                        <tr>
+                                            <td>@Shared.GetTranslation(36)</td>
+                                            <td>@Shared.GetTranslation(37)</td>
+                                            <td>@Shared.GetTranslation(38)</td>
+                                            <td>@Shared.GetTranslation(39)</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @Html.Raw(userList(ConnXml, itemYear.Year))
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <style>
+            .text-acc-header { margin-top: 0; display: flex; align-items: center; justify-content: left }
+            .text-acc-header h5 { margin-bottom: 0; }
+            table thead td { font-weight: bold; }
+            table td { padding: 10px; border: 1px solid; border-collapse: collapse; font-size: 14px; }
+            table tr td:first-child { border-left: 0; }
+            table tr td:last-child { border-right: 0; }
+            table tr:last-child td { border-bottom: 0; }
+            table thead tr:first-child td { border-top: 0; }
+        </style>
+    }
+}

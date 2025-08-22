@@ -1,0 +1,126 @@
+﻿@{
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    Setting Setting = ConnXml.Setting.FirstOrDefault();
+    Page.Title = Setting.Pagetitle;
+    Login AdminLogin = new Login();
+    if (!AdminLogin.IsLogin())
+    {
+        Response.Redirect(Shared.PageBasePath() + "Govern/Login");
+    }
+    //int reqAdminID = 9;
+    int reqAdminID = AdminLogin.LoginUserID();
+    Admin AdminDetail = ConnXml.Admin.FirstOrDefault(x => x.AdminID == reqAdminID);
+    string StatusMessage = "";
+    if (Session["Error"] != null)
+    {
+        StatusMessage = "<div class=\"Error\" id=\"In_Error\">" + Session["Error"].ToString() + "</div>";
+        Session["Error"] = null;
+    }
+    if (Session["Info"] != null)
+    {
+        StatusMessage = "<div class=\"Info\" id=\"In_Info\">" + Session["Info"].ToString() + "</div>";
+        Session["Info"] = null;
+    }
+    if (Session["Warning"] != null)
+    {
+        StatusMessage = "<div class=\"Warning\" id=\"In_Warning\">" + Session["Warning"].ToString() + "</div>";
+        Session["Warning"] = null;
+    }
+    if (Session["Ok"] != null)
+    {
+        StatusMessage = "<div class='Ok' id='In_Ok'>" + Session["Ok"].ToString() + "</div>";
+        Session["Ok"] = null;
+    }
+    List<int> getMenuIDList = new List<int>();
+    IQueryable<int> iqMenuIDList = getMenuIDList.AsQueryable();
+    iqMenuIDList = ConnXml.AdminAuthorization.Where(x => x.AdminID == reqAdminID).Select(x => x.AdminMenuID);
+    string getUrl = Request.RawUrl;
+    string getLastPart = getUrl.Split('/').Last().Split('?').First();
+    string[] adminUserPageList = { "admin", "editadmin", "adminauth" };
+    if (ConnXml.AdminMenu.Any(x => x.Url == getLastPart))
+    {
+        int getAdminMenuID = ConnXml.AdminMenu.FirstOrDefault(x => x.Url == getLastPart).AdminMenuID;
+        if (!AdminDetail.UserAuth && !ConnXml.AdminAuthorization.Any(x => x.AdminID == reqAdminID && x.AdminMenuID == getAdminMenuID))
+        {
+            throw new Exception("Bu sayfaya erişim yetkiniz yok");
+        }
+    }
+    else if (adminUserPageList.Contains(getLastPart.ToLower()))
+    {
+        if (!AdminDetail.UserAuth)
+        {
+            Response.Redirect("/Govern/");
+        }
+    }
+}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>@Page.Title</title>
+        <link href="~/Govern/Css/jquery-ui.css" rel="stylesheet" type="text/css" />
+        <link href="~/Govern/Css/Admin.css" rel="stylesheet" type="text/css" />
+        <link href="~/Govern/Css/Login.css" rel="stylesheet" type="text/css" />
+        <link href="~/Govern/Css/base/ui.all.css" rel="stylesheet" type="text/css" />
+        <link href="summernote/summernote.min.css" rel="stylesheet">
+        @*<link href="~/ckeditor/outputxhtml.css" rel="stylesheet" type="text/css" />*@
+        @*<script src="~/Scripts/jquery-1.7.1.min.js"></script>*@
+        <script src="~/Scripts/jquery-3.6.0.min.js"></script>
+        <script src="~/Scripts/jquery-ui-1.13.1.js"></script>
+        @*<script src="~/Scripts/jquery.validate.min.js"></script>
+        <script src="~/Scripts/jquery.validate.unobtrusivee.min.js"></script>*@
+        <script src="~/Govern/js/jquery.mask.js"></script>
+        <script src="~/Govern/js/Admin.js"></script>
+        @*<script src="~/ckeditor/ckeditor.js"></script>*@
+        <link href="Css/bootstrap.min.css" rel="stylesheet">
+        <script src="~/Scripts/bootstrap.3.4.1.min.js"></script>
+        <script src="summernote/summernote.min.js"></script>
+        @RenderSection("head", required: false)
+    </head>
+    <body>
+        <div align="center">
+            <div class="Header">
+                <div class="HeaderRight">
+                    Merhaba <b> <asp:label runat="server" id="UserName"></asp:label> </b>
+                    | <span id="UserAuth" runat="server"></span>
+                    | @{ if (AdminDetail.UserAuth) { @Html.Raw("<a href=\"Admin\">Kullanıcı Yönetimi</a> |"); } }
+                    <a href="@Shared.PageBasePath()" target="_blank">Siteye git</a> |  <a href="Logout">Çıkış</a>
+                </div>
+            </div>
+            <div class="Container">
+                <div class="Main" id="Main">
+                    <div class="MainLeft">
+                        <div class="Menu" runat="server">
+                            @{
+                                foreach (AdminMenu itemMenu in ConnXml.AdminMenu.Where(x => x.ParentID == 0 && (!AdminDetail.UserAuth ? iqMenuIDList.Contains(x.AdminMenuID) : true)).OrderBy(x => x.Line))
+                                {
+                                    if (ConnXml.AdminMenu.Any(x => x.ParentID == itemMenu.AdminMenuID && x.ShowInSubMenu))
+                                    {
+                                        <div class="Item">
+                                            <div class="ItemTitle">@itemMenu.Title</div>
+                                            <div class="ItemContent" style="display: none;">
+                                                @foreach (var itemSubMenu in ConnXml.AdminMenu.Where(x => x.ParentID == itemMenu.AdminMenuID && x.ShowInSubMenu && (!AdminDetail.UserAuth ? iqMenuIDList.Contains(x.AdminMenuID) : true)).OrderBy(x => x.Line))
+                                                {
+                                                    <div class="ItemLink" href="@itemSubMenu.Url" style="cursor: pointer;">@itemSubMenu.Title</div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="Link" href="@itemMenu.Url" style="cursor: pointer;">@itemMenu.Title</div>
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="MainRight">
+                        <div class="Page">
+                            @Html.Raw(StatusMessage)
+                            @RenderBody()
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

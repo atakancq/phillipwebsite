@@ -1,0 +1,123 @@
+﻿@{
+    Layout = "Master/_Default.cshtml";
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        int getLang = Shared.GetLang();
+        if ((UrlData[0].IsInt()) && (ConnXml.Pages.AsEnumerable().Any(x => x.PageID == UrlData[0].AsInt())))
+        {
+            int getPageID = UrlData[0].AsInt();
+            System.Globalization.CultureInfo cultureinfo = new System.Globalization.CultureInfo(getLang.toLangCulture());
+            Pages itemPage = ConnXml.Pages.FirstOrDefault(x => x.PageID == getPageID);
+            Page.Title = itemPage.Title + " | " + Setting.Pagetitle;
+            if (itemPage.Status == false)
+            {
+                Response.Redirect(Shared.PageBasePath());
+            }
+            if (itemPage.ExtarnalLink.AsInt() > 0)
+            {
+                int getValue = itemPage.ExtarnalLink.ToString().AsInt();
+                Pages itemPageReDirect = ConnXml.Pages.FirstOrDefault(x => x.PageID == getValue);
+                if (itemPageReDirect != null)
+                {
+                    Response.Redirect(Shared.PageBasePath() + itemPageReDirect.RawUrl);
+                }
+            }
+            else if (!string.IsNullOrEmpty(itemPage.ExternalUrl))
+            {
+                Response.Redirect(itemPage.ExternalUrl);
+            }
+            string strTopName = "";
+            if (ConnXml.Pages.Any(x => x.PageID == itemPage.ParentID))
+            {
+                strTopName = ConnXml.Pages.FirstOrDefault(x => x.PageID == itemPage.ParentID).DisplayName;
+            }
+            string strRenderHtml = "";
+            if (itemPage.ModuleID > 0)
+            {
+                Module getModule = ConnXml.Module.FirstOrDefault(x => x.ModuleID == itemPage.ModuleID);
+                object[] data = new object[] { itemPage.ControlParameter, this };
+                strRenderHtml = RenderPage("~/App_Module/Module/" + getModule.ModulePath, data).ToHtmlString();
+            }
+            @section head {
+                @{
+                    <meta property="og:title" content="@itemPage.Title" />
+                    if (!string.IsNullOrEmpty(itemPage.Keywords))
+                    {
+                        <meta name="keywords" content="@itemPage.Keywords">
+                    }
+                    if (!string.IsNullOrEmpty(itemPage.Description))
+                    {
+                        <meta name="description" content="@itemPage.Description">
+                        <meta property="og:description" content="@itemPage.Description" />
+                    }
+                    <meta property="og:site_name" content="@Shared.PageBasePath()@Request.RawUrl.Substring(1)" />
+                }
+            }
+            <div class="page">
+                @*
+                    <div class="title-area">
+                        <h1>
+                            @{
+                                string pTitle = string.Empty;
+                                if (strTopName.Contains(" "))
+                                {
+                                    var splitTitle = strTopName.Split(' ');
+                                    pTitle = "<span class='orange'>" + splitTitle[0] + "</span>";
+                                    for (int i = 1; i < splitTitle.Length; i++)
+                                    {
+                                        pTitle += " " + splitTitle[i];
+                                    }
+                                }
+                            }
+                            @Html.Raw(pTitle)
+                        </h1>
+                        <div class="left-menu-dropdown">
+                            <svg id="Group_5735" data-name="Group 5735" xmlns="http://www.w3.org/2000/svg" width="27.795" height="27.795" viewBox="0 0 27.795 27.795">
+                                <path id="Path_48035" data-name="Path 48035" d="M13.9,0A13.9,13.9,0,1,0,27.8,13.9,13.913,13.913,0,0,0,13.9,0Zm4.293,14.717L12.4,20.507a1.158,1.158,0,1,1-1.638-1.638L15.735,13.9,10.763,8.926A1.158,1.158,0,0,1,12.4,7.288l5.791,5.791A1.157,1.157,0,0,1,18.191,14.717Z" fill="#F47F01" />
+                            </svg>
+                        </div>
+                    </div>
+                *@
+                <div class="page-container fullWidth">
+                    <div class="page-inner-wrapper">
+                        <div class="page-inner">
+                            <link href="/Content/css/all.min.css" rel="stylesheet" />
+                            <link href="/Content/css/owl.carousel.css" rel="stylesheet" />
+                            <link href="/Content/css/owl.theme.css" rel="stylesheet" />
+                            <link href="/Content/css/material-icons.css" rel="stylesheet" />
+                            <link href="/Content/css/style.css" rel="stylesheet" />
+                            <link href="/Content/css/responsive.css" rel="stylesheet" />
+                            <script type="text/javascript">
+                                $(document).ready(function () {
+                                    // Set Event
+                                    $(".accordion div a").click(function () {
+                                        // Open?
+                                        if ($(this).attr("id").indexOf("open") > -1) {
+                                            var top = $(this).parent();
+                                            setTimeout(function () {
+                                                // Scroll to the top of the element
+                                                $('html, body').animate({
+                                                    scrollTop: top.offset().top
+                                                }, 500);
+                                            }, 120);
+                                        }
+                                    });
+                                });
+                            </script>
+                            @{
+                                @Html.Raw(strRenderHtml)
+                                if (itemPage.FormID > 0)
+                                {
+                                    Form getModule = ConnXml.Form.FirstOrDefault(x => x.FormID == itemPage.FormID);
+                                    object[] data = new object[] { getModule.FormID };
+                                    @RenderPage("~/App_Module/Form/" + getModule.Module, data)
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}

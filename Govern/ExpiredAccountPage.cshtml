@@ -1,0 +1,85 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+}
+@functions {
+    public string GetDetail()
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (ExpiredAccount itemPages in ConnXml.ExpiredAccount.OrderByDescending(x => x.ExpiredAccountID))
+        {
+            str += "<tr thisVal=" + itemPages.ExpiredAccountID + " " + (itemPages.Status == false ? "class='Yellow sssicon' Question='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            str += "<td class></td>";
+            str += "<td class='Normal'>" + itemPages.NameSurname+"</td>";
+            str += "<td>";
+            if (itemPages.MemberType == 0)
+            {
+                str += "Basit";
+            }
+            str += "</td>";
+            str += "<td class='Normal'>" + itemPages.LastProcessDate.ToString("dd/MM/yyyy").Replace(".", "/") + "</td>";
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditExpiredAccountPage?ID=" + itemPages.ExpiredAccountID + "'>Düzenle</a>";
+            str += "<a class='Red' onclick='return confirmDelete();' href='EditExpiredAccountPage?Delete=" + itemPages.ExpiredAccountID +  "'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }
+}
+<script type="text/javascript">
+    <!-- 
+    function newPage(num, reqLangID) {
+        var url = new Array();
+        url[0] = "EditExpiredAccountPage?Lang=" + reqLangID;
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Hesap Listesi</div>
+<form method="post">
+    <div class="Content">
+        <div class="ButtonPanel">
+            <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0,0)" value="Yeni Hesap Ekle" />
+        </div>
+        <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+            <thead>
+                <td class="Min"></td>
+                <td class="Normal">Ad Soyad</td>
+                <td class="Normal">Hesap Türü</td>
+                <td class="Normal">Son İşlem Tarihi</td>
+                <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetDetail();
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Hesap Bulunamadı<br />
+                                    <br />
+                                    <a onclick="newPage(0,0)">Yeni Hesap Ekle</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Min"></td>
+                <td class="Normal">Ad Soyad</td>
+                <td class="Normal">Hesap Türü</td>
+                <td class="Normal">Son İşlem Tarihi</td>
+                <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

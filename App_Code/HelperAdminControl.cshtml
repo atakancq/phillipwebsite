@@ -1,0 +1,104 @@
+﻿@using IValidator = System.Web.WebPages.IValidator;
+@using ValidationHelper = System.Web.WebPages.ValidationHelper;
+@functions {
+    public static ValidationHelper req;
+}
+@helper inputText(string inputID, string inputName, bool Multiline, bool Required, string inputValue)
+{
+    <div class="Title">@inputName @if (Required) { @Html.ValidationMessage(inputID) }</div>
+    <div class="Input">
+        @if (Required)
+        {
+            WebPage page = CurrentPage as WebPage;
+            page.Validation.RequireField(inputID, "*");
+            req = page.Validation;
+        }
+        @if (Multiline) {
+            <textarea id="@inputID" name="@inputID" cols="20" rows="2" class="inputtextarea">@inputValue</textarea>
+        } else {
+            <input id="@inputID" name="@inputID" type="text" value="@inputValue" class="inputtext" @if (Required) { @req.For(inputID) } />
+        }
+    </div>
+}
+@helper inputText(string inputID, string inputName, bool Multiline, bool Required, string inputValue, string CssClass)
+{
+    <div class="Title">
+        @inputName @if (Required) { @Html.ValidationMessage(inputID) }
+    </div>
+    <div class="Input">
+        @if (Required)
+        {
+            WebPage page = CurrentPage as WebPage;
+            page.Validation.RequireField(inputID, "*");
+            if (CssClass.Contains("Email"))
+            {
+                page.Validation.Add(inputID, Validator.Regex(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$", "*"));
+            }
+            req = page.Validation;
+        }
+        @if (Multiline) {
+            <textarea id="@inputID" name="@inputID" cols="20" rows="2" class="inputtextarea">@inputValue</textarea>
+        } else {
+            <input id="@inputID" name="@inputID" type="text" value="@inputValue" class="inputtext @CssClass" @if (Required) { @req.For(inputID) } />
+        }
+    </div>
+}
+@helper inputEditor(string inputID, string inputName, string inputValue)
+{
+    <div class="Title">@Html.Raw(inputName) </div>
+    <div class="Input">
+        <textarea cols="80" id="@inputID" name="@inputID" type="html" rows="10">@inputValue</textarea>
+    </div>
+    <script>
+        $(document).ready(function (e) {
+            $('#@inputID').summernote({
+                toolbar: [
+                    ['style', ['style']],
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['font', ['strikethrough', 'superscript', 'subscript']],
+                    ['fontsize', ['fontsize']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['height', ['height']],
+                    ['view', ['fullscreen', 'codeview', 'help']],
+                ],
+                height: 400
+            });
+        })
+    </script>
+}
+@helper fileUpload(string fuID, string FuName)
+{
+    <div class="Title">@FuName</div>
+    <div class="Input uploadcontrol">
+        <input type="file" name="@fuID" id="@fuID" class="inputfile">
+    </div>
+}
+@helper DropDownList(string drpID, string drpName, IEnumerable<SelectListItem> drpItems)
+{ 
+    <div class="Title">@drpName</div>
+    <div class="Input">
+        @Html.ListBox(drpID, drpItems, new { @class = "inputdrp" })
+    </div>
+}
+@helper DropDownList(string drpID, string drpName, IEnumerable<SelectListItem> drpItems, bool NoNumaric)
+{
+    WebPage page = CurrentPage as WebPage;
+    page.Validation.RequireField(drpID, "*");
+    page.Validation.Add(drpID, Validator.Regex(@"^(?=.*[1-9])(?:[1-9]\d*\.?|0?\.)\d*$", "*"));
+    req = page.Validation;
+    <div class="Title">@Html.Raw(drpName) @Html.ValidationMessage(drpID)</div>
+    <div class="Input">
+        @Html.ListBox(drpID, drpItems, new { @class = "inputdrp" })
+    </div>
+}
+@helper ListBox(string drpID, string drpName, IEnumerable<SelectListItem> drpItems)
+{ <div class="Title">@drpName</div>
+    <div class="Input">
+        @Html.DropDownList(drpID, drpItems, new { @class = "inputdrp", @rows = 5, @multiple = "multiple", @style = "width: 99%;" })
+    </div>
+}
+@helper CheckBox(string drpID, string drpName, bool isChecked)
+{
+    @Html.CheckBox(drpID, isChecked)<label>@drpName</label>
+}

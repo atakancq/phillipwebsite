@@ -1,0 +1,141 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    if (IsPost)
+    {
+        int regqPhotoGalery = Request.QueryString["GaleryID"].AsInt();
+        if (!Request.Form["btnSort"].IsEmpty())
+        {
+            string[] StrSortList = Request.Form["SortItems"].Split(',');
+            try
+            {
+                int i = 1;
+                foreach (var item in StrSortList)
+                {
+                    if (!item.IsEmpty())
+                    {
+                        int getItem = Convert.ToInt32(item);
+                        PhotoGaleryFile itemPage = ConnXml.PhotoGaleryFile.FirstOrDefault(x => x.PhotoGaleryFileID == getItem);
+                        itemPage.Line = i;
+                        ConnXml.Entry(itemPage).State = System.Data.EntityState.Modified;
+                        ConnXml.SaveChanges();
+                        i++;
+                    }
+                }
+            }
+            catch { }
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+            Response.Redirect("PhotoGaleryPageFile?GaleryID="+ regqPhotoGalery + "");
+        }
+    }
+}
+@functions
+{
+    public string GetDetail(int reqPhotoGaleryFile)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (PhotoGaleryFile itemPages in ConnXml.PhotoGaleryFile.Where(x => x.PhotoGaleryID == reqPhotoGaleryFile).OrderBy(x=>x.Line))
+        {
+            str += "<tr thisVal=" + itemPages.PhotoGaleryFileID + " " + (itemPages.Status == false ? "class='Yellow sssicon' title='Kayıt pasif durumda. Web sitesinde gösterilmiyor.'" : "") + ">";
+            str += "<td class=\"Min grippy\"></td>";
+            if (!itemPages.PhotoGaleryFileUrl.IsEmpty())
+            {
+                string imgDir = "~/" + Setting.Documentdir + "/PhotoGalery/" + itemPages.PhotoGaleryFileUrl;
+                if (System.IO.File.Exists(Server.MapPath(imgDir)))
+                {
+                    str += "<td class='Normal'><img src=\"" + imgDir.Replace("~/", "../") + "\" width=\"100\" /></td>";
+                }
+                else
+                {
+                    str += "<td class='Normal'>Resim Bulunamadı</td>";
+                }
+            }
+            else
+            {
+                str += "<td class='Normal'>Resim Bulunamadı</td>";
+            }
+            str += "<td class='Normal'>" + itemPages.PhotoGaleryFileDescription + "</td>";
+            str += "<td class='Big'>";
+            str += "<a class='Blue' href='EditPhotoGaleryPageFile?ID=" + itemPages.PhotoGaleryFileID + "'>Düzenle</a>";
+            str += "<a class='Red' onclick='return confirmDelete();'  href='EditPhotoGaleryPageFile?Delete=" + itemPages.PhotoGaleryFileID + "&GaleryID=" + itemPages.PhotoGaleryID + "'>Sil</a>";
+            str += "</td>";
+            str += "</tr>";
+        }
+        return str;
+    }  
+}
+<script type="text/javascript">
+    <!-- 
+    function newPage(num) {
+        var url = new Array();
+        url[0] = "EditPhotoGaleryPageFile?GaleryID=@Request.QueryString["GaleryID"].AsInt()";
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Fotoğraf Galerisi</div>
+<form method="post">
+    <input type="hidden" id="PageName" value="" />
+    <input type="hidden" id="PageNameQ" value="" />
+    <input type="hidden" id="SelectedItems" name="SelectedItems" class="SelectedItems"  />
+    <input type="hidden" id="PassiveItems" name="PassiveItems" class="PassiveItems"  />
+    <input type="hidden" id="SortItems" name="SortItems" class="SortItems"  />
+    <div class="Content">
+        <div class="ButtonPanel">
+            @{
+                List<SelectListItem> lstLang = new List<SelectListItem>();
+                for (int i = 0; i < Shared.Lang.Length; i++)
+                {
+                    lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                }
+                lstLang.FirstOrDefault(x => x.Value == "0").Selected = true;
+                IEnumerable<SelectListItem> drplstLangs = lstLang;
+            }
+            @Html.ListBox("drpLang", drplstLangs, new { @class = "inputdrp" })
+            <input name="btnSort" type="submit" value="Sıralamayı Kaydet" id="btnSort" class="inputbutton Save">
+            <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0)" value="Yeni Fotoğraf Ekle" />
+        </div>
+        <table class="GridWiew" cellpadding="5" cellspacing="0" type="sortable">
+            <thead>
+                <td class="Min"></td>
+                <td class="Normal">Resim</td>
+                <td class="Normal">Açıklama</td>
+                <td class="Big"></td>
+            </thead>
+            <tbody>
+                @{
+                    int reqPhotoGalery = 0;
+                    if (Request.QueryString["GaleryID"].IsInt())
+                    {
+                        reqPhotoGalery = Request.QueryString["GaleryID"].AsInt();
+                        string str = GetDetail(reqPhotoGalery);
+                        if (!str.IsEmpty())
+                        {
+                            @Html.Raw(str);
+                        }
+                        else
+                        {
+                            <tr>
+                                <td class='Big' colspan='15'>
+                                    <div class='NoneItemPage'>
+                                        Fotoğraf Bulunamadı<br />
+                                        <br />
+                                        <a href="EditPhotoGaleryPageFile?GaleryID=@reqPhotoGalery">Yeni Fotoğraf Ekle</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Min"></td>
+                <td class="Normal">Resim</td>
+                <td class="Normal">Açıklama</td>
+                <td class="Big"></td>
+            </tfoot>
+        </table>
+    </div>
+</form>

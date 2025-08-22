@@ -1,0 +1,101 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+}
+@functions
+{
+    string FileType(string Extension, string Filename)
+    {
+        Extension = Extension.ToLower();
+        if (Extension == ".jpg" || Extension == ".png" || Extension == ".gif" || Extension == ".bmp")
+        {
+            return "[img]" + Filename + "[/img]";
+        }
+        else if (Extension == ".swf")
+        {
+            return "[flash]" + Filename + "[/flash]";
+        }
+        else if (Extension == ".flv")
+        {
+            return "[video]" + Filename + ":Videoyu görüntülemek için tıklayın[/video]";
+        }
+        else if (Extension == ".doc" || Extension == ".xls" || Extension == ".pdf" || Extension == ".rar" || Extension == ".zip")
+        {
+            return "[document]" + Filename + ":Dosyayı görüntülemek için tıklayın[/document]";
+        }
+        return "";
+    }
+}
+@functions
+{
+    public string GetDetail()
+    {
+        Setting Setting = new global::Setting();
+        string dir = Server.MapPath("~/Files/Upload");
+        string[] AllFile = Directory.GetFiles(dir);
+        string str = "";
+        if (AllFile.Length > 0)
+        {
+            foreach (string File in AllFile)
+            {
+                FileInfo FileInfo = new FileInfo(File);
+                str += "<tr thisVal='" + FileInfo.Name + "'>";
+                str += "<td class='Normal'>" + FileInfo.Name + "</td>";
+                str += "<td class='Big'>" + FileType(FileInfo.Extension, FileInfo.Name) + "</td>";
+                str += "<td class='Small'>" + FileInfo.Extension + "</td>";
+                str += "<td class='Normal'><a href='../Files/Upload/" + FileInfo.Name + "' target='_blank'>Dosyayı görüntüle</a> | <a href='EditFileGaleryPage?Delete=" + FileInfo.Name + "' onclick='confirmDelete();'>Dosyayı Sil</a></td>";
+                str += "</tr>";
+            }
+        }
+        return str;
+    }  
+}
+<script type="text/javascript">
+    <!-- 
+    function newPage(num) {
+        var url = new Array();
+        url[0] = "EditFileGaleryPage";
+        window.location = url[num];
+    }
+    // -->
+</script>
+<div class="Title">Dosya Yöneticisi</div>
+<div class="Content">
+    <div class="ButtonPanel">
+        <input id="btnAdd" name="btnAdd" type="button" class="inputbutton Add" onclick="newPage(0)" value="Yeni Dosya Ekle" />
+    </div>
+    <table class="GridWiew" cellpadding="5" cellspacing="0">
+        <thead>
+            <td class="Normal">Dosya Adı</td>
+            <td class="Big">Kod</td>
+            <td class="Small">Dosya Tipi</td>
+            <td class="Normal"></td>
+        </thead>
+        <tbody>
+            @{
+                string str = GetDetail();
+                if (!str.IsEmpty())
+                {
+                    @Html.Raw(str);
+                }
+                else
+                {
+                    <tr>
+                        <td class='Big' colspan='15'>
+                            <div class='NoneItemPage'>
+                                Dosya Bulunamadı<br />
+                                <br />
+                                <a href="EditFileGaleryPage">Yeni Dosya Ekle</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+        <tfoot>
+            <td class="Normal">Dosya Adı</td>
+                <td class="Big">Kod</td>
+                <td class="Small">Dosya Tipi</td>
+                <td class="Normal"></td>
+        </tfoot>
+    </table>
+</div>

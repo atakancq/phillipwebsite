@@ -1,0 +1,784 @@
+﻿@{
+    Layout = "Master/_Default.cshtml";
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        Setting Setting = ConnXml.Setting.FirstOrDefault();
+        Page.Title = Setting.Pagetitle.Split('&')[0];
+        int getLang = Shared.GetLang();
+        System.Globalization.CultureInfo cultureinfo =
+        new System.Globalization.CultureInfo(getLang.toLangCulture());
+        int getFormID = 1;
+        bool FormConfirm = false;
+        string message = "";
+        string islemUrl = GetSeoUrl.getPagesUrl(36);
+        if (getLang == 1)
+        {
+            islemUrl = GetSeoUrl.getPagesUrl(0);
+        }
+        if (IsPost)
+        {
+            if (Request.Form["txtNameSurname"] != null)
+            {
+                var txtNameSurname = Request.Form["txtNameSurname"];
+                var txtPhone = Request.Form["txtPhone"];
+                var txtEmail = Request.Form["txtEmail"];
+                var txtMessage = Request.Form["txtMessage"];
+                ContactForm passwordRequestForm = new ContactForm()
+                {
+                    NameSurname = txtNameSurname,
+                    Email = txtEmail,
+                    Phone = txtPhone,
+                    IpAddress = Shared.GetIpAddress(),
+                    AcceptElectronicMessage = true,
+                    KVKK = true,
+                    LangID = Shared.GetLang(),
+                    AddDate = DateTime.Now
+                };
+                ConnXml.ContactForm.Add(passwordRequestForm);
+                int ConnStatus = ConnXml.SaveChanges();
+                if (ConnStatus > 0)
+                {
+                    #region MailNames
+                    string[] MailNames = {
+                                 "Ad Soyad",
+                                 "Telefon",
+                                 "E-Posta adresi",
+                                 "Mesaj",
+                                 "KVKK",
+                                 "Elektronik İleti Gönderimini ",
+                                 "Gönderim Tarihi"
+                             };
+                    #endregion
+                    #region MailValues
+                    string[] MailValues = {
+                           txtNameSurname,
+                           txtPhone,
+                           txtEmail,
+                           txtMessage,
+                           "ok",
+                           "ok",
+                           DateTime.Now.ToString()
+                           };
+                    #endregion
+                    if (ConnXml.FormMailRelation.Any(x => x.FormID == getFormID))
+                    {
+                        FormMailRelation FormMailRelation = ConnXml.FormMailRelation.FirstOrDefault(x => x.FormID == getFormID);
+                        foreach (MailAccount itemAccount in ConnXml.MailAccount.Where(x => x.MailGroupID == FormMailRelation.MailGroupID))
+                        {
+                            WebMail.Send(to: itemAccount.Address, subject: "İletişim Formu", isBodyHtml: true, body: Setting.Pagetitle + " web sitesinden iletişim formu gönderildi.<br /><br />" + Shared.ToFormBody(MailNames, MailValues));
+                        }
+                    }
+                }
+                FormConfirm = true;
+                message = Shared.GetTranslation(15);
+            }
+        }
+        @section head {
+            <meta name="description" content="" />
+            <meta name="keywords" content="" />
+            <meta name="author" content="" />
+            <meta name="twitter:card" content="summary" />
+            <meta name="twitter:site" content="" />
+            <meta name="twitter:domain" content="" />
+            <meta name="twitter:title" content="" />
+            <meta name="twitter:description" content="" />
+            <meta name="twitter:image" content="" />
+            <meta property="og:title" content="" />
+            <meta property="og:type" content="" />
+            <meta property="og:url" content="" />
+            <meta property="og:image" content="" />
+            <meta property="og:site_name" content="" />
+            <meta property="og:description" content="" />
+            <link rel="alternate" href="" hreflang="tr" />
+            <link rel="alternate" href="" hreflang="en" />
+            <link rel="alternate" href="" hreflang="ar" />
+            <link rel="canonical" href="" />
+        }
+
+        <div class="page">
+            <div class="inner-page">
+                <script src="~/Scripts/lottie5.10.2.min.js"></script>
+
+                <div class="banners owl-carousel owl-theme owl-loaded">
+                    <div class="owl-stage-outer">
+                        <div class="owl-stage" id="owlStage">
+                            <div class="owl-item" data-hash="-1" style=" display: flex; justify-content: center; align-items: center;" id="animationArea">
+                                <a class="bannerLink" target="_self" href='/hesap-ac'>
+                                    <div id="bm"></div>
+                                </a>
+                            </div>
+                            <div class="owl-item" data-hash="-2" style="width: 1519px; display:none;" id="usaBanner">
+                                <a class="bannerLink" target="_self" href="/hesap-ac">
+                                    <img src="/Files/Banner/768/usa.jpg">
+                                    <div class="box">
+                                    </div>
+                                </a>
+                            </div>
+                            @{
+                                foreach (var item in ConnXml.Banner.Where(x => x.Lang == getLang && x.Status).OrderBy(x => x.Line))
+                                {
+                                    if (!string.IsNullOrEmpty(item.Url))
+                                    {
+                                        <div class="owl-item" data-hash="@item.Line">
+                                            <a class="bannerLink" target="@item.Target" href='@Html.Raw(string.IsNullOrEmpty(item.Url)?"javascript:;":item.Url)'>
+                                                @{
+                                                    if (!string.IsNullOrEmpty(item.YoutubeVideoCode))
+                                                    {
+                                                        <div class="owl-video-frame" data-video="@item.YoutubeVideoCode"></div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <img src="/Files/Banner/@item.ImageUrl"
+                                                             srcset="/Files/Banner/768/@item.ImageUrl 768w, /Files/Banner/1170/@item.ImageUrl 1170w,
+														/Files/Banner/@item.ImageUrl 1280w, /Files/Banner/@item.ImageUrl 1920w"
+                                                             sizes="(max-width: 768px) 768px, (max-width: 1280px) 1280px, (max-width: 1170px) 1170px, 1920px"
+                                                             alt="Banner" />
+                                                    }
+                                                }
+                                                <div class="box">
+                                                    @Html.Raw(item.Body)
+                                                </div>
+                                            </a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="owl-item" data-hash="@item.Line">
+                                            @{
+                                                if (!string.IsNullOrEmpty(item.YoutubeVideoCode))
+                                                {
+                                                    <div class="owl-video-frame" data-video="@item.YoutubeVideoCode"></div>
+                                                }
+                                                else
+                                                {
+                                                    <img src="/Files/Banner/@item.ImageUrl" />
+                                                }
+                                            }
+                                            <div class="box">
+                                                @Html.Raw(item.Body)
+                                            </div>
+                                        </div>
+                                    }
+                                }
+
+
+                            }
+                        </div>
+                    </div>
+                    <div class="banners-PrevBtn"><a class="circle"><i class="bi bi-chevron-left"></i></a></div>
+                    <div class="banners-NextBtn" id="nextBtn"><a class="circle"><i class="bi bi-chevron-right"></i></a></div>
+                </div>
+                <script>
+                    if (window.matchMedia("(max-width: 768px)").matches) {
+
+                        $("#animationArea").remove(); 
+                        $("#usaBanner").show();
+
+
+                    } else {
+                        $(document).ready(function (e) {
+                            var animation = bodymovin.loadAnimation({
+                                container: document.getElementById("bm"),
+                                renderer: "svg",
+                                loop: true,
+                                autoplay: true,
+                                path: "yurtdisi.json"
+                            });
+                        });
+                    }
+
+                </script>
+                <script type="text/javascript">
+                    // ----------------------------------------
+                    // Wait for Functions to appear
+                    // ----------------------------------------
+                    function whenAvailableRun(functionName, params, counter) {
+                        if (!counter) counter = 0;
+                        console.log("Tried to call function " + counter + " times.");
+                        // If function ready run
+                        if (typeof functionName === 'function') {
+                            if (typeof params !== "undefined") {
+                                functionName(params);
+                            } else if (typeof functionName !== "undefined") {
+                                functionName();
+                            }
+                        } else {
+                            // Retry
+                            setTimeout(function () {
+                                counter = counter + 1;
+                                whenAvailableRun(functionName, params, counter);
+                            }, 1000);
+                        }
+                    }
+                    // ----------------------------------------
+                    // Prepare Banner, Slider, YouTube Players
+                    // ----------------------------------------
+                    $(document).ready(function () {
+
+                        // ----------------------------------------
+                        // Prepare YouTube Players
+                        // ----------------------------------------
+                        var ytplayerIds = [];
+                        var ytplayers = [];
+                        var pndx = 0;
+                        // Create Player
+                        //window.YT.ready(function () {
+                        //    $('.owl-video-frame').each(function () {
+                        //        // Get Video Id
+                        //        var vid = $(this).attr('data-video');
+                        //        // Set Video Object Id
+                        //        ytplayerIds[pndx] = "vid_" + vid;
+                        //        $(this).attr('id', ytplayerIds[pndx]);
+                        //        // Create Video Player
+                        //        CreateVideoPlayer(ytplayers[pndx], ytplayerIds[pndx], vid);
+                        //        // Next Video Object
+                        //        pndx++;
+                        //    });
+                        //});
+                        // When Video Stops
+                        function stop(t) {
+                            if (typeof t !== "undefined"
+                                && typeof t.stopVideo === "function") { t.stopVideo(); }
+                            // Start Banner Slider
+                            banners.trigger('play.owl.autoplay');
+                            banners.trigger('next.owl.carousel');
+                        }
+                        // When Video Starts
+                        function play(t) {
+                            // if (navigator.userAgent.indexOf('Chrome')>-1) { t.mute(); } // Have to Mute First Chrome doesnt allow auto play without mute)
+                            if (typeof t !== "undefined"
+                                && typeof t.playVideo === "function") { t.playVideo(); }
+                            // Stop Banner Slider
+                            banners.trigger('stop.owl.autoplay');
+                        }
+                        // Create a YouTube Player for each elements
+                        function CreateVideoPlayer(element, playerId, video) {
+                            // Set YT Player
+                            element = new YT.Player(playerId, {
+                                videoId: video,
+                                playerVars: {
+                                    'enablejsapi': '1',
+                                    'version': '3',
+                                    'origin': window.location.origin, // 'origin': 'https://developers.google.com',
+                                    'controls': 1,
+                                    'modestbranding': 0,
+                                    'showinfo': 0,
+                                    'rel': 0,
+                                    'autoplay': 0,
+                                    'loop': 0,
+                                    'playerapiid': playerId
+                                },
+                                events: {
+                                    'onReady': function (e) { if (element == 'undefined') { element = e.target; } /* play(e.target); */ }, // AutoPlay
+                                    'onStateChange': function (s) {
+                                        if (typeof s == 'Object') { element = s.target; }       // SetPlayer
+                                        switch (s.data) {
+                                            case -1: console.log('Video Unstarted'); break;		// Unstarted
+                                            case 0: console.log('Video Ended'); break;			// Ended
+                                            case 1: console.log('Video Playing'); break;		// Playing
+                                            case 2: console.log('Video Paused'); break;			// Paused
+                                            case 3: console.log('Video Buffering'); break;		// Buffering
+                                            case 4: console.log('Unkown Video State'); break;	// Unkown
+                                            case 5: console.log('Video Cued'); break;			// Cued
+                                            default: console.log('Unkown Video State'); break;	// Unkown
+                                        }
+                                        if (s.data == 0) { stop(s.target); } 			        // AutoStop
+                                    },
+                                    'onError': function (e) { console.log("Error", e); },
+                                }
+                            });
+                        }
+                        // Quick Call For Banner Videos
+                        function getPlayer() {
+                            // Does it contains YTPlayer?
+                            if ($(".owl-item.active iframe").length) {
+                                return $(".owl-item.active iframe").attr('id');
+                            } else {
+                                return 'undefined';
+                            }
+                        }
+                        // ----------------------------------------
+                        // Banners
+                        // ----------------------------------------
+                        console.log("ready");
+                        var banners = $(".banners");
+                        banners.owlCarousel({
+                            items: 1,
+                            margin: 0,
+                            dots: true,
+                            autoplay: true, // true
+                            autoplayTimeout: 30000, // 30000
+                            autoplayHoverPause: true,
+                            URLhashListener: true,
+                            lazyLoad: true,
+                            loop: true,
+                            onInitialized: function () {
+                                /*//
+                                // For All Players
+                                for (var i = 0; i < ytplayerIds.length; i++) {
+                                    // Get Current Player
+                                    var obj = { id: ytplayerIds[i], player: YT.get(ytplayerIds[i]) };
+                                    // On State Change
+                                    obj.player.addEventListener('onStateChange', function (state) {
+                                        // Get State
+                                        if (state == 0) { state.target.stopVideo(); }
+                                        banners.trigger('play.owl.autoplay');
+                                        banners.trigger('next.owl.carousel');
+                                    });
+                                }
+                                //*/
+                            },
+                            onTranslated: function () {
+                                // YT Player Exist?
+                                var id = getPlayer();
+                                var obj = YT.get(id);
+                                if (typeof obj !== "undefined"
+                                    && typeof obj.getPlayerState === "function"
+                                    && typeof obj.playVideo === "function"
+                                    && typeof obj.stopVideo === "function") {
+                                    // Play If Stopped
+                                    if (isInView(document.getElementById(id))) {
+                                        // Check if not already playing
+                                        if (obj.getPlayerState() != 1) {
+                                            // Play
+                                            obj.playVideo();
+                                            banners.trigger('stop.owl.autoplay');
+                                        } else {
+                                            // Stop
+                                            obj.stopVideo();
+                                            banners.trigger('play.owl.autoplay');
+                                        }
+                                    } else {
+                                        // Not in view so stop video
+                                        obj.stopVideo();
+                                        banners.trigger('play.owl.autoplay');
+                                    }
+                                }
+                            }
+                        });
+                        // Go to the next item
+                        $('#nextBtn').click(function () {
+                            console.log("trrigered");
+                            // YT Player Exist?
+                            //var obj = YT.get(getPlayer());
+                            //if (typeof obj !== "undefined"
+                            //    && typeof obj.stopVideo === "function") {
+                            //    // Not in view so stop video
+                            //    obj.stopVideo();
+                            //    banners.trigger('play.owl.autoplay');
+                            //    banners.trigger('next.owl.carousel');
+                            //} else {
+                            banners.trigger('next.owl.carousel');
+                            //}
+                        });
+                        // Go to the previous item
+                        $('.banners-PrevBtn').click(function () {
+                            // YT Player Exist?
+                            var obj = YT.get(getPlayer());
+                            if (typeof obj !== "undefined"
+                                && typeof obj.stopVideo === "function") {
+                                // Not in view so stop video
+                                obj.stopVideo();
+                                banners.trigger('play.owl.autoplay');
+                                banners.trigger('prev.owl.carousel');
+                            } else {
+                                banners.trigger('prev.owl.carousel');
+                            }
+                        });
+                        // When moved outside the view stop
+                        $(document).on('scroll', function () {
+                            // YT Player Exist?
+                            var id = getPlayer();
+                            var obj = YT.get(id);
+                            if (typeof obj !== "undefined"
+                                && typeof obj.getPlayerState === "function"
+                                && typeof obj.playVideo === "function"
+                                && typeof obj.stopVideo === "function") {
+                                // Play If Stopped
+                                if (isInView(document.getElementById(id))) {
+                                    // Check if not already playing
+                                    if (obj.getPlayerState() != 1) {
+                                        // Play
+                                        obj.playVideo();
+                                        banners.trigger('stop.owl.autoplay');
+                                    } else {
+                                        // Stop
+                                        obj.stopVideo();
+                                        banners.trigger('play.owl.autoplay');
+                                    }
+                                } else {
+                                    // Not in view so stop video
+                                    obj.stopVideo();
+                                    banners.trigger('play.owl.autoplay');
+                                }
+                            }
+                        });
+                    });
+                </script>
+                <div class="page-container">
+                    <div class="blocks">
+                        @{
+                            foreach (var item in ConnXml.MainPageQuickMenu.Where(x => x.Status && x.Lang == getLang).OrderBy(x => x.Line))
+                            {
+                                var pageUrl = item.PageID > 0 ? GetSeoUrl.getPagesUrl(item.PageID) : item.Url;
+
+                                <div class="block clickurl" data-url="@pageUrl" data-target="@item.Target">
+                                    <div class="icon">
+                                        <img src="/Files/MainPageQuickMenu/@item.ImageUrl" alt="icon-bars" />
+                                    </div>
+                                    <div class="title">@item.Title</div>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="mini-banner">
+                        <img src="/Content/images/hesap-ac-dunya-devi.webp" alt="PhillipCapital'de şimdi hesap aç." />
+                        <div class="title">PhillipCapital’de Şimdi Hesap Açın</div>
+                        <div class="desc">Bir Dünya Devi ile Çalışmanın Avantajlarından Faydalanın.</div>
+                        <a class="btn whiter" href="/hesap-ac">@Shared.GetTranslation(105)</a>
+                    </div>
+                    <br />
+                    <div class="views">
+                        <div class="left">
+                            <div class="title">@Shared.GetTranslation(129)</div>
+                            <div class="desc">
+                                @Shared.GetTranslation(130)
+                            </div>
+                            <div class="block">
+                                <div class="tabs">
+                                    <div class="tab active">@Shared.GetTranslation(131)</div>
+                                    <div class="tab">@Shared.GetTranslation(132)</div>
+                                </div>
+                                <div class="tabcos">
+                                    <div tip="yurtici" class="tabco active" id="yurtici">
+                                        <div class="quick-tabs">
+                                            <a class="quick-tab active">@Shared.GetTranslation(41)</a>
+                                            <a class="quick-tab">Şirket Raporları</a>
+                                            @*<a class="quick-tab">@Shared.GetTranslation(47)</a>*@
+                                            <a class="quick-tab">@Shared.GetTranslation(48)</a>
+                                            @*<a class="quick-tab">@Shared.GetTranslation(49)</a>*@
+                                            <a class="quick-tab">Diğer Raporlar</a>
+                                        </div>
+                                        @{
+                                            <div class="table-box active">
+                                                <input type="hidden" value="1" id="bist100Page" />
+                                                <table id="bist100">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@Shared.GetTranslation(42)</th>
+                                                            <th>@Shared.GetTranslation(43)</th>
+                                                            <th>@Shared.GetTranslation(44)</th>
+                                                            <th>@Shared.GetTranslation(45)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-box">
+                                                <input type="hidden" value="1" id="companyReportPage" />
+                                                <table id="companyReport">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@Shared.GetTranslation(42)</th>
+                                                            <th>@Shared.GetTranslation(43)</th>
+                                                            <th>@Shared.GetTranslation(44)</th>
+                                                            <th>@Shared.GetTranslation(45)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-box">
+                                                <input type="hidden" value="1" id="localTechnicalAnalysisPage" />
+                                                <table id="localTechnicalAnalysis">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@Shared.GetTranslation(42)</th>
+                                                            <th>@Shared.GetTranslation(43)</th>
+                                                            <th>@Shared.GetTranslation(44)</th>
+                                                            <th>@Shared.GetTranslation(45)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-box">
+                                                <input type="hidden" value="1" id="otherReportPage" />
+                                                <table id="otherReport">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@Shared.GetTranslation(42)</th>
+                                                            <th>@Shared.GetTranslation(43)</th>
+                                                            <th>@Shared.GetTranslation(44)</th>
+                                                            <th>@Shared.GetTranslation(45)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-box">
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@Shared.GetTranslation(42)</th>
+                                                            <th>@Shared.GetTranslation(43)</th>
+                                                            <th>@Shared.GetTranslation(44)</th>
+                                                            <th>@Shared.GetTranslation(45)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @{
+                                                            foreach (var item in ConnXml.BIST100CompanyCard.Where(x => x.Status).OrderByDescending(x => x.Date))
+                                                            {
+                                                                <tr> <td> <span>@item.Date.Day</span> @item.Date.ToString("MMMM yyyy", cultureinfo) </td> <td> @Html.Raw(item.Title) </td> <td> <div class="pdf">Pdf</div> </td> <td> <a class="button" target="_blank" href="/Files/BIST100CompanyCard/@item.ImageUrl">@Shared.GetTranslation(46)</a> </td> </tr>
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-box">
+                                                <table style="max-width:inherit">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@Shared.GetTranslation(42)</th>
+                                                            <th>@Shared.GetTranslation(43)</th>
+                                                            <th>@Shared.GetTranslation(44)</th>
+                                                            <th>@Shared.GetTranslation(45)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody style="overflow-y: initial; height:auto">
+                                                        @*@{
+                                                                foreach (var item in ConnXml.OtherReports.Where(x => x.Status.Value).OrderByDescending(x => x.Date))
+                                                                {
+                                                                    <tr> <td> <span>@item.Date.Value.Day</span> @item.Date.Value.ToString("MMMM yyyy", cultureinfo) </td> <td> @item.Title </td> <td> <div class="pdf">Pdf</div> </td> <td> <a class="button" target="_blank" href="/Files/OtherReports/@item.ImageUrl">@Shared.GetTranslation(46)</a> </td> </tr>
+                                                                }
+                                                            }*@
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        }
+
+                                    </div>
+                                    <div tip="yurtdisi" class="tabco">
+                                        <div class="quick-tabs">
+                                            <a class="quick-tab active">@Shared.GetTranslation(41)</a>
+                                            @*<a class="quick-tab">@Shared.GetTranslation(47)</a>*@
+                                            <a class="quick-tab">@Shared.GetTranslation(48)</a>
+                                            @*<a class="quick-tab">@Shared.GetTranslation(49)</a>*@
+                                        </div>
+                                        @{
+                                            <div class="table-box active">
+                                                <input type="hidden" value="1" id="abdBullettinPage" />
+                                                <table id="abdBullettin">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@Shared.GetTranslation(42)</th>
+                                                            <th>@Shared.GetTranslation(43)</th>
+                                                            <th>@Shared.GetTranslation(44)</th>
+                                                            <th>@Shared.GetTranslation(45)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @{
+                                                            @*foreach (var item in ConnXml.ABDBulletin.Where(x => x.Status).OrderByDescending(x => x.Date))
+                                                                {
+                                                                    <tr> <td> <span>@item.Date.Day</span> @item.Date.ToString("MMMM yyyy", cultureinfo) </td> <td> @Html.Raw(item.Title) </td> <td> <div class="pdf">Pdf</div> </td> <td> <a class="button" target="_blank" href="/Files/ABDBulletin/@item.ImageUrl">@Shared.GetTranslation(46)</a> </td> </tr>
+                                                                }*@
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-box">
+                                                <input type="hidden" value="1" id="abdStockAnalysisPage" />
+                                                <table id="abdStockAnalysis">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@Shared.GetTranslation(42)</th>
+                                                            <th>@Shared.GetTranslation(43)</th>
+                                                            <th>@Shared.GetTranslation(44)</th>
+                                                            <th>@Shared.GetTranslation(45)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @*@{
+                                                                foreach (var item in ConnXml.ABDStockAnalysis.Where(x => x.Status).OrderByDescending(x => x.Date))
+                                                                {
+                                                                    <tr> <td> <span>@item.Date.Day</span> @item.Date.ToString("MMMM yyyy", cultureinfo) </td> <td> @Html.Raw(item.Title) </td> <td> <div class="pdf">Pdf</div> </td> <td> <a class="button" target="_blank" href="/Files/ABDStockAnalysis/@item.ImageUrl">@Shared.GetTranslation(46)</a> </td> </tr>
+                                                                }
+                                                            }*@
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-box">
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@Shared.GetTranslation(42)</th>
+                                                            <th>@Shared.GetTranslation(43)</th>
+                                                            <th>@Shared.GetTranslation(44)</th>
+                                                            <th>@Shared.GetTranslation(45)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @{
+                                                            foreach (var item in ConnXml.ABDStockAnalysis.Where(x => x.Status).OrderByDescending(x => x.Date))
+                                                            {
+                                                                <tr> <td> <span>@item.Date.Day</span> @item.Date.ToString("MMMM yyyy", cultureinfo) </td> <td> @Html.Raw(item.Title) </td> <td> <div class="pdf">Pdf</div> </td> <td> <a class="button" target="_blank" href="/Files/ABDStockAnalysis/@item.ImageUrl">@Shared.GetTranslation(46)</a> </td> </tr>
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-box">
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>@Shared.GetTranslation(42)</th>
+                                                            <th>@Shared.GetTranslation(43)</th>
+                                                            <th>@Shared.GetTranslation(44)</th>
+                                                            <th>@Shared.GetTranslation(45)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @{
+                                                            foreach (var item in ConnXml.ABDCompanyCard.Where(x => x.Status).OrderByDescending(x => x.Date))
+                                                            {
+                                                                <tr> <td> <span>@item.Date.Day</span> @item.Date.ToString("MMMM yyyy", cultureinfo) </td> <td> @Html.Raw(item.Title) </td> <td> <div class="pdf">Pdf</div> </td> <td> <a class="button" target="_blank" href="/Files/ABDCompanyCard/@item.ImageUrl">@Shared.GetTranslation(46)</a> </td> </tr>
+                                                            }
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <script type="text/javascript">
+                                    changetabs(".tab", ".tabco");
+                                </script>
+                            </div>
+                        </div>
+                        @*<div class="right">
+                                <div class="title">@Shared.GetTranslation(133)</div>
+                                <div class="block">
+                                    <div class="gallery">
+                                        <div class="gallery-main">
+                                            <div id="currentVideoWrapper">
+                                                <div id="currentVideo"></div>
+                                            </div>
+                                        </div>
+                                        <div class="gallery-slider owl-carousel owl-theme owl-loaded ">
+                                            <div class="owl-stage-outer">
+                                                <div id="playlistvideos" class="owl-stage">
+
+                                                </div>
+                                            </div>
+                                            <div class="gallery-PrevBtn"><a class="circle"><i class="bi bi-chevron-left"></i></a></div>
+                                            <div class="gallery-NextBtn"><a class="circle"><i class="bi bi-chevron-right"></i></a></div>
+                                        </div>
+                                        <script type="text/javascript" src="https://www.youtube.com/iframe_api?hl=tr"></script>
+                                    </div>
+                                </div>
+                            </div>*@
+                    </div>
+                    <br />
+                </div>
+                <div class="splitter">
+                    <div class="box">
+                        <div class="icon"><img src="/Content/images/envelope-circle-green.svg" alt="icon-envelope" /></div>
+                        <div class="title" lang="tr">@Shared.GetTranslation(91)</div>
+                        <div class="subtitle" lang="tr">@Shared.GetTranslation(92)</div>
+                    </div>
+                    <div class="form">
+                        <form method="post" class="form">
+                            @HelperClientControl.inputTextWithoutLabelWrapper("txtNameSurname", Shared.GetTranslation(81), false, true, "", "")
+                            @HelperClientControl.inputTextWithoutLabelWrapper("txtEmail", Shared.GetTranslation(82), false, true, "Email", "")
+                            @HelperClientControl.inputTextWithoutLabelWrapper("txtPhone", Shared.GetTranslation(84), false, true, "", "")
+                            @HelperClientControl.inputTextWithoutLabelWrapper("txtMessage", Shared.GetTranslation(93), false, true, "", "")
+                            <input class="send" type="submit" value="@Shared.GetTranslation(22)" />
+                        </form>
+                    </div>
+                    @{
+                        if (FormConfirm)
+                        {
+                            <script>
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Talebiniz Alınmıştır. En kısa sürede sizinle iletişime geçicez.',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                                setTimeout(function () {
+                                    window.location.href = window.location.href;
+                                }, 1600);
+                            </script>
+                        }
+                    }
+                    @*
+                        <div class="message" style="color: white; padding-top: 20px;">
+                            @Html.Raw(message)
+                        </div>
+                    *@
+                </div>
+                @*
+                    <div class="interest-rate">
+                        <div class="title">
+                            @Shared.GetTranslation(159)
+                        </div>
+                        <div class="desc">
+                            @Shared.GetTranslation(160)
+                        </div>
+                    </div>
+                *@
+                <div class="page-container">
+                    <div class="photo-blocks">
+                        <div class="left">
+                            <div class="top">
+                                <img src="/Content/images/sigorta.webp" alt="sigorta.webp" />
+                                <div class="boxes">
+                                    <div class="leftDown">
+                                        <a href="https://phillipsigorta.com.tr/" target="_blank" class="button">@Shared.GetTranslation(121)</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bottom">
+                                <div class="info">
+                                    <div class="title">
+                                        @Html.Raw(Shared.GetTranslation(119))
+                                    </div>
+                                    <div class="desc">
+                                        @Shared.GetTranslation(120)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right">
+                            <div class="top">
+                                <div class="info">
+                                    <div class="title">
+                                        @Html.Raw(Shared.GetTranslation(122))
+                                    </div>
+                                    <div class="desc">
+                                        @Shared.GetTranslation(123)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bottom">
+                                <img src="/Content/images/portfoy.webp" alt="portfoy.webp" />
+                                <div class="boxes">
+                                    <div class="leftDown">
+                                        <a href="https://www.phillipportfoy.com.tr/" target="_blank" class="button">@Shared.GetTranslation(158)</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                </div>
+            </div>
+        </div>
+    }
+}

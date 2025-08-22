@@ -1,0 +1,69 @@
+﻿@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        PhotoGaleryFile photoGaleryFile = new PhotoGaleryFile();
+        string getPageData = PageData[0];
+        System.Globalization.CultureInfo cultureinfo = new System.Globalization.CultureInfo(getLang.toLangCulture());
+        if (UrlData[1].IsEmpty())
+        {
+            foreach (var item in ConnXml.Events.Where(x => x.Status).OrderByDescending(x => x.Date))
+            {
+                <div class="events-body">
+                    <div class="col-md-4 img">
+                        <a href="@item.RawUrl">
+                            <img src="~/Files/Events/@item.ImageUrl" />
+                        </a>
+                    </div>
+                    <div class="col-md-8 widthRes">
+                        <div class="head">
+                            <a href="@item.RawUrl">
+                                <h5>@item.Title</h5>
+                            </a>
+                            <a href="@item.RawUrl">
+                                <h5>@item.Date.ToString("d MMMM yyyy", cultureinfo)</h5>
+                            </a>
+                        </div>
+                        <a href="@item.RawUrl">
+                            <div class="desc">@item.Description</div>
+                        </a>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            if ((UrlData[1].IsInt()) && (ConnXml.Events.AsEnumerable().Any(x => x.EventsID == UrlData[1].AsInt())))
+            {
+                int getEventsID = UrlData[1].AsInt();
+                Events itemPage = ConnXml.Events.FirstOrDefault(x => x.EventsID == getEventsID);
+                PhotoGalery itemgalery = ConnXml.PhotoGalery.FirstOrDefault(x => x.PhotoGaleryID == itemPage.PhotoGaleryID);
+                PhotoGaleryFile Page = ConnXml.PhotoGaleryFile.FirstOrDefault(x => x.PhotoGaleryID == itemPage.PhotoGaleryID);
+                <div class="events-desc">
+                    <div class="head">
+                        <div class="title">@itemPage.Title</div>
+                        <div class="title">@itemPage.Date.ToString("d MMMM yyyy", cultureinfo)</div>
+                    </div>
+                    <div class="img"><img src="~/Files/Events/@itemPage.ImageUrl" /></div>
+                    <div>@Html.Raw(itemPage.Contents)</div>
+                    <div class="photogalery">
+                        @foreach (var item in ConnXml.PhotoGaleryFile.Where(x => x.PhotoGaleryID == itemPage.PhotoGaleryID))
+                        {
+                            <div class="col-md-4 float" id="image">
+                                <a data-fancybox="gallery" href="~/Files/PhotoGalery/@item.PhotoGaleryFileUrl">
+                                    <img src="~/Files/PhotoGalery/@item.PhotoGaleryFileUrl" alt="Image" />
+                                </a>
+                            </div>
+                        }
+                        @*<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>*@
+                        <script>
+                            Fancybox.bind('[data-fancybox="gallery"]', {
+                                //
+                            });
+                        </script>
+                    </div>
+                </div>
+            }
+        }
+    }
+}

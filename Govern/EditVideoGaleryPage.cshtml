@@ -1,0 +1,145 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    var drpGaleryID = "0";
+    var txtGaleryName = "";
+    var drpLang = "0";
+    bool drpPageStatus = true;
+    if (Request.QueryString["ID"].IsInt())
+    {
+        int reqID = Request.QueryString["ID"].AsInt();
+        VideoGalery reqPage = ConnXml.VideoGalery.FirstOrDefault(x => x.VideoGaleryID == reqID);
+        drpGaleryID = reqPage.VideoGaleryParentID.ToString();
+        txtGaleryName = reqPage.Name;
+        drpLang = reqPage.Lang.ToString();
+        drpPageStatus = reqPage.Status;
+    }
+    if (Request.QueryString["ParentID"].IsInt())
+    {
+        drpGaleryID = Request.QueryString["ParentID"];
+    }
+    if (Request.QueryString["Lang"].IsInt())
+    {
+        drpLang = Request.QueryString["Lang"];
+    }
+    if (Request.QueryString["Delete"].IsInt())
+    {
+        int reqID = Request.QueryString["Delete"].AsInt();
+        VideoGalery Pages = ConnXml.VideoGalery.FirstOrDefault(x => x.VideoGaleryID == reqID);
+        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        int ConnStatus = 0;
+        ConnStatus = ConnXml.SaveChanges();
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("VideoGaleryPage");
+    }
+    if (IsPost)
+    {
+        // AntiForgery.Validate();
+        VideoGalery VideoGalery = new VideoGalery();
+        if (Request.QueryString["ID"].IsInt())
+        {
+            int reqID = Request.QueryString["ID"].AsInt();
+            VideoGalery = ConnXml.VideoGalery.FirstOrDefault(x => x.VideoGaleryID == reqID);
+        }
+        else
+        {
+            VideoGalery.AddDate = DateTime.Now;
+        }
+        VideoGalery.VideoGaleryParentID = Request.Form["drpGaleryID"].AsInt();
+        VideoGalery.Name = Request.Form["txtGaleryName"];
+        VideoGalery.Lang = Request.Form["drpLang"].AsInt();
+        VideoGalery.Status = (Request.Form["drpPageStatus"] == "1" ? true : false);
+        int ConnStatus = 0;
+        if (Request.QueryString["ID"].IsInt())
+        {
+            ConnXml.Entry(VideoGalery).State = System.Data.EntityState.Modified;
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        else
+        {
+            ConnXml.VideoGalery.Add(VideoGalery);
+            ConnStatus = ConnXml.SaveChanges();
+        }
+        if (ConnStatus > 0)
+        {
+            Session["Ok"] = "İşlem başarı ile gerçekleşmiştir.";
+        }
+        else
+        {
+            Session["Error"] = "Bir problem oldu yönetici ile görüşün.";
+        }
+        Response.Redirect("VideoGaleryPage");
+    }
+}
+@functions
+{ 
+    List<SelectListItem> GetSubPage(int i, List<VideoGalery> VideoGalery, int getPageID)
+    {
+        string left = new string('-', i * 3);
+        List<SelectListItem> lst = new List<SelectListItem>();
+        foreach (VideoGalery itemPages in VideoGalery.Where(x => x.VideoGaleryParentID == getPageID && x.Lang == 0))
+        {
+            lst.Add(new SelectListItem { Value = itemPages.VideoGaleryID.ToString(), Text = left + " " + itemPages.Name });
+            lst.AddRange(GetSubPage(i + 1, VideoGalery, itemPages.VideoGaleryID));
+        }
+        return lst;
+    }
+}
+<div class="Title">Yeni Galeri Ekle</div>
+<form method="post">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <div id="EditPageContent">
+        <div class="Content">
+            <div class="Item">
+                @{
+                    List<SelectListItem> lstModule = new List<SelectListItem>();
+                    lstModule.Add(new SelectListItem { Value = "0", Text = "En üst Kategori" });
+                    lstModule.AddRange(GetSubPage(0, ConnXml.VideoGalery.ToList(), 0));
+                    lstModule.FirstOrDefault(x => x.Value == drpGaleryID).Selected = true;
+                    IEnumerable<SelectListItem> drpParentItems = lstModule;
+                }
+                @HelperAdminControl.DropDownList("drpGaleryID", "Üst Kategori", drpParentItems)
+                @HelperAdminControl.inputText("txtGaleryName", "Galeri Adı", false, true, txtGaleryName)
+                @{
+                    List<SelectListItem> lstLang = new List<SelectListItem>();
+                    for (int i = 0; i < Shared.Lang.Length; i++)
+                    {
+                        lstLang.Add(new SelectListItem { Value = i.ToString(), Text = Shared.toLang(i) });
+                    }
+                    lstLang.FirstOrDefault(x => x.Value == drpLang).Selected = true;
+                    IEnumerable<SelectListItem> drplstLangs = lstLang;
+                }
+                @HelperAdminControl.DropDownList("drpLang", "Dil", drplstLangs)
+                <div class="Title">Durum</div>
+                <div class="Input">
+                    @{
+                        string StatusFalse = "";
+                        string StatusTrue = "";
+                        if (!drpPageStatus)
+                        {
+                            StatusFalse = "checked='checked'";
+                        }
+                        else
+                        {
+                            StatusTrue = "checked='checked'";
+                        }
+                    }
+                    <input type="radio" id="drpPageStatus0" name="drpPageStatus" value="0" @StatusFalse><label for="drpPageStatus0">Pasif</label>
+                    <input type="radio" id="drpPageStatus1" name="drpPageStatus" value="1"  @StatusTrue><label for="drpPageStatus1">Aktif</label>
+                </div>
+                <div class="ButtonPanel">
+                    <input id="btnSave" name="btnSave" type="submit" class="inputbutton Add" value="Kaydet" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+	<!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+	<edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+		<!-- Diagram content (shape and connector positions) -->
+		<edmx:Diagrams>
+			<Diagram DiagramId="35a7a52cdcc544dfa166f1017f4d57ea" Name="Diagram1" ZoomLevel="47">
+        <EntityTypeShape EntityType="mvcXmlModel.ABDBulletinHistory" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ABDCompanyCard" Width="1.5" PointX="2.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ABDCompanyCardHistory" Width="1.5" PointX="4.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ABDStockAnalysis" Width="1.5" PointX="0.75" PointY="5.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ABDStockAnalysisHistory" Width="1.5" PointX="2.75" PointY="5.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ABDViopAnalysis" Width="1.5" PointX="4.75" PointY="5.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ABDViopAnalysisHistory" Width="1.5" PointX="6.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.AccountForm" Width="1.5" PointX="6.75" PointY="5.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ActivityReport" Width="1.5" PointX="8.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ActivityReportHistory" Width="1.5" PointX="8.75" PointY="4.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Admin" Width="1.5" PointX="4.75" PointY="9.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.AdminAuthorization" Width="1.5" PointX="6.75" PointY="9.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.AdminMenu" Width="1.5" PointX="8.75" PointY="9.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Bank" Width="1.5" PointX="0.75" PointY="10.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BankAccount" Width="1.5" PointX="10.75" PointY="5.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BankAccountHistory" Width="1.5" PointX="10.75" PointY="10.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BankHistory" Width="1.5" PointX="12.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Banner" Width="1.5" PointX="2.75" PointY="12.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BannerHistory" Width="1.5" PointX="4.75" PointY="12.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BIST100BulletinHistory" Width="1.5" PointX="12.75" PointY="5.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BIST100CompanyCard" Width="1.5" PointX="12.75" PointY="10.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BIST100CompanyCardHistory" Width="1.5" PointX="6.75" PointY="13.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BIST100StockAnalysis" Width="1.5" PointX="14.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BIST100StockAnalysisHistory" Width="1.5" PointX="14.75" PointY="4.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BoardOfDirectors" Width="1.5" PointX="14.75" PointY="9.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BoardOfDirectorsHistory" Width="1.5" PointX="12.75" PointY="14.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Branch" Width="1.5" PointX="14.75" PointY="14.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.BranchHistory" Width="1.5" PointX="8.75" PointY="15.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.City" Width="1.5" PointX="16.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ComplainForm" Width="1.5" PointX="16.75" PointY="3.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ContactForm" Width="1.5" PointX="16.75" PointY="8.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Country" Width="1.5" PointX="16.75" PointY="12.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.District" Width="1.5" PointX="16.75" PointY="15.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.DocumentGalery" Width="1.5" PointX="0.75" PointY="17.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.DocumentGaleryFile" Width="1.5" PointX="18.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.EmailList" Width="1.5" PointX="2.75" PointY="18.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Events" Width="1.5" PointX="18.75" PointY="3.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.EventsHistory" Width="1.5" PointX="4.75" PointY="18.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ExpiredAccount" Width="1.5" PointX="18.75" PointY="8.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ExpiredAccountHistory" Width="1.5" PointX="18.75" PointY="12.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ExportDocument" Width="1.5" PointX="16.75" PointY="18.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ExportDocumentHistory" Width="1.5" PointX="18.75" PointY="17.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.FAQ" Width="1.5" PointX="10.75" PointY="19.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.FAQCategory" Width="1.5" PointX="12.75" PointY="19.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.FAQCategoryHistory" Width="1.5" PointX="20.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.FAQHistory" Width="1.5" PointX="20.75" PointY="4.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.FinancialStatement" Width="1.5" PointX="20.75" PointY="9.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.FinancialStatementHistory" Width="1.5" PointX="20.75" PointY="13.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ForeignTechnicalAnalysis" Width="1.5" PointX="20.75" PointY="18.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ForeignTechnicalAnalysisHistory" Width="1.5" PointX="6.75" PointY="21.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Form" Width="1.5" PointX="22.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.FormMailRelation" Width="1.5" PointX="0.75" PointY="22.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.GlobalBranch" Width="1.5" PointX="22.75" PointY="3.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.GlobalBranchHistory" Width="1.5" PointX="22.75" PointY="8.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.JobApplicationForm" Width="1.5" PointX="22.75" PointY="14.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.LanguageWord" Width="1.5" PointX="14.75" PointY="22.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.LanguageWordValue" Width="1.5" PointX="16.75" PointY="22.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.LanguageWordValueHistory" Width="1.5" PointX="18.75" PointY="22.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.LocalTechnicalAnalysis" Width="1.5" PointX="20.75" PointY="23.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.LocalTechnicalAnalysisHistory" Width="1.5" PointX="22.75" PointY="23.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.MailAccount" Width="1.5" PointX="24.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.MailGroup" Width="1.5" PointX="2.75" PointY="24.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.MailGroupHistory" Width="1.5" PointX="24.75" PointY="3.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.MainPageApplicationArea" Width="1.5" PointX="24.75" PointY="8.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.MainPageApplicationAreaHistory" Width="1.5" PointX="8.75" PointY="24.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.MainPageQuickMenu" Width="1.5" PointX="10.75" PointY="24.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.MainPageQuickMenuHistory" Width="1.5" PointX="24.75" PointY="14.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Module" Width="1.5" PointX="24.75" PointY="19.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.News" Width="1.5" PointX="24.75" PointY="22.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.NewsletterForm" Width="1.5" PointX="12.75" PointY="25.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.OfficialAnnouncement" Width="1.5" PointX="26.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.OfficialAnnouncementCategory" Width="1.5" PointX="4.75" PointY="26.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.OfficialAnnouncementCategoryHistory" Width="1.5" PointX="26.75" PointY="5.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.OfficialAnnouncementHistory" Width="1.5" PointX="26.75" PointY="9.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Pages" Width="1.5" PointX="16.75" PointY="26.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.PagesHistory" Width="1.5" PointX="26.75" PointY="18.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.PasswordRequestForm" Width="1.5" PointX="18.75" PointY="27.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.PhotoGalery" Width="1.5" PointX="28.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.PhotoGaleryFile" Width="1.5" PointX="0.75" PointY="28.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.PopUp" Width="1.5" PointX="28.75" PointY="3.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.PressRelease" Width="1.5" PointX="28.75" PointY="7.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.PressReleaseCategory" Width="1.5" PointX="28.75" PointY="11.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Prospectus" Width="1.5" PointX="28.75" PointY="14.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ProspectusHistory" Width="1.5" PointX="28.75" PointY="18.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.QualityDocument" Width="1.5" PointX="20.75" PointY="28.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Region" Width="1.5" PointX="22.75" PointY="28.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.SeminarForm" Width="1.5" PointX="28.75" PointY="23.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.Setting" Width="1.5" PointX="24.75" PointY="28.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.VideoGalery" Width="1.5" PointX="26.75" PointY="28.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.VideoGaleryFile" Width="1.5" PointX="28.75" PointY="28.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.vwUrlList" Width="1.5" PointX="10.75" PointY="29.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.OtherReportsHistory" Width="1.5" PointX="5.375" PointY="30.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.AskYourStockForm" Width="1.5" PointX="7.75" PointY="30.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.CompanyReport" Width="1.5" PointX="31.75" PointY="0.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.IndustryReport" Width="1.5" PointX="0.75" PointY="31.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ModelPortfolio" Width="1.5" PointX="2.75" PointY="31.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.CompanyReportHistory" Width="1.5" PointX="31.375" PointY="4.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.IndustryReportHistory" Width="1.5" PointX="31.375" PointY="9.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ModelPortfolioHistory" Width="1.5" PointX="31.375" PointY="14.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.OtherReports" Width="1.5" PointX="13.375" PointY="28.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.NovemberEventMember" Width="1.5" PointX="31.375" PointY="19.75" />
+      </Diagram>
+		</edmx:Diagrams>
+	</edmx:Designer>
+</edmx:Edmx>

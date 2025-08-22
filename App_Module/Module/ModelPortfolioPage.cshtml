@@ -1,0 +1,38 @@
+@{
+    int getLang = Shared.GetLang();
+    using (MvcXmlEntities ConnXml = new MvcXmlEntities())
+    {
+        string getPageData = PageData[0];
+        System.Globalization.CultureInfo cultureinfo = new System.Globalization.CultureInfo(getLang.toLangCulture());
+        <div class="views" style="padding:0;">
+            <div class="block">
+                <div class="tabcos">
+                    <div class="tabco active">
+                        @{
+                            <div class="table-box active">
+                                <table style="max-width:inherit">
+                                    <thead>
+                                        <tr>
+                                            <th>@Shared.GetTranslation(42)</th>
+                                            <th>@Shared.GetTranslation(43)</th>
+                                            <th>@Shared.GetTranslation(44)</th>
+                                            <th>@Shared.GetTranslation(45)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="overflow-y: initial; height:auto">
+                                        @{
+                                            foreach (var item in ConnXml.ModelPortfolio.Where(x => x.Status).OrderByDescending(x => x.Date))
+                                            {
+                                                <tr> <td> <span>@item.Date.Day</span> @item.Date.ToString("MMMM yyyy", cultureinfo) </td> <td> @item.Title </td> <td> <div class="pdf">Pdf</div> </td> <td> <a class="button" target="_blank" href="/Files/ModelPortfolio/@item.ImageUrl">@Shared.GetTranslation(46)</a> </td> </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

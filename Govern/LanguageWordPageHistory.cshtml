@@ -1,0 +1,81 @@
+﻿@{
+    Layout = "_Admin.cshtml";
+    MvcXmlEntities ConnXml = new MvcXmlEntities();
+    int reqLangID = 0;
+}
+@functions
+{
+    public string GetDetail(int getLangID)
+    {
+        MvcXmlEntities ConnXml = new MvcXmlEntities();
+        Setting Setting = new MvcXmlEntities().Setting.FirstOrDefault();
+        string str = "";
+        foreach (LanguageWordValueHistory itemPages in ConnXml.LanguageWordValueHistory.ToList())
+        {
+            var userName = "";
+            LanguageWord lwValue = null;
+            lwValue = ConnXml.LanguageWord.FirstOrDefault(x => x.LanguageWordID == itemPages.LanguageWordID);
+            if (lwValue!=null && itemPages.ModifiedId > 0)
+            {
+                var admin = ConnXml.Admin.FirstOrDefault(x => x.AdminID == itemPages.ModifiedId);
+                if (admin != null)
+                {
+                    userName = admin.UserName;
+                }
+                str += "<tr>";
+                str += "<td class='Min'>" + itemPages.LanguageWordID + "</td>";
+                str += "<td class='Normal'><xmp>" + lwValue.Word + "</xmp></td>";
+                str += "<td class='Normal'><xmp>" + itemPages.Value + "</xmp></td>";
+                str += "<td class='Normal'>" + userName + "</td>";
+                str += "<td class='Normal'>" + itemPages.HistoryCreateDate + "</td>";
+                str += "</tr>";
+            }
+        }
+        return str;
+    }
+}
+<div class="Title">Dil Ayarları Geçmiş Listesi</div>
+<form method="post">
+    <input type="hidden" id="PageName" value="" />
+    <input type="hidden" id="PageNameQ" value="" />
+    <input type="hidden" id="SelectedItems" name="SelectedItems" class="SelectedItems" runat="server" />
+    <input type="hidden" id="PassiveItems" name="PassiveItems" class="PassiveItems" runat="server" />
+    <input type="hidden" id="SortItems" name="SortItems" class="SortItems" runat="server" />
+    <div class="Content">
+        <table class="GridWiew" cellpadding="5" cellspacing="0" >
+            <thead>
+                <td class="Min">ID</td>
+                <td class="Normal">Kelime</td>
+                <td class="Big">Değer</td>
+                <td class="Normal">Düzenleyen</td>
+                <td class="Normal">Geçmişin Oluşturulma Tarihi</td>
+            </thead>
+            <tbody>
+                @{
+                    string str = GetDetail(reqLangID);
+                    if (!str.IsEmpty())
+                    {
+                        @Html.Raw(str);
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class='Big' colspan='15'>
+                                <div class='NoneItemPage'>
+                                    Kelime Bulunamadı<br />                                    
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <td class="Min">ID</td>
+                <td class="Normal">Kelime</td>
+                <td class="Big">Değer</td>
+                <td class="Normal">Düzenleyen</td>
+                <td class="Normal">Geçmişin Oluşturulma Tarihi</td>
+            </tfoot>
+        </table>
+    </div>
+</form>
