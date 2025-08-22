@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="37" height="37" viewBox="0 0 37 37">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #407ec6;
+      }
+
+      .cls-2 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <g id="Group_5549" data-name="Group 5549" transform="translate(0.19)">
+    <circle id="Ellipse_275" data-name="Ellipse 275" class="cls-1" cx="18.5" cy="18.5" r="18.5" transform="translate(-0.19)"/>
+    <g id="windows-platform-logo" transform="translate(9.968 9.201)">
+      <g id="Group_5548" data-name="Group 5548" transform="translate(0)">
+        <path id="Path_46514" data-name="Path 46514" class="cls-2" d="M27.372,2.1,21.689,3.236V8.482l5.683-.1V2.1M37.9,9.721l-9.23-.158v6.524l9.23,1.843V9.721M27.372,9.544l-5.683-.1v5.245l5.683,1.135V9.544M37.9,0l-9.23,1.842V8.366l9.23-.157V0" transform="translate(-21.689)"/>
+      </g>
+    </g>
+  </g>
+</svg>

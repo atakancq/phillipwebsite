@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="19.852" height="17.805" viewBox="0 0 19.852 17.805">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #8dc640;
+      }
+    </style>
+  </defs>
+  <g id="upload-big-arrow" transform="translate(0 -23.714)">
+    <g id="Group_5697" data-name="Group 5697" transform="translate(4.508 23.714)">
+      <path id="Path_48013" data-name="Path 48013" class="cls-1" d="M105.252,29.954h2.009v5.96a1.094,1.094,0,0,0,1.094,1.094h2.987a1.094,1.094,0,0,0,1.094-1.094v-5.96h2.008a.822.822,0,0,0,.581-1.4l-4.6-4.6a.824.824,0,0,0-1.163,0l-4.6,4.6a.822.822,0,0,0,.581,1.4Z" transform="translate(-104.431 -23.713)"/>
+    </g>
+    <g id="Group_5698" data-name="Group 5698" transform="translate(0 32.188)">
+      <path id="Path_48014" data-name="Path 48014" class="cls-1" d="M18.865,220.029a.987.987,0,0,0-.986.987v4.127a2.245,2.245,0,0,1-2.243,2.242H4.216a2.245,2.245,0,0,1-2.242-2.242v-4.127a.987.987,0,1,0-1.974,0v4.127a4.221,4.221,0,0,0,4.216,4.216H15.636a4.221,4.221,0,0,0,4.217-4.216v-4.127A.987.987,0,0,0,18.865,220.029Z" transform="translate(0 -220.029)"/>
+    </g>
+  </g>
+</svg>
