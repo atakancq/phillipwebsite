@@ -19,7 +19,7 @@
                         int getItem = Convert.ToInt32(item);
                         Banner itemPage = ConnXml.Banner.FirstOrDefault(x => x.BannerID == getItem);
                         itemPage.Line = i;
-                        ConnXml.Entry(itemPage).State = System.Data.EntityState.Modified;
+                        ConnXml.Entry(itemPage).State = System.Data.Entity.EntityState.Modified;
                         ConnXml.SaveChanges();
                         i++;
                     }

@@ -22,7 +22,7 @@
     {
         int reqID = Request.QueryString["Delete"].AsInt();
         Admin Pages = ConnXml.Admin.FirstOrDefault(x => x.AdminID == reqID);
-        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        ConnXml.Entry(Pages).State = System.Data.Entity.EntityState.Deleted;
         int ConnStatus = 0;
         ConnStatus = ConnXml.SaveChanges();
         if (ConnStatus > 0)
@@ -69,7 +69,7 @@
                 reqPage.UserAuth = Request.Form["UserAuth"] == "0" ? false : true;
                 reqPage.PassWord =  Request.Form["txtPassword"].IsEmpty() ? reqPage.PassWord : Request.Form["txtPassword"].md5();
                 int ConnStatus = 0;
-                ConnXml.Entry(reqPage).State = System.Data.EntityState.Modified;
+                ConnXml.Entry(reqPage).State = System.Data.Entity.EntityState.Modified;
                 ConnStatus = ConnXml.SaveChanges();
                 if (ConnStatus > 0)
                 {

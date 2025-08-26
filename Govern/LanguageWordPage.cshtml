@@ -32,7 +32,7 @@
                     backup = itemPages.Cast<LanguageWordValueHistory>();
                     itemPages.Value = Request.Unvalidated().Form[value];
                     itemPages.ModifiedDate = DateTime.Now;
-                    ConnXml.Entry(itemPages).State = System.Data.EntityState.Modified;
+                    ConnXml.Entry(itemPages).State = System.Data.Entity.EntityState.Modified;
                     ConnStatus = ConnXml.SaveChanges();
                     if (backup.Value != itemPages.Value)
                     {
@@ -49,7 +49,7 @@
                     itemPages.Value = Request.Unvalidated().Form[value];
                     itemPages.ModifiedDate = DateTime.Now;
                     itemPages.CreatedDate = DateTime.Now;
-                    ConnXml.Entry(itemPages).State = System.Data.EntityState.Added;
+                    ConnXml.Entry(itemPages).State = System.Data.Entity.EntityState.Added;
                     ConnStatus = ConnXml.SaveChanges();
                 }
             }

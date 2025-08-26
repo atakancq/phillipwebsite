@@ -5,7 +5,8 @@
 }
 @helper inputText(string inputID, string inputName, bool Multiline, bool Required, string inputValue)
 {
-    <div class="Title">@inputName @if (Required) { @Html.ValidationMessage(inputID) }</div>
+    <div class="Title">@inputName @if (Required)
+    {@Html.ValidationMessage(inputID)}</div>
     <div class="Input">
         @if (Required)
         {
@@ -13,9 +14,12 @@
             page.Validation.RequireField(inputID, "*");
             req = page.Validation;
         }
-        @if (Multiline) {
+        @if (Multiline)
+        {
             <textarea id="@inputID" name="@inputID" cols="20" rows="2" class="inputtextarea">@inputValue</textarea>
-        } else {
+        }
+        else
+        {
             <input id="@inputID" name="@inputID" type="text" value="@inputValue" class="inputtext" @if (Required) { @req.For(inputID) } />
         }
     </div>
@@ -23,7 +27,8 @@
 @helper inputText(string inputID, string inputName, bool Multiline, bool Required, string inputValue, string CssClass)
 {
     <div class="Title">
-        @inputName @if (Required) { @Html.ValidationMessage(inputID) }
+        @inputName @if (Required)
+        {@Html.ValidationMessage(inputID)}
     </div>
     <div class="Input">
         @if (Required)
@@ -36,9 +41,12 @@
             }
             req = page.Validation;
         }
-        @if (Multiline) {
+        @if (Multiline)
+        {
             <textarea id="@inputID" name="@inputID" cols="20" rows="2" class="inputtextarea">@inputValue</textarea>
-        } else {
+        }
+        else
+        {
             <input id="@inputID" name="@inputID" type="text" value="@inputValue" class="inputtext @CssClass" @if (Required) { @req.For(inputID) } />
         }
     </div>
@@ -75,7 +83,7 @@
     </div>
 }
 @helper DropDownList(string drpID, string drpName, IEnumerable<SelectListItem> drpItems)
-{ 
+{
     <div class="Title">@drpName</div>
     <div class="Input">
         @Html.ListBox(drpID, drpItems, new { @class = "inputdrp" })
@@ -93,10 +101,10 @@
     </div>
 }
 @helper ListBox(string drpID, string drpName, IEnumerable<SelectListItem> drpItems)
-{ <div class="Title">@drpName</div>
-    <div class="Input">
-        @Html.DropDownList(drpID, drpItems, new { @class = "inputdrp", @rows = 5, @multiple = "multiple", @style = "width: 99%;" })
-    </div>
+{<div class="Title">@drpName</div>
+<div class="Input">
+    @Html.DropDownList(drpID, drpItems, new { @class = "inputdrp", @rows = 5, @multiple = "multiple", @style = "width: 99%;" })
+</div>
 }
 @helper CheckBox(string drpID, string drpName, bool isChecked)
 {

@@ -8,7 +8,7 @@
     {
         int reqID = Request.QueryString["Delete"].AsInt();
         FormMailRelation FMailRe = ConnXml.FormMailRelation.FirstOrDefault(x => x.FormMailRelationID == reqID);
-        ConnXml.Entry(FMailRe).State = System.Data.EntityState.Deleted;
+        ConnXml.Entry(FMailRe).State = System.Data.Entity.EntityState.Deleted;
         int ConnStatus = 0;
         ConnStatus = ConnXml.SaveChanges();
         if (ConnStatus > 0)

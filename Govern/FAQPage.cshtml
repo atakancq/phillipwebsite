@@ -21,7 +21,7 @@
                         int getItem = Convert.ToInt32(item);
                         FAQ itemPage = ConnXml.FAQ.FirstOrDefault(x => x.FAQID == getItem);
                         itemPage.Line = i;
-                        ConnXml.Entry(itemPage).State = System.Data.EntityState.Modified;
+                        ConnXml.Entry(itemPage).State = System.Data.Entity.EntityState.Modified;
                         ConnXml.SaveChanges();
                         i++;
                     }

@@ -35,7 +35,7 @@
         <EntityTypeShape EntityType="mvcXmlModel.BranchHistory" Width="1.5" PointX="8.75" PointY="15.75" />
         <EntityTypeShape EntityType="mvcXmlModel.City" Width="1.5" PointX="16.75" PointY="0.75" />
         <EntityTypeShape EntityType="mvcXmlModel.ComplainForm" Width="1.5" PointX="16.75" PointY="3.75" />
-        <EntityTypeShape EntityType="mvcXmlModel.ContactForm" Width="1.5" PointX="16.75" PointY="8.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.ContactForm" Width="1.5" PointX="16.625" PointY="8.625" />
         <EntityTypeShape EntityType="mvcXmlModel.Country" Width="1.5" PointX="16.75" PointY="12.75" />
         <EntityTypeShape EntityType="mvcXmlModel.District" Width="1.5" PointX="16.75" PointY="15.75" />
         <EntityTypeShape EntityType="mvcXmlModel.DocumentGalery" Width="1.5" PointX="0.75" PointY="17.75" />
@@ -106,6 +106,7 @@
         <EntityTypeShape EntityType="mvcXmlModel.ModelPortfolioHistory" Width="1.5" PointX="31.375" PointY="14.75" />
         <EntityTypeShape EntityType="mvcXmlModel.OtherReports" Width="1.5" PointX="13.375" PointY="28.75" />
         <EntityTypeShape EntityType="mvcXmlModel.NovemberEventMember" Width="1.5" PointX="31.375" PointY="19.75" />
+        <EntityTypeShape EntityType="mvcXmlModel.NewZoomWebinarForm" Width="1.5" PointX="31.375" PointY="23.75" />
       </Diagram>
 		</edmx:Diagrams>
 	</edmx:Designer>

@@ -28,7 +28,7 @@
                     if (ConnXml.AdminAuthorization.Any(x=>x.AdminMenuID == getPageID && x.AdminID == getAdminID))
                     {
                         AdminAuthorization = ConnXml.AdminAuthorization.FirstOrDefault(x => x.AdminMenuID == getPageID);
-                        ConnXml.Entry(AdminAuthorization).State = System.Data.EntityState.Modified;
+                        ConnXml.Entry(AdminAuthorization).State = System.Data.Entity.EntityState.Modified;
                         ConnXml.SaveChanges();
                         continue;
                     }

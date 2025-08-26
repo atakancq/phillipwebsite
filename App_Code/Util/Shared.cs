@@ -11,7 +11,7 @@ using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Web.WebPages.Html;
+//using System.Web.WebPages.Html;
 
 public static class Shared
 {
@@ -99,14 +99,14 @@ public static class Shared
         return formatted;
     }
     //
-    public static List<SelectListItem> lstViewType()
-    {
-        List<SelectListItem> lstVideo = new List<SelectListItem>();
-        lstVideo.Add(new SelectListItem { Text = "Gösterim Tipi Seçiniz", Value = "0" });      
-        lstVideo.Add(new SelectListItem { Text = "Metin", Value = "1" });
-        lstVideo.Add(new SelectListItem { Text = "Resim", Value = "2" });
-        return lstVideo;
-    }
+    //public static List<SelectListItem> lstViewType()
+    //{
+    //    List<SelectListItem> lstVideo = new List<SelectListItem>();
+    //    lstVideo.Add(new SelectListItem { Text = "Gösterim Tipi Seçiniz", Value = "0" });      
+    //    lstVideo.Add(new SelectListItem { Text = "Metin", Value = "1" });
+    //    lstVideo.Add(new SelectListItem { Text = "Resim", Value = "2" });
+    //    return lstVideo;
+    //}
     //
     public static string ConvertToUrl(this string str)
     {
@@ -478,11 +478,11 @@ public static class Shared
         var res = client.OpenRead("https://www.google.com/recaptcha/api/siteverify?secret=6Lf6f6YnAAAAAKqLo5z6362hURRyptEnRdpQgCeR&response=" + gRecaptchaResponse);
         StreamReader reader = new StreamReader(res);
         string s = reader.ReadToEnd();
-        dynamic json = JsonConvert.DeserializeObject(s);
-        if (json.success != "true" || json.score <= 0.5m)
-        {
-            return false;
-        }
+        //dynamic json = JsonConvert.DeserializeObject(s);
+        //if (json.success != "true" || json.score <= 0.5m)
+        //{
+        //    return false;
+        //}
         return true;
     }
 

@@ -30,7 +30,7 @@
         itemPage.SMTPPort = Request.Form["txtSMTPPort"].AsInt();
         itemPage.Pagetitle = Request.Form["txtPagetitle"];
         itemPage.Sitedomain = Request.Form["txtSitedomain"];
-        ConnXml.Entry(itemPage).State = System.Data.EntityState.Modified;
+        ConnXml.Entry(itemPage).State = System.Data.Entity.EntityState.Modified;
         int ConnStatus = ConnXml.SaveChanges();
         if (ConnStatus > 0)
         {

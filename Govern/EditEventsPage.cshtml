@@ -31,7 +31,7 @@
         {
             System.IO.File.Delete(Server.MapPath(imgDir));
         }
-        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        ConnXml.Entry(Pages).State = System.Data.Entity.EntityState.Deleted;
         int ConnStatus = 0;
         ConnStatus = ConnXml.SaveChanges();
         if (ConnStatus > 0)
@@ -149,7 +149,7 @@
         int ConnStatus = 0;
         if (Request.QueryString["ID"].IsInt() || Request.QueryString["HistoryID"].IsInt())
         {
-            ConnXml.Entry(itemPages).State = System.Data.EntityState.Modified;
+            ConnXml.Entry(itemPages).State = System.Data.Entity.EntityState.Modified;
             ConnStatus = ConnXml.SaveChanges();
         }
         else
@@ -159,7 +159,7 @@
             Events reqPageUpdate = ConnXml.Events.FirstOrDefault(x => x.EventsID == itemPages.EventsID);
             int getNewsID = ConnXml.Pages.Where(x => x.ModuleID == 32 && x.Lang == reqPageUpdate.Lang).FirstOrDefault().PageID;
             reqPageUpdate.LinkUrl = "Page/" + getNewsID + "/" + itemPages.EventsID + "?lang=" + reqPageUpdate.Lang;
-            ConnXml.Entry(reqPageUpdate).State = System.Data.EntityState.Modified;
+            ConnXml.Entry(reqPageUpdate).State = System.Data.Entity.EntityState.Modified;
             ConnStatus = ConnXml.SaveChanges();
             backup = itemPages.Cast<EventsHistory>();
         }

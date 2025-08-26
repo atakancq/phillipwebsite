@@ -290,7 +290,110 @@ public class ClientServices : WebService
         var result = JsonConvert.SerializeObject(dtos);
         return result;
     }
+    
+    [WebMethod(EnableSession = false)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json, UseHttpGet = false)]
+    public string GetChatMessage(string message, string session_id = null)
+    {
+        try
+        {
+            var apiUrl = "http://10.1.1.177:8443/chat";
+            
+            if (string.IsNullOrEmpty(session_id))
+            {
+                session_id = Guid.NewGuid().ToString();
+            }
+            
+            var requestData = new
+            {
+                message = message,
+                session_id = session_id
+            };
 
+            var jsonContent = JsonConvert.SerializeObject(requestData);
+
+            var request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(apiUrl);
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.Timeout = 30000;
+
+            using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+            {
+                streamWriter.Write(jsonContent);
+                streamWriter.Flush();
+            }
+
+            using (var response = (System.Net.HttpWebResponse)request.GetResponse())
+            {
+                using (var streamReader = new StreamReader(response.GetResponseStream()))
+                {
+                    var apiResult = streamReader.ReadToEnd();
+                    
+                    // API'den gelen yanıtı parse et
+                    dynamic apiResponse = JsonConvert.DeserializeObject(apiResult);
+                    
+                    string botMessage;
+                    
+                    // Session limit kontrolü
+                    if (apiResponse.response != null && apiResponse.response.ToString().Contains("Session limit reached"))
+                    {
+                        botMessage = "Görüşme süreniz dolmuştur.";
+                    }
+                    else
+                    {
+                        botMessage = apiResponse.response.ToString() ?? "Yanıt alınamadı.";
+                    }
+                    
+                    // Standart format olarak döndür
+                    var result = new
+                    {
+                        message = botMessage,
+                        success = true,
+                        session_id = session_id // Session ID'yi geri döndür
+                    };
+
+                    return JsonConvert.SerializeObject(result);
+                }
+            }
+        }
+        catch (System.Net.WebException webEx)
+        {
+            if (webEx.Response != null)
+            {
+                using (var errorResponse = (System.Net.HttpWebResponse)webEx.Response)
+                {
+                    using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                    {
+                        var errorResult = reader.ReadToEnd();
+                        return JsonConvert.SerializeObject(new
+                        {
+                            message = "Üzgünüz, şu anda size yardımcı olamıyoruz. Lütfen daha sonra tekrar deneyin.",
+                            success = false,
+                            error = errorResult
+                        });
+                    }
+                }
+            }
+
+            return JsonConvert.SerializeObject(new
+            {
+                message = "Bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol edin.",
+                success = false,
+                error = webEx.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            // Genel hata durumunda
+            return JsonConvert.SerializeObject(new
+            {
+                message = "Üzgünüz, bir hata oluştu. Lütfen tekrar deneyin.",
+                success = false,
+                error = ex.Message
+            });
+        }
+    }
+    
     [WebMethod(EnableSession = false)]
     [ScriptMethod(ResponseFormat = ResponseFormat.Json, UseHttpGet = true)]
 

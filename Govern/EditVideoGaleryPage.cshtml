@@ -26,7 +26,7 @@
     {
         int reqID = Request.QueryString["Delete"].AsInt();
         VideoGalery Pages = ConnXml.VideoGalery.FirstOrDefault(x => x.VideoGaleryID == reqID);
-        ConnXml.Entry(Pages).State = System.Data.EntityState.Deleted;
+        ConnXml.Entry(Pages).State = System.Data.Entity.EntityState.Deleted;
         int ConnStatus = 0;
         ConnStatus = ConnXml.SaveChanges();
         if (ConnStatus > 0)
@@ -59,7 +59,7 @@
         int ConnStatus = 0;
         if (Request.QueryString["ID"].IsInt())
         {
-            ConnXml.Entry(VideoGalery).State = System.Data.EntityState.Modified;
+            ConnXml.Entry(VideoGalery).State = System.Data.Entity.EntityState.Modified;
             ConnStatus = ConnXml.SaveChanges();
         }
         else

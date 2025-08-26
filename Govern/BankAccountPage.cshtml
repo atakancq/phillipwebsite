@@ -25,7 +25,7 @@
                         int getItem = Convert.ToInt32(item);
                         BankAccount itemPage = ConnXml.BankAccount.FirstOrDefault(x => x.BankAccountID == getItem);
                         itemPage.Line = i;
-                        ConnXml.Entry(itemPage).State = System.Data.EntityState.Modified;
+                        ConnXml.Entry(itemPage).State = System.Data.Entity.EntityState.Modified;
                         ConnXml.SaveChanges();
                         i++;
                     }
