@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -297,7 +298,7 @@ public class ClientServices : WebService
     {
         try
         {
-            var apiUrl = "http://10.1.1.177:8443/chat";
+            var apiUrl = ConfigurationManager.AppSettings["ChatApiUrl"];
             
             if (string.IsNullOrEmpty(session_id))
             {
